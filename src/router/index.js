@@ -73,10 +73,87 @@ export const constantRouterMap = [
         path: 'dashboard',
         component: () => import('@/views/dashboard/index'),
         name: 'Dashboard',
-        meta: { title: 'dashboard', icon: 'dashboard', noCache: true, affix: true }
+        meta: {
+          title: 'dashboard',
+          icon: 'dashboard',
+          noCache: true,
+          affix: true
+        }
       }
     ]
   },
+  {
+    path: '/sales',
+    component: Layout,
+    redirect: '/sales/index',
+    alwaysShow: true, // will always show the root menu
+    meta: {
+      title: 'Sales Section',
+      icon: 'lock',
+      roles: ['admin', 'editor'] // you can set roles in root nav
+    },
+    children: [
+      {
+        path: 'orders',
+        component: () => import('@/views/sales/orders'),
+        name: 'Orders',
+        meta: {
+          title: 'Orders',
+          roles: ['admin'] // or you can only set roles in sub nav
+        }
+      },
+      {
+        path: 'invoices',
+        component: () => import('@/views/sales/invoices'),
+        name: 'Invoices',
+        meta: {
+          title: 'Invoices'
+          // if do not set roles, means: this page does not require permission
+        }
+      },
+      {
+        path: 'transactions',
+        component: () => import('@/views/sales/transactions'),
+        name: 'Transactions',
+        meta: {
+          title: 'Transactions'
+          // if do not set roles, means: this page does not require permission
+        }
+      }
+    ]
+  },
+  {
+    path: '/catalog',
+    component: Layout,
+    redirect: '/sales/index',
+    alwaysShow: true, // will always show the root menu
+    meta: {
+      title: 'Catalog Section',
+      icon: 'lock',
+      roles: ['admin', 'editor'] // you can set roles in root nav
+    },
+    children: [
+      {
+        path: 'products',
+        component: () => import('@/views/catalog/products'),
+        name: 'Products',
+        meta: {
+          title: 'Products',
+          roles: ['admin'] // or you can only set roles in sub nav
+        }
+      },
+      {
+        path: 'categories',
+        component: () => import('@/views/catalog/categories'),
+        name: 'Categories',
+        meta: {
+          title: 'Categories'
+          // if do not set roles, means: this page does not require permission
+        }
+      }
+    ]
+  },
+
   {
     path: '/documentation',
     component: Layout,

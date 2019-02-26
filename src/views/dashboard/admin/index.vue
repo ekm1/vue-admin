@@ -1,6 +1,5 @@
 <template>
   <div class="dashboard-editor-container">
-
     <github-corner style="position: absolute; top: 0px; border: 0; right: 0;"/>
 
     <panel-group @handleSetLineChartData="handleSetLineChartData"/>
@@ -28,17 +27,38 @@
     </el-row>
 
     <el-row :gutter="8">
-      <el-col :xs="{span: 24}" :sm="{span: 24}" :md="{span: 24}" :lg="{span: 12}" :xl="{span: 12}" style="padding-right:8px;margin-bottom:30px;">
+      <el-col
+        :xs="{span: 24}"
+        :sm="{span: 24}"
+        :md="{span: 24}"
+        :lg="{span: 12}"
+        :xl="{span: 12}"
+        style="padding-right:8px;margin-bottom:30px;"
+      >
         <transaction-table/>
       </el-col>
-      <el-col :xs="{span: 24}" :sm="{span: 12}" :md="{span: 12}" :lg="{span: 6}" :xl="{span: 6}" style="margin-bottom:30px;">
+      <el-col
+        :xs="{span: 24}"
+        :sm="{span: 16}"
+        :md="{span: 16}"
+        :lg="{span: 8}"
+        :xl="{span: 8}"
+        style="margin-bottom:30px;"
+      >
+        <new-costumer/>
+      </el-col>
+
+      <el-col
+        :xs="{span: 24}"
+        :sm="{span: 8}"
+        :md="{span: 8}"
+        :lg="{span: 4}"
+        :xl="{span: 4}"
+        style="margin-bottom:30px;"
+      >
         <todo-list/>
       </el-col>
-      <el-col :xs="{span: 24}" :sm="{span: 12}" :md="{span: 12}" :lg="{span: 6}" :xl="{span: 6}" style="margin-bottom:30px;">
-        <box-card/>
-      </el-col>
     </el-row>
-
   </div>
 </template>
 
@@ -50,6 +70,7 @@ import RaddarChart from './components/RaddarChart'
 import PieChart from './components/PieChart'
 import BarChart from './components/BarChart'
 import TransactionTable from './components/TransactionTable'
+import NewCostumer from './components/NewCostumer'
 import TodoList from './components/TodoList'
 import BoxCard from './components/BoxCard'
 
@@ -82,6 +103,7 @@ export default {
     PieChart,
     BarChart,
     TransactionTable,
+    NewCostumer,
     TodoList,
     BoxCard
   },
