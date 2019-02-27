@@ -12,14 +12,14 @@
         <lang-select class="set-language"/>
       </div>
 
-      <el-form-item prop="username">
+      <el-form-item prop="email">
         <span class="svg-container">
           <svg-icon icon-class="user"/>
         </span>
         <el-input
           v-model="loginForm.email"
-          :placeholder="$t('login.username')"
-          name="username"
+          :placeholder="$t('login.email')"
+          name="email"
           type="text"
           auto-complete="on"
         />
@@ -51,11 +51,11 @@
 
       <div style="position:relative">
         <div class="tips">
-          <span>{{ $t('login.username') }} : admin</span>
+          <span>{{ $t('login.email') }} : admin</span>
           <span>{{ $t('login.password') }} : {{ $t('login.any') }}</span>
         </div>
         <div class="tips">
-          <span style="margin-right:18px;">{{ $t('login.username') }} : editor</span>
+          <span style="margin-right:18px;">{{ $t('login.email') }} : editor</span>
           <span>{{ $t('login.password') }} : {{ $t('login.any') }}</span>
         </div>
 
@@ -78,7 +78,6 @@
 </template>
 
 <script>
-import { validUsername } from '@/utils/validate'
 import LangSelect from '@/components/LangSelect'
 import SocialSign from './socialsignin'
 
@@ -102,14 +101,14 @@ export default {
     // }
     return {
       loginForm: {
-        username: 'admin',
-        password: '1111111'
+        email: 'naun1.telo@test.com',
+        password: 'nuni123'
       },
       // loginRules: {
       //   username: [{ required: true, trigger: 'blur', validator: validateUsername }],
       //   password: [{ required: true, trigger: 'blur', validator: validatePassword }]
       // },
-  
+
       passwordType: 'password',
       loading: false,
       showDialog: false,

@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div id="center" class="app-container">
     <div class="filter-container">
       <el-input
         :placeholder="$t('table.title')"
@@ -69,9 +69,10 @@
       <el-checkbox
         v-model="showReviewer"
         class="filter-item"
+        checked
         style="margin-left:15px;"
-        @change="tableKey=tableKey+1"
-      >{{ $t('table.reviewer') }}</el-checkbox>
+        @change="handleStatus()"
+      >{{ $t('active') }}</el-checkbox>
     </div>
 
     <el-table
@@ -89,61 +90,20 @@
         prop="id"
         sortable="custom"
         align="center"
-        width="65"
+        width="205"
       >
         <template slot-scope="scope">
-          <span>{{ scope.row.id }}</span>
+          <span>{{ scope.row._id }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.date')" width="150px" align="center">
+      <el-table-column :label="$t('Category')" width="150px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          <span>{{ scope.row.category }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.title')" min-width="150px">
+      <el-table-column :label="$t('Subcategory')" width="150px" align="center">
         <template slot-scope="scope">
-          <span class="link-type" @click="handleUpdate(scope.row)">{{ scope.row.title }}</span>
-          <el-tag>{{ scope.row.type | typeFilter }}</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('table.author')" width="110px" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.author }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column
-        v-if="showReviewer"
-        :label="$t('table.reviewer')"
-        width="110px"
-        align="center"
-      >
-        <template slot-scope="scope">
-          <span style="color:red;">{{ scope.row.reviewer }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('table.importance')" width="80px">
-        <template slot-scope="scope">
-          <svg-icon
-            v-for="n in +scope.row.importance"
-            :key="n"
-            icon-class="star"
-            class="meta-item__icon"
-          />
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('table.readings')" align="center" width="95">
-        <template slot-scope="scope">
-          <span
-            v-if="scope.row.pageviews"
-            class="link-type"
-            @click="handleFetchPv(scope.row.pageviews)"
-          >{{ scope.row.pageviews }}</span>
-          <span v-else>0</span>
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('table.status')" class-name="status-col" width="100">
-        <template slot-scope="scope">
-          <el-tag :type="scope.row.status | statusFilter">{{ scope.row.status }}</el-tag>
+          <span>{{ scope.row.subcategory }}</span>
         </template>
       </el-table-column>
       <el-table-column
@@ -158,17 +118,7 @@
             size="mini"
             @click="handleUpdate(scope.row)"
           >{{ $t('table.edit') }}</el-button>
-          <el-button
-            v-if="scope.row.status!='published'"
-            size="mini"
-            type="success"
-            @click="handleModifyStatus(scope.row,'published')"
-          >{{ $t('table.publish') }}</el-button>
-          <el-button
-            v-if="scope.row.status!='draft'"
-            size="mini"
-            @click="handleModifyStatus(scope.row,'draft')"
-          >{{ $t('table.draft') }}</el-button>
+
           <el-button
             v-if="scope.row.status!='deleted'"
             size="mini"
@@ -279,7 +229,7 @@ const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
 }, {})
 
 export default {
-  name: 'ComplexTable',
+  name: 'Categories',
   components: { Pagination },
   directives: { waves },
   filters: {
@@ -307,6 +257,8 @@ export default {
         importance: undefined,
         title: undefined,
         type: undefined,
+        status: true,
+
         sort: '+id'
       },
       importanceOptions: [1, 2, 3],
@@ -320,8 +272,7 @@ export default {
         remark: '',
         timestamp: new Date(),
         title: '',
-        type: '',
-        status: 'published'
+        type: ''
       },
       dialogFormVisible: false,
       dialogStatus: '',
@@ -346,8 +297,8 @@ export default {
     getList() {
       this.listLoading = true
       fetchList(this.listQuery).then(response => {
-        this.list = response.data.items
-        this.total = response.data.total
+        this.list = response.data.docs
+        this.total = response.data.pages
 
         // Just to simulate the time of the request
         setTimeout(() => {
@@ -492,3 +443,5 @@ export default {
   }
 }
 </script>
+<style scoped>
+</style>
