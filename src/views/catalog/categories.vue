@@ -2,48 +2,12 @@
   <div id="center" class="app-container">
     <div class="filter-container">
       <el-input
-        :placeholder="$t('table.title')"
+        :placeholder="$t('table.category')"
         v-model="listQuery.title"
         style="width: 200px;"
         class="filter-item"
         @keyup.enter.native="handleFilter"
       />
-      <el-select
-        v-model="listQuery.importance"
-        :placeholder="$t('table.importance')"
-        clearable
-        style="width: 90px"
-        class="filter-item"
-      >
-        <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item"/>
-      </el-select>
-      <el-select
-        v-model="listQuery.type"
-        :placeholder="$t('table.type')"
-        clearable
-        class="filter-item"
-        style="width: 130px"
-      >
-        <el-option
-          v-for="item in calendarTypeOptions"
-          :key="item.key"
-          :label="item.display_name+'('+item.key+')'"
-          :value="item.key"
-        />
-      </el-select>
-      <el-select
-        v-model="listQuery.sort"
-        style="width: 140px"
-        class="filter-item"
-        @change="handleFilter"
-      >
-        <el-option
-          v-for="item in sortOptions"
-          :key="item.key"
-          :label="item.label"
-          :value="item.key"
-        />
-      </el-select>
       <el-button
         v-waves
         class="filter-item"
@@ -82,28 +46,22 @@
       border
       fit
       highlight-current-row
-      style="width: 100%;"
+      style="width: 100%;display:table-caption;"
       @sort-change="sortChange"
     >
-      <el-table-column
-        :label="$t('table.id')"
-        prop="id"
-        sortable="custom"
-        align="center"
-        width="205"
-      >
-        <template slot-scope="scope">
-          <span>{{ scope.row._id }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('Category')" width="150px" align="center">
+      <el-table-column :label="$t('table.category')" width="150px" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.category }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('Subcategory')" width="150px" align="center">
+      <el-table-column :label="$t('table.subcategory')" width="150px" align="center">
         <template slot-scope="scope">
           <span>{{ scope.row.subcategory }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('table.status')" width="150px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.active }}</span>
         </template>
       </el-table-column>
       <el-table-column
@@ -120,11 +78,18 @@
           >{{ $t('table.edit') }}</el-button>
 
           <el-button
-            v-if="scope.row.status!='deleted'"
+            v-if="scope.row.active === true"
             size="mini"
-            type="danger"
+            type="delete"
             @click="handleModifyStatus(scope.row,'deleted')"
           >{{ $t('table.delete') }}</el-button>
+
+          <el-button
+            v-if="scope.row.active ===false"
+            size="mini"
+            type="success"
+            @click="handleModifyStatus(scope.row,'activate')"
+          >Activate</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -139,62 +104,47 @@
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form
-        ref="dataForm"
-        :rules="rules"
-        :model="temp"
-        label-position="left"
-        label-width="70px"
-        style="width: 400px; margin-left:50px;"
+        ref="dynamicValidateForm"
+        :model="dynamicValidateForm"
+        label-width="120px"
+        class="demo-dynamic"
       >
-        <el-form-item :label="$t('table.type')" prop="type">
-          <el-select v-model="temp.type" class="filter-item" placeholder="Please select">
+        <el-form-item prop="category" label="Category">
+          <el-input v-model="dynamicValidateForm.category"/>
+        </el-form-item>
+        <el-form-item prop="subcategory" label="Subcategory">
+          <el-input v-model="dynamicValidateForm.subcategory"/>
+        </el-form-item>
+
+        <el-form-item
+          v-for="(attribute, index) in dynamicValidateForm.attributes"
+          :label="'Attribute '"
+          :key="attribute.key"
+          :prop="'attributes.' + index + '.name'"
+          :rules="{
+            required: true, message: 'attribute can not be null', trigger: 'blur'
+          }"
+          style="padding-left:15%"
+        >
+          <el-input v-model="attribute.name"/>
+          <el-select v-model="attribute.fieldType" placeholder="Select">
             <el-option
-              v-for="item in calendarTypeOptions"
-              :key="item.key"
-              :label="item.display_name"
-              :value="item.key"
+              v-for="item in options"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
             />
           </el-select>
+          <el-checkbox :prop="'attributes.' + index + '.required'" v-model="attribute.required">Nuni</el-checkbox>
+
+          <el-button @click.prevent="removeattribute(attribute)">Delete</el-button>
         </el-form-item>
-        <el-form-item :label="$t('table.date')" prop="timestamp">
-          <el-date-picker
-            v-model="temp.timestamp"
-            type="datetime"
-            placeholder="Please pick a date"
-          />
-        </el-form-item>
-        <el-form-item :label="$t('table.title')" prop="title">
-          <el-input v-model="temp.title"/>
-        </el-form-item>
-        <el-form-item :label="$t('table.status')">
-          <el-select v-model="temp.status" class="filter-item" placeholder="Please select">
-            <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item"/>
-          </el-select>
-        </el-form-item>
-        <el-form-item :label="$t('table.importance')">
-          <el-rate
-            v-model="temp.importance"
-            :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
-            :max="3"
-            style="margin-top:8px;"
-          />
-        </el-form-item>
-        <el-form-item :label="$t('table.remark')">
-          <el-input
-            :autosize="{ minRows: 2, maxRows: 4}"
-            v-model="temp.remark"
-            type="textarea"
-            placeholder="Please input"
-          />
+        <el-form-item>
+          <el-button type="primary" @click="submitForm('dynamicValidateForm')">Submit</el-button>
+          <el-button @click="addAttribute">Add new Attribute</el-button>
+          <el-button @click="resetForm('dynamicValidateForm')">Reset</el-button>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">{{ $t('table.cancel') }}</el-button>
-        <el-button
-          type="primary"
-          @click="dialogStatus==='create'?createData():updateData()"
-        >{{ $t('table.confirm') }}</el-button>
-      </div>
     </el-dialog>
 
     <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
@@ -214,19 +164,7 @@ import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
 import waves from '@/directive/waves' // Waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
-
-const calendarTypeOptions = [
-  { key: 'CN', display_name: 'China' },
-  { key: 'US', display_name: 'USA' },
-  { key: 'JP', display_name: 'Japan' },
-  { key: 'EU', display_name: 'Eurozone' }
-]
-
-// arr to obj ,such as { CN : "China", US : "USA" }
-const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
-  acc[cur.key] = cur.display_name
-  return acc
-}, {})
+import { searchByCategoryName, deleteSubCategory } from '@/api/categories'
 
 export default {
   name: 'Categories',
@@ -242,11 +180,29 @@ export default {
       return statusMap[status]
     },
     typeFilter(type) {
-      return calendarTypeKeyValue[type]
+      return true
     }
   },
   data() {
     return {
+      dynamicValidateForm: {
+        attributes: [{
+          name: '',
+          required: true
+        }],
+        category: '',
+        subcategory: ''
+      },
+      options: [{
+        value: 'String',
+        label: 'String'
+      }, {
+        value: 'Number',
+        label: 'Number'
+      }, {
+        value: 'Boolean',
+        label: 'Boolean'
+      }],
       tableKey: 0,
       list: null,
       total: 0,
@@ -257,15 +213,12 @@ export default {
         importance: undefined,
         title: undefined,
         type: undefined,
-        status: true,
-
-        sort: '+id'
-      },
+        status: true },
       importanceOptions: [1, 2, 3],
-      calendarTypeOptions,
       sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
       statusOptions: ['published', 'draft', 'deleted'],
       showReviewer: false,
+      tableStatus: true,
       temp: {
         id: undefined,
         importance: 1,
@@ -278,7 +231,7 @@ export default {
       dialogStatus: '',
       textMap: {
         update: 'Edit',
-        create: 'Create'
+        create: 'Create Category'
       },
       dialogPvVisible: false,
       pvData: [],
@@ -300,22 +253,54 @@ export default {
         this.list = response.data.docs
         this.total = response.data.pages
 
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
+        this.listLoading = false
       })
     },
+    getFilerResults() {
+      this.listLoading = true
+      searchByCategoryName(this.listQuery.title).then(results => {
+        this.list = results.data
+        this.listLoading = false
+      })
+    },
+    // Searching in the table
     handleFilter() {
-      this.listQuery.page = 1
-      this.getList()
+      if (this.listQuery.title === undefined || this.listQuery.title === '' || this.listQuery.title === ' ') {
+        this.listQuery.page = 1
+        this.getList()
+      } else {
+        this.listQuery.page = 1
+        this.getFilerResults()
+      }
     },
     handleModifyStatus(row, status) {
-      this.$message({
-        message: 'success',
-        type: 'success'
-      })
-      row.status = status
+      if (status === 'deleted') {
+        deleteSubCategory(row._id, 'false').then(res => {
+          if (res.status) {
+            this.$message({
+              message: 'success',
+              type: 'success'
+            })
+            this.list = this.list.filter(el => {
+              return el._id !== row._id
+            })
+            row.status = status
+          }
+        })
+      } else if (status === 'activate') {
+        deleteSubCategory(row._id, 'true').then(res => {
+          if (res.status) {
+            this.$message({
+              message: 'success',
+              type: 'success'
+            })
+            this.list = this.list.filter(el => {
+              return el._id !== row._id
+            })
+            row.status = status
+          }
+        })
+      }
     },
     sortChange(data) {
       const { prop, order } = data
@@ -347,7 +332,7 @@ export default {
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
       this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
+        this.$refs['dynamicValidateForm'].clearValidate()
       })
     },
     createData() {
@@ -368,13 +353,51 @@ export default {
         }
       })
     },
+
+    // Add new attributes
+
+    addAttribute() {
+      this.dynamicValidateForm.attributes.push({
+        required: true,
+        name: ''
+      })
+    },
+
+    // Submit Dialog form for Adding
+    submitForm(dynamicValidateForm) {
+      this.$refs[dynamicValidateForm].validate((valid) => {
+        if (valid) {
+          console.log(this.dynamicValidateForm)
+
+          this.dialogFormVisible = false
+          // this.resetForm('dynamicValidateForm');
+        } else {
+          console.log('error submit!!')
+          return false
+        }
+      })
+    },
+
+    // Reseting Dialog form
+    resetForm(formName) {
+      this.$refs[formName].resetFields()
+      //        while(this.dynamicValidateForm.attributes.length > 0) {
+      //     this.dynamicValidateForm.attributes.pop();
+      // }
+    },
+    removeattribute(item) {
+      var index = this.dynamicValidateForm.attributes.indexOf(item)
+      if (index !== -1) {
+        this.dynamicValidateForm.attributes.splice(index, 1)
+      }
+    },
     handleUpdate(row) {
       this.temp = Object.assign({}, row) // copy obj
       this.temp.timestamp = new Date(this.temp.timestamp)
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
+        this.$refs['dynamicValidateForm'].clearValidate()
       })
     },
     updateData() {
@@ -420,8 +443,8 @@ export default {
     handleDownload() {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['timestamp', 'title', 'type', 'importance', 'status']
-        const filterVal = ['timestamp', 'title', 'type', 'importance', 'status']
+        const tHeader = ['Category', 'Subcategory', 'ACTIVE']
+        const filterVal = ['category', 'subcategory', 'active']
         const data = this.formatJson(filterVal, this.list)
         excel.export_json_to_excel({
           header: tHeader,
@@ -430,6 +453,11 @@ export default {
         })
         this.downloadLoading = false
       })
+    },
+    handleStatus() {
+      this.listQuery.status = !this.listQuery.status
+      this.tableStatus = this.listQuery.status
+      this.getList()
     },
     formatJson(filterVal, jsonData) {
       return jsonData.map(v => filterVal.map(j => {
@@ -440,8 +468,12 @@ export default {
         }
       }))
     }
+
   }
 }
 </script>
 <style scoped>
+.app-container {
+  padding-left: 25%;
+}
 </style>
