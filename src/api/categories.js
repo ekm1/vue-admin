@@ -17,3 +17,19 @@ export function deleteSubCategory(subCategoryId, status) {
     method: 'get'
   })
 }
+
+export function addCategory(data) {
+  return request({
+    url: '/api/categories/create',
+    method: 'post',
+    data
+  })
+}
+
+export function updateCategory(data) {
+  return request({
+    url: '/api/categories/update',
+    method: 'post',
+    data
+  })
+}

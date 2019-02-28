@@ -102,7 +102,7 @@
       @pagination="getList"
     />
 
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" class="dialog-size">
       <el-form
         ref="dynamicValidateForm"
         :model="dynamicValidateForm"
@@ -126,8 +126,8 @@
           }"
           style="padding-left:15%"
         >
-          <el-input v-model="attribute.name"/>
-          <el-select v-model="attribute.fieldType" placeholder="Select">
+          <el-input v-model="attribute.name" class="input-field"/>
+          <el-select v-model="attribute.fieldType" class="select-size" placeholder="Select">
             <el-option
               v-for="item in options"
               :key="item.value"
@@ -135,7 +135,10 @@
               :value="item.value"
             />
           </el-select>
-          <el-checkbox :prop="'attributes.' + index + '.required'" v-model="attribute.required">Nuni</el-checkbox>
+          <el-checkbox
+            :prop="'attributes.' + index + '.required'"
+            v-model="attribute.required"
+          >Required</el-checkbox>
 
           <el-button @click.prevent="removeattribute(attribute)">Delete</el-button>
         </el-form-item>
@@ -147,24 +150,67 @@
       </el-form>
     </el-dialog>
 
-    <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
-      <el-table :data="pvData" border fit highlight-current-row style="width: 100%">
-        <el-table-column prop="key" label="Channel"/>
-        <el-table-column prop="pv" label="Pv"/>
-      </el-table>
-      <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="dialogPvVisible = false">{{ $t('table.confirm') }}</el-button>
-      </span>
+    <el-dialog
+      :visible.sync="dialogPvVisible"
+      title="Update Category"
+      class="dialog-size"
+      @click="updateForm('dynamicValidateForm')"
+    >
+      <el-form
+        ref="dynamicValidateForm"
+        :model="dynamicValidateForm"
+        label-width="120px"
+        class="demo-dynamic"
+      >
+        <el-form-item prop="category" label="Category">
+          <el-input v-model="dynamicValidateForm.category"/>
+        </el-form-item>
+        <el-form-item prop="subcategory" label="Subcategory">
+          <el-input v-model="dynamicValidateForm.subcategory"/>
+        </el-form-item>
+
+        <el-form-item
+          v-for="(attribute, index) in dynamicValidateForm.attributes"
+          :label="'Attribute '"
+          :key="attribute.key"
+          :prop="'attributes.' + index + '.name'"
+          :rules="{
+            required: true, message: 'attribute can not be null', trigger: 'blur'
+          }"
+          style="padding-left:15%"
+        >
+          <el-input v-model="attribute.name" class="input-field"/>
+          <el-select v-model="attribute.fieldType" placeholder="Select">
+            <el-option
+              v-for="item in options"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+          <el-checkbox
+            :prop="'attributes.' + index + '.required'"
+            v-model="attribute.required"
+          >Required</el-checkbox>
+
+          <el-button class="delete-btn" button @click.prevent="removeattribute(attribute)">Delete</el-button>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="updateForm('dynamicValidateForm')">Update</el-button>
+          <el-button @click="addAttribute">Add new Attribute</el-button>
+          <el-button @click="resetForm('dynamicValidateForm')">Reset</el-button>
+        </el-form-item>
+      </el-form>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
+import { fetchList, fetchPv, updateArticle } from '@/api/article'
 import waves from '@/directive/waves' // Waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
-import { searchByCategoryName, deleteSubCategory } from '@/api/categories'
+import { searchByCategoryName, deleteSubCategory, addCategory, updateCategory } from '@/api/categories'
 
 export default {
   name: 'Categories',
@@ -191,6 +237,7 @@ export default {
           required: true
         }],
         category: '',
+        active: true,
         subcategory: ''
       },
       options: [{
@@ -251,8 +298,7 @@ export default {
       this.listLoading = true
       fetchList(this.listQuery).then(response => {
         this.list = response.data.docs
-        this.total = response.data.pages
-
+        this.total = response.data.total
         this.listLoading = false
       })
     },
@@ -290,9 +336,11 @@ export default {
       } else if (status === 'activate') {
         deleteSubCategory(row._id, 'true').then(res => {
           if (res.status) {
-            this.$message({
-              message: 'success',
-              type: 'success'
+            this.$notify({
+              title: 'success',
+              message: 'Successfully deleted Subcategory',
+              type: 'success',
+              duration: 2000
             })
             this.list = this.list.filter(el => {
               return el._id !== row._id
@@ -317,40 +365,23 @@ export default {
       this.handleFilter()
     },
     resetTemp() {
-      this.temp = {
-        id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
-        status: 'published',
-        type: ''
+      const reset = this.temp = {
+        attributes: [{
+          name: '',
+          required: true
+        }],
+        category: '',
+        active: true,
+        subcategory: ''
       }
+      return reset
     },
     handleCreate() {
-      this.resetTemp()
+      this.dynamicValidateForm = this.resetTemp()
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
       this.$nextTick(() => {
         this.$refs['dynamicValidateForm'].clearValidate()
-      })
-    },
-    createData() {
-      this.$refs['dataForm'].validate((valid) => {
-        if (valid) {
-          this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-          this.temp.author = 'vue-element-admin'
-          createArticle(this.temp).then(() => {
-            this.list.unshift(this.temp)
-            this.dialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '创建成功',
-              type: 'success',
-              duration: 2000
-            })
-          })
-        }
       })
     },
 
@@ -367,10 +398,39 @@ export default {
     submitForm(dynamicValidateForm) {
       this.$refs[dynamicValidateForm].validate((valid) => {
         if (valid) {
-          console.log(this.dynamicValidateForm)
+          addCategory(this.dynamicValidateForm).then(
+            this.getList()
+          ).catch(err => console.log(err))
+          // this.resetForm('dynamicValidateForm')
+
+          this.$notify({
+            title: 'success',
+            message: 'Successfully created new Category',
+            type: 'success',
+            duration: 2000
+          })
 
           this.dialogFormVisible = false
-          // this.resetForm('dynamicValidateForm');
+        } else {
+          console.log('error submit!!')
+          return false
+        }
+      })
+    },
+    updateForm(dynamicValidateForm) {
+      this.$refs[dynamicValidateForm].validate((valid) => {
+        if (valid) {
+          updateCategory(this.dynamicValidateForm).then(
+            console.log(this.dynamicValidateForm),
+            this.getList()
+          ).catch(err => console.log(err))
+          this.$notify({
+            title: 'success',
+            message: 'Successfully updated Category',
+            type: 'success',
+            duration: 2000
+          })
+          this.dialogPvVisible = false
         } else {
           console.log('error submit!!')
           return false
@@ -381,9 +441,9 @@ export default {
     // Reseting Dialog form
     resetForm(formName) {
       this.$refs[formName].resetFields()
-      //        while(this.dynamicValidateForm.attributes.length > 0) {
-      //     this.dynamicValidateForm.attributes.pop();
-      // }
+      while (this.dynamicValidateForm.attributes.length > 0) {
+        this.dynamicValidateForm.attributes.pop()
+      }
     },
     removeattribute(item) {
       var index = this.dynamicValidateForm.attributes.indexOf(item)
@@ -392,13 +452,11 @@ export default {
       }
     },
     handleUpdate(row) {
+      this.dynamicValidateForm = row
       this.temp = Object.assign({}, row) // copy obj
       this.temp.timestamp = new Date(this.temp.timestamp)
       this.dialogStatus = 'update'
-      this.dialogFormVisible = true
-      this.$nextTick(() => {
-        this.$refs['dynamicValidateForm'].clearValidate()
-      })
+      this.dialogPvVisible = true
     },
     updateData() {
       this.$refs['dataForm'].validate((valid) => {
@@ -424,16 +482,7 @@ export default {
         }
       })
     },
-    handleDelete(row) {
-      this.$notify({
-        title: '成功',
-        message: '删除成功',
-        type: 'success',
-        duration: 2000
-      })
-      const index = this.list.indexOf(row)
-      this.list.splice(index, 1)
-    },
+
     handleFetchPv(pv) {
       fetchPv(pv).then(response => {
         this.pvData = response.data.pvData
@@ -476,4 +525,16 @@ export default {
 .app-container {
   padding-left: 25%;
 }
+
+.input-field {
+  padding-bottom: 2%;
+}
+/*
+.dialog-size {
+  width: 50%;
+  margin: 0 auto;
+}
+.select-size {
+  width: 100%;
+} */
 </style>
