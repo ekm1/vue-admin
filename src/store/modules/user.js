@@ -79,7 +79,7 @@ const user = {
             }
 
             commit('SET_NAME', data.name)
-            commit('SET_AVATAR', data.avatar)
+            commit('SET_AVATAR', 'https://www.clipartmax.com/png/small/319-3191274_male-avatar-admin-profile.png')
             commit('SET_INTRODUCTION', data.introduction)
             resolve(response)
           })

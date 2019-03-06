@@ -1,8 +1,16 @@
 import request from '@/utils/request'
 
-export function searchByCategoryName(categoryName) {
+export function searchByCategoryName(categoryName, page, limit, status) {
   return request({
-    url: '/api/categories/getAllBySameCategory?name=' + categoryName,
+    url:
+      '/api/categories/getAllBySameCategory?name=' +
+      categoryName +
+      '&page=' +
+      page +
+      '&limit=' +
+      limit +
+      '&status=' +
+      status,
     method: 'get'
   })
 }

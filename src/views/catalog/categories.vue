@@ -3,7 +3,7 @@
     <div class="filter-container">
       <el-input
         :placeholder="$t('table.category')"
-        v-model="listQuery.title"
+        v-model="listQuery.name"
         style="width: 200px;"
         class="filter-item"
         @keyup.enter.native="handleFilter"
@@ -206,11 +206,17 @@
 </template>
 
 <script>
+// TODO: Validation & on Enter Submit form.
 import { fetchList, fetchPv, updateArticle } from '@/api/article'
 import waves from '@/directive/waves' // Waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
-import { searchByCategoryName, deleteSubCategory, addCategory, updateCategory } from '@/api/categories'
+import {
+  searchByCategoryName,
+  deleteSubCategory,
+  addCategory,
+  updateCategory
+} from '@/api/categories'
 
 export default {
   name: 'Categories',
@@ -232,24 +238,30 @@ export default {
   data() {
     return {
       dynamicValidateForm: {
-        attributes: [{
-          name: '',
-          required: true
-        }],
+        attributes: [
+          {
+            name: '',
+            required: true
+          }
+        ],
         category: '',
         active: true,
         subcategory: ''
       },
-      options: [{
-        value: 'String',
-        label: 'String'
-      }, {
-        value: 'Number',
-        label: 'Number'
-      }, {
-        value: 'Boolean',
-        label: 'Boolean'
-      }],
+      options: [
+        {
+          value: 'String',
+          label: 'String'
+        },
+        {
+          value: 'Number',
+          label: 'Number'
+        },
+        {
+          value: 'Boolean',
+          label: 'Boolean'
+        }
+      ],
       tableKey: 0,
       list: null,
       total: 0,
@@ -258,20 +270,21 @@ export default {
         page: 1,
         limit: 20,
         importance: undefined,
-        title: undefined,
+        name: undefined,
         type: undefined,
-        status: true },
+        status: true
+      },
       importanceOptions: [1, 2, 3],
-      sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
-      statusOptions: ['published', 'draft', 'deleted'],
-      showReviewer: false,
-      tableStatus: true,
+      sortOptions: [
+        { label: 'ID Ascending', key: '+id' },
+        { label: 'ID Descending', key: '-id' }
+      ],
       temp: {
         id: undefined,
         importance: 1,
         remark: '',
         timestamp: new Date(),
-        title: '',
+        name: '',
         type: ''
       },
       dialogFormVisible: false,
@@ -282,36 +295,66 @@ export default {
       },
       dialogPvVisible: false,
       pvData: [],
+      showReviewer: false,
+
       rules: {
-        type: [{ required: true, message: 'type is required', trigger: 'change' }],
-        timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-        title: [{ required: true, message: 'title is required', trigger: 'blur' }]
+        type: [
+          { required: true, message: 'type is required', trigger: 'change' }
+        ],
+        timestamp: [
+          {
+            type: 'date',
+            required: true,
+            message: 'timestamp is required',
+            trigger: 'change'
+          }
+        ],
+        name: [{ required: true, message: 'name is required', trigger: 'blur' }]
       },
       downloadLoading: false
     }
   },
+  // Get items on create
   created() {
     this.getList()
   },
   methods: {
     getList() {
-      this.listLoading = true
-      fetchList(this.listQuery).then(response => {
-        this.list = response.data.docs
-        this.total = response.data.total
-        this.listLoading = false
-      })
+      if (
+        this.listQuery.name === undefined ||
+        this.listQuery.name === '' ||
+        this.listQuery.name === ' '
+      ) {
+        this.listLoading = true
+        fetchList(this.listQuery).then(response => {
+          this.list = response.data.docs
+          this.total = response.data.total
+          this.listLoading = false
+        })
+      } else {
+        this.getFilerResults()
+      }
     },
     getFilerResults() {
       this.listLoading = true
-      searchByCategoryName(this.listQuery.title).then(results => {
-        this.list = results.data
+      searchByCategoryName(
+        this.listQuery.name,
+        this.listQuery.page,
+        this.listQuery.limit,
+        this.listQuery.status
+      ).then(results => {
+        this.list = results.data.docs
+        this.total = results.data.total
         this.listLoading = false
       })
     },
     // Searching in the table
     handleFilter() {
-      if (this.listQuery.title === undefined || this.listQuery.title === '' || this.listQuery.title === ' ') {
+      if (
+        this.listQuery.name === undefined ||
+        this.listQuery.name === '' ||
+        this.listQuery.name === ' '
+      ) {
         this.listQuery.page = 1
         this.getList()
       } else {
@@ -319,6 +362,7 @@ export default {
         this.getFilerResults()
       }
     },
+    // Handle status change
     handleModifyStatus(row, status) {
       if (status === 'deleted') {
         deleteSubCategory(row._id, 'false').then(res => {
@@ -350,12 +394,16 @@ export default {
         })
       }
     },
+
+    // Sorting change
     sortChange(data) {
       const { prop, order } = data
       if (prop === 'id') {
         this.sortByID(order)
       }
     },
+
+    // Sorting by ID
     sortByID(order) {
       if (order === 'ascending') {
         this.listQuery.sort = '+id'
@@ -364,18 +412,22 @@ export default {
       }
       this.handleFilter()
     },
+    // Reset Modal-Form values
     resetTemp() {
-      const reset = this.temp = {
-        attributes: [{
-          name: '',
-          required: true
-        }],
+      const reset = (this.temp = {
+        attributes: [
+          {
+            name: '',
+            required: true
+          }
+        ],
         category: '',
         active: true,
         subcategory: ''
-      }
+      })
       return reset
     },
+    // Handle create method
     handleCreate() {
       this.dynamicValidateForm = this.resetTemp()
       this.dialogStatus = 'create'
@@ -396,11 +448,11 @@ export default {
 
     // Submit Dialog form for Adding
     submitForm(dynamicValidateForm) {
-      this.$refs[dynamicValidateForm].validate((valid) => {
+      this.$refs[dynamicValidateForm].validate(valid => {
         if (valid) {
-          addCategory(this.dynamicValidateForm).then(
-            this.getList()
-          ).catch(err => console.log(err))
+          addCategory(this.dynamicValidateForm)
+            .then(this.getList())
+            .catch(err => console.log(err))
           // this.resetForm('dynamicValidateForm')
 
           this.$notify({
@@ -417,13 +469,13 @@ export default {
         }
       })
     },
+    // Edit Enitity
     updateForm(dynamicValidateForm) {
-      this.$refs[dynamicValidateForm].validate((valid) => {
+      this.$refs[dynamicValidateForm].validate(valid => {
         if (valid) {
-          updateCategory(this.dynamicValidateForm).then(
-            console.log(this.dynamicValidateForm),
-            this.getList()
-          ).catch(err => console.log(err))
+          updateCategory(this.dynamicValidateForm)
+            .then(console.log(this.dynamicValidateForm), this.getList())
+            .catch(err => console.log(err))
           this.$notify({
             title: 'success',
             message: 'Successfully updated Category',
@@ -445,12 +497,14 @@ export default {
         this.dynamicValidateForm.attributes.pop()
       }
     },
+    // Remove attribute dinamically
     removeattribute(item) {
       var index = this.dynamicValidateForm.attributes.indexOf(item)
       if (index !== -1) {
         this.dynamicValidateForm.attributes.splice(index, 1)
       }
     },
+    // Handling update on edit
     handleUpdate(row) {
       this.dynamicValidateForm = row
       this.temp = Object.assign({}, row) // copy obj
@@ -458,8 +512,9 @@ export default {
       this.dialogStatus = 'update'
       this.dialogPvVisible = true
     },
+
     updateData() {
-      this.$refs['dataForm'].validate((valid) => {
+      this.$refs['dataForm'].validate(valid => {
         if (valid) {
           const tempData = Object.assign({}, this.temp)
           tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
@@ -509,15 +564,16 @@ export default {
       this.getList()
     },
     formatJson(filterVal, jsonData) {
-      return jsonData.map(v => filterVal.map(j => {
-        if (j === 'timestamp') {
-          return parseTime(v[j])
-        } else {
-          return v[j]
-        }
-      }))
+      return jsonData.map(v =>
+        filterVal.map(j => {
+          if (j === 'timestamp') {
+            return parseTime(v[j])
+          } else {
+            return v[j]
+          }
+        })
+      )
     }
-
   }
 }
 </script>

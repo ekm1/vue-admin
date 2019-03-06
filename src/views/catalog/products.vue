@@ -1,49 +1,13 @@
 <template>
-  <div class="app-container">
+  <div id="center" class="app-container">
     <div class="filter-container">
       <el-input
-        :placeholder="$t('table.title')"
-        v-model="listQuery.title"
+        :placeholder="$t('table.category')"
+        v-model="getProductsQuery.name"
         style="width: 200px;"
         class="filter-item"
         @keyup.enter.native="handleFilter"
       />
-      <el-select
-        v-model="listQuery.importance"
-        :placeholder="$t('table.importance')"
-        clearable
-        style="width: 90px"
-        class="filter-item"
-      >
-        <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item"/>
-      </el-select>
-      <el-select
-        v-model="listQuery.type"
-        :placeholder="$t('table.type')"
-        clearable
-        class="filter-item"
-        style="width: 130px"
-      >
-        <el-option
-          v-for="item in calendarTypeOptions"
-          :key="item.key"
-          :label="item.display_name+'('+item.key+')'"
-          :value="item.key"
-        />
-      </el-select>
-      <el-select
-        v-model="listQuery.sort"
-        style="width: 140px"
-        class="filter-item"
-        @change="handleFilter"
-      >
-        <el-option
-          v-for="item in sortOptions"
-          :key="item.key"
-          :label="item.label"
-          :value="item.key"
-        />
-      </el-select>
       <el-button
         v-waves
         class="filter-item"
@@ -51,13 +15,14 @@
         icon="el-icon-search"
         @click="handleFilter"
       >{{ $t('table.search') }}</el-button>
-      <el-button
-        class="filter-item"
-        style="margin-left: 10px;"
-        type="primary"
-        icon="el-icon-edit"
-        @click="handleCreate"
-      >{{ $t('table.add') }}</el-button>
+      <router-link :to="{ path: 'products/new' }">
+        <el-button
+          class="filter-item"
+          style="margin-left: 10px;"
+          type="primary"
+          icon="el-icon-edit"
+        >{{ $t('table.add') }}</el-button>
+      </router-link>
       <el-button
         v-waves
         :loading="downloadLoading"
@@ -69,9 +34,10 @@
       <el-checkbox
         v-model="showReviewer"
         class="filter-item"
+        checked
         style="margin-left:15px;"
-        @change="tableKey=tableKey+1"
-      >{{ $t('table.reviewer') }}</el-checkbox>
+        @change="handleStatus()"
+      >{{ $t('active') }}</el-checkbox>
     </div>
 
     <el-table
@@ -84,66 +50,49 @@
       style="width: 100%;"
       @sort-change="sortChange"
     >
-      <el-table-column
-        :label="$t('table.id')"
-        prop="id"
-        sortable="custom"
-        align="center"
-        width="65"
-      >
+      <el-table-column :label="$t('Name')" width="150px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.id }}</span>
+          <span>{{ scope.row.data.name }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.date')" width="150px" align="center">
+      <el-table-column :label="$t('Description')" width="300px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.timestamp | parseTime('{y}-{m}-{d} {h}:{i}') }}</span>
+          <span>{{ scope.row.data.description }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.title')" min-width="150px">
+      <el-table-column :label="$t('Price')" width="100px" align="center">
         <template slot-scope="scope">
-          <span class="link-type" @click="handleUpdate(scope.row)">{{ scope.row.title }}</span>
-          <el-tag>{{ scope.row.type | typeFilter }}</el-tag>
+          <span>{{ scope.row.data.price }}$</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.author')" width="110px" align="center">
+      <el-table-column :label="$t('Auction')" width="100px" align="center">
         <template slot-scope="scope">
-          <span>{{ scope.row.author }}</span>
+          <span>{{ scope.row.isAuction }}</span>
         </template>
       </el-table-column>
-      <el-table-column
-        v-if="showReviewer"
-        :label="$t('table.reviewer')"
-        width="110px"
-        align="center"
-      >
+      <el-table-column :label="$t('Category')" width="120px" align="center">
         <template slot-scope="scope">
-          <span style="color:red;">{{ scope.row.reviewer }}</span>
+          <span>{{ scope.row.data.category }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.importance')" width="80px">
+      <el-table-column :label="$t('Type')" width="120px" align="center">
         <template slot-scope="scope">
-          <svg-icon
-            v-for="n in +scope.row.importance"
-            :key="n"
-            icon-class="star"
-            class="meta-item__icon"
-          />
+          <span>{{ scope.row.data.productType }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.readings')" align="center" width="95">
+      <el-table-column :label="$t('Stock')" width="120px" align="center">
         <template slot-scope="scope">
-          <span
-            v-if="scope.row.pageviews"
-            class="link-type"
-            @click="handleFetchPv(scope.row.pageviews)"
-          >{{ scope.row.pageviews }}</span>
-          <span v-else>0</span>
+          <span>{{ scope.row.data.stock_level }}</span>
         </template>
       </el-table-column>
-      <el-table-column :label="$t('table.status')" class-name="status-col" width="100">
+      <el-table-column :label="$t('Stock Status')" width="120px" align="center">
         <template slot-scope="scope">
-          <el-tag :type="scope.row.status | statusFilter">{{ scope.row.status }}</el-tag>
+          <span>{{ scope.row.data.stock_status }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column :label="$t('table.status')" width="150px" align="center">
+        <template slot-scope="scope">
+          <span>{{ scope.row.active }}</span>
         </template>
       </el-table-column>
       <el-table-column
@@ -158,23 +107,20 @@
             size="mini"
             @click="handleUpdate(scope.row)"
           >{{ $t('table.edit') }}</el-button>
+
           <el-button
-            v-if="scope.row.status!='published'"
+            v-if="scope.row.active === true"
             size="mini"
-            type="success"
-            @click="handleModifyStatus(scope.row,'published')"
-          >{{ $t('table.publish') }}</el-button>
-          <el-button
-            v-if="scope.row.status!='draft'"
-            size="mini"
-            @click="handleModifyStatus(scope.row,'draft')"
-          >{{ $t('table.draft') }}</el-button>
-          <el-button
-            v-if="scope.row.status!='deleted'"
-            size="mini"
-            type="danger"
+            type="delete"
             @click="handleModifyStatus(scope.row,'deleted')"
           >{{ $t('table.delete') }}</el-button>
+
+          <el-button
+            v-if="scope.row.active ===false"
+            size="mini"
+            type="success"
+            @click="handleModifyStatus(scope.row,'activate')"
+          >Activate</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -182,105 +128,142 @@
     <pagination
       v-show="total>0"
       :total="total"
-      :page.sync="listQuery.page"
-      :limit.sync="listQuery.limit"
+      :page.sync="getProductsQuery.page"
+      :limit.sync="getProductsQuery.limit"
       @pagination="getList"
     />
 
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form
-        ref="dataForm"
-        :rules="rules"
-        :model="temp"
-        label-position="left"
-        label-width="70px"
-        style="width: 400px; margin-left:50px;"
-      >
-        <el-form-item :label="$t('table.type')" prop="type">
-          <el-select v-model="temp.type" class="filter-item" placeholder="Please select">
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" class="dialog-size">
+      <el-form ref="ProductsForm" :model="ProductsForm" label-width="120px" class="demo-dynamic">
+        <el-form-item prop="category" label="Product Name">
+          <el-input v-model="ProductsForm.category"/>
+        </el-form-item>
+        <el-form-item prop="description" label="Description">
+          <el-input v-model="ProductsForm.subcategory" type="textarea"/>
+        </el-form-item>
+        <el-form-item prop="subcategory" label="Price">
+          <el-input-number v-model="ProductsForm.price" :precision="2" :step="1"/>
+        </el-form-item>
+
+        <el-form-item prop="subcategory" label="Subcategory">
+          <el-select
+            v-model="ProductsForm.searchValue"
+            :remote-method="searchSubcategory"
+            filterable
+            remote
+            reserve-keyword
+            placeholder="Please enter a Subcategory"
+          >
             <el-option
-              v-for="item in calendarTypeOptions"
-              :key="item.key"
-              :label="item.display_name"
-              :value="item.key"
+              v-for="(category,index) in listSubcategories"
+              :key="index"
+              :label="category.subcategory"
+              :value="category.subcategory"
             />
           </el-select>
         </el-form-item>
-        <el-form-item :label="$t('table.date')" prop="timestamp">
-          <el-date-picker
-            v-model="temp.timestamp"
-            type="datetime"
-            placeholder="Please pick a date"
-          />
+
+        <el-form-item>
+          <div class="editor-container">
+            <dropzone
+              id="myVueDropzone"
+              url="https://httpbin.org/post"
+              @dropzone-removedFile="dropzoneR"
+              @dropzone-success="dropzoneS"
+            />
+          </div>
         </el-form-item>
-        <el-form-item :label="$t('table.title')" prop="title">
-          <el-input v-model="temp.title"/>
-        </el-form-item>
-        <el-form-item :label="$t('table.status')">
-          <el-select v-model="temp.status" class="filter-item" placeholder="Please select">
-            <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item"/>
+        <el-form-item/>
+
+        <el-form-item
+          v-for="(attribute, index) in ProductsForm.attributes"
+          :label="'Attribute '"
+          :key="attribute.key"
+          :prop="'attributes.' + index + '.name'"
+          :rules="{
+            required: true, message: 'attribute can not be null', trigger: 'blur'
+          }"
+          style="padding-left:15%"
+        >
+          <el-input v-model="attribute.name" class="input-field"/>
+          <el-select v-model="attribute.fieldType" class="select-size" placeholder="Select">
+            <el-option
+              v-for="item in options"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
           </el-select>
+          <el-checkbox
+            :prop="'attributes.' + index + '.required'"
+            v-model="attribute.required"
+          >Required</el-checkbox>
+
+          <el-button @click.prevent="removeattribute(attribute)">Delete</el-button>
         </el-form-item>
-        <el-form-item :label="$t('table.importance')">
-          <el-rate
-            v-model="temp.importance"
-            :colors="['#99A9BF', '#F7BA2A', '#FF9900']"
-            :max="3"
-            style="margin-top:8px;"
-          />
-        </el-form-item>
-        <el-form-item :label="$t('table.remark')">
-          <el-input
-            :autosize="{ minRows: 2, maxRows: 4}"
-            v-model="temp.remark"
-            type="textarea"
-            placeholder="Please input"
-          />
+        <el-form-item>
+          <el-button type="primary" @click="submitForm('ProductsForm')">Submit</el-button>
+          <el-button @click="addAttribute">Add new Attribute</el-button>
+          <el-button @click="resetForm('ProductsForm')">Reset</el-button>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">{{ $t('table.cancel') }}</el-button>
-        <el-button
-          type="primary"
-          @click="dialogStatus==='create'?createData():updateData()"
-        >{{ $t('table.confirm') }}</el-button>
-      </div>
     </el-dialog>
 
-    <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
-      <el-table :data="pvData" border fit highlight-current-row style="width: 100%">
-        <el-table-column prop="key" label="Channel"/>
-        <el-table-column prop="pv" label="Pv"/>
-      </el-table>
-      <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="dialogPvVisible = false">{{ $t('table.confirm') }}</el-button>
-      </span>
+    <el-dialog
+      :visible.sync="dialogPvVisible"
+      title="Update Category"
+      class="dialog-size"
+      @click="updateForm('ProductsForm')"
+    >
+      <el-form ref="ProductsForm" :model="ProductsForm" label-width="120px" class="demo-dynamic">
+        <el-form-item prop="category" label="Category">
+          <el-input v-model="ProductsForm.category"/>
+        </el-form-item>
+        <el-form-item prop="subcategory" label="Subcategory">
+          <el-input v-model="ProductsForm.subcategory"/>
+        </el-form-item>
+
+        <el-form-item
+          v-for="(attribute, index) in ProductsForm.attributes"
+          :label="'Attribute '"
+          :key="attribute.key"
+          :prop="'attributes.' + index + '.name'"
+          :rules="{
+            required: true, message: 'attribute can not be null', trigger: 'blur'
+          }"
+          style="padding-left:15%"
+        >
+          <el-input v-model="attribute.name" class="input-field"/>
+          <el-select v-model="attribute.fieldType" placeholder="Select">
+            <el-option v-for="(item, index) in list" :key="index" :label="item" :value="item"/>
+          </el-select>
+          <el-checkbox
+            :prop="'attributes.' + index + '.required'"
+            v-model="attribute.required"
+          >Required</el-checkbox>
+
+          <el-button class="delete-btn" button @click.prevent="removeattribute(attribute)">Delete</el-button>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="updateForm('ProductsForm')">Update</el-button>
+          <el-button @click="addAttribute">Add new Attribute</el-button>
+          <el-button @click="resetForm('ProductsForm')">Reset</el-button>
+        </el-form-item>
+      </el-form>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
+import { getAllProducts, getSelectedSubcategory } from '@/api/products'
 import waves from '@/directive/waves' // Waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
-
-const calendarTypeOptions = [
-  { key: 'CN', display_name: 'China' },
-  { key: 'US', display_name: 'USA' },
-  { key: 'JP', display_name: 'Japan' },
-  { key: 'EU', display_name: 'Eurozone' }
-]
-
-// arr to obj ,such as { CN : "China", US : "USA" }
-const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
-  acc[cur.key] = cur.display_name
-  return acc
-}, {})
+import Dropzone from '@/components/Dropzone'
 
 export default {
-  name: 'Products',
-  components: { Pagination },
+  name: 'Categories',
+  components: { Pagination, Dropzone },
   directives: { waves },
   filters: {
     statusFilter(status) {
@@ -292,49 +275,93 @@ export default {
       return statusMap[status]
     },
     typeFilter(type) {
-      return calendarTypeKeyValue[type]
+      return true
     }
   },
   data() {
     return {
+      ProductsForm: {
+        price: 1,
+        attributes: [
+          {
+            name: '',
+            required: true
+          }
+        ],
+        category: '',
+        active: true,
+        subcategory: '',
+        searchValue: ''
+      },
+      options: [
+        {
+          value: 'String',
+          label: 'String'
+        },
+        {
+          value: 'Number',
+          label: 'Number'
+        },
+        {
+          value: 'Boolean',
+          label: 'Boolean'
+        }
+      ],
       tableKey: 0,
       list: null,
+      listSubcategories: [],
       total: 0,
       listLoading: true,
-      listQuery: {
+      getSubcategoriesQuery: {
+        page: 1,
+        limit: 999,
+        status: true
+      },
+      getProductsQuery: {
         page: 1,
         limit: 20,
         importance: undefined,
-        title: undefined,
+        name: undefined,
         type: undefined,
-        sort: '+id'
+        status: true
       },
       importanceOptions: [1, 2, 3],
-      calendarTypeOptions,
-      sortOptions: [{ label: 'ID Ascending', key: '+id' }, { label: 'ID Descending', key: '-id' }],
+      sortOptions: [
+        { label: 'ID Ascending', key: '+id' },
+        { label: 'ID Descending', key: '-id' }
+      ],
       statusOptions: ['published', 'draft', 'deleted'],
       showReviewer: false,
+      tableStatus: true,
       temp: {
         id: undefined,
         importance: 1,
         remark: '',
         timestamp: new Date(),
-        title: '',
-        type: '',
-        status: 'published'
+        name: '',
+        type: ''
       },
       dialogFormVisible: false,
       dialogStatus: '',
       textMap: {
         update: 'Edit',
-        create: 'Create'
+        create: 'Add Product'
       },
       dialogPvVisible: false,
       pvData: [],
       rules: {
-        type: [{ required: true, message: 'type is required', trigger: 'change' }],
-        timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-        title: [{ required: true, message: 'title is required', trigger: 'blur' }]
+        type: [
+          { required: true, message: 'type is required', trigger: 'change' }
+        ],
+        timestamp: [
+          {
+            type: 'date',
+            required: true,
+            message: 'timestamp is required',
+            trigger: 'change'
+          }
+        ],
+        name: [{ required: true, message: 'name is required', trigger: 'blur' }]
       },
       downloadLoading: false
     }
@@ -343,29 +370,87 @@ export default {
     this.getList()
   },
   methods: {
+    dropzoneS(file) {
+      console.log(file)
+      this.$message({ message: 'Upload success', type: 'success' })
+    },
+    dropzoneR(file) {
+      console.log(file)
+      this.$message({ message: 'Delete success', type: 'success' })
+    },
     getList() {
-      this.listLoading = true
-      fetchList(this.listQuery).then(response => {
-        this.list = response.data.items
-        this.total = response.data.total
-
-        // Just to simulate the time of the request
-        setTimeout(() => {
+      if (
+        this.getProductsQuery.name === undefined ||
+        this.getProductsQuery.name === '' ||
+        this.getProductsQuery.name === ' '
+      ) {
+        this.listLoading = true
+        getAllProducts(this.getProductsQuery).then(response => {
+          this.list = response.data.docs
+          this.total = response.data.total
           this.listLoading = false
-        }, 1.5 * 1000)
-      })
+        })
+      } else {
+        this.getFilerResults()
+      }
     },
+    // getFilerResults() {
+    //   this.listLoading = true
+    //   searchByCategoryName(
+    //     this.getProductsQuery.name,
+    //     this.getProductsQuery.page,
+    //     this.getProductsQuery.limit
+    //   ).then(results => {
+    //     this.list = results.data.docs
+    //     this.total = results.data.total
+    //     this.listLoading = false
+    //   })
+    // },
+    // Searching in the table
     handleFilter() {
-      this.listQuery.page = 1
-      this.getList()
+      if (
+        this.getProductsQuery.name === undefined ||
+        this.getProductsQuery.name === '' ||
+        this.getProductsQuery.name === ' '
+      ) {
+        this.getProductsQuery.page = 1
+        this.getList()
+      } else {
+        this.getProductsQuery.page = 1
+        this.getFilerResults()
+      }
     },
-    handleModifyStatus(row, status) {
-      this.$message({
-        message: 'success',
-        type: 'success'
-      })
-      row.status = status
-    },
+    // handleModifyStatus(row, status) {
+    //   if (status === 'deleted') {
+    //     deleteSubCategory(row._id, 'false').then(res => {
+    //       if (res.status) {
+    //         this.$message({
+    //           message: 'success',
+    //           type: 'success'
+    //         })
+    //         this.list = this.list.filter(el => {
+    //           return el._id !== row._id
+    //         })
+    //         row.status = status
+    //       }
+    //     })
+    //   } else if (status === 'activate') {
+    //     deleteSubCategory(row._id, 'true').then(res => {
+    //       if (res.status) {
+    //         this.$notify({
+    //           title: 'success',
+    //           message: 'Successfully deleted Subcategory',
+    //           type: 'success',
+    //           duration: 2000
+    //         })
+    //         this.list = this.list.filter(el => {
+    //           return el._id !== row._id
+    //         })
+    //         row.status = status
+    //       }
+    //     })
+    //   }
+    // },
     sortChange(data) {
       const { prop, order } = data
       if (prop === 'id') {
@@ -374,103 +459,159 @@ export default {
     },
     sortByID(order) {
       if (order === 'ascending') {
-        this.listQuery.sort = '+id'
+        this.getProductsQuery.sort = '+id'
       } else {
-        this.listQuery.sort = '-id'
+        this.getProductsQuery.sort = '-id'
       }
       this.handleFilter()
     },
+    // Reset Modal form fields
     resetTemp() {
-      this.temp = {
-        id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
-        status: 'published',
-        type: ''
-      }
+      const reset = (this.temp = {
+        attributes: [
+          {
+            name: '',
+            required: true
+          }
+        ],
+        category: '',
+        active: true,
+        subcategory: '',
+        price: 1
+      })
+      return reset
     },
+
+    // Handle Creating new Product
     handleCreate() {
-      this.resetTemp()
+      this.ProductsForm = this.resetTemp()
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
       this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
+        this.$refs['ProductsForm'].clearValidate()
       })
     },
-    createData() {
-      this.$refs['dataForm'].validate((valid) => {
+
+    searchSubcategory(query) {
+      if (query !== '' && query.length >= 3) {
+        this.loading = true
+        console.log(query)
+        getSelectedSubcategory(query).then(response => {
+          this.listSubcategories = response.data
+          console.log(response.data)
+        })
+      } else {
+        this.listSubcategories = []
+      }
+    },
+
+    // Add new attributes
+    addAttribute() {
+      this.ProductsForm.attributes.push({
+        required: true,
+        name: ''
+      })
+    },
+    // Submit Dialog form for Adding
+    submitForm(ProductsForm) {
+      this.$refs[ProductsForm].validate(valid => {
         if (valid) {
-          this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-          this.temp.author = 'vue-element-admin'
-          createArticle(this.temp).then(() => {
-            this.list.unshift(this.temp)
-            this.dialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '创建成功',
-              type: 'success',
-              duration: 2000
-            })
+          console.log(this.ProductsForm)
+
+          this.$notify({
+            title: 'success',
+            message: 'Successfully created new Category',
+            type: 'success',
+            duration: 2000
           })
+
+          this.dialogFormVisible = false
+        } else {
+          console.log('error submit!!')
+          return false
         }
       })
     },
+
+    // Edit Enitity
+    // updateForm(ProductsForm) {
+    //   this.$refs[ProductsForm].validate(valid => {
+    //     if (valid) {
+    //       updateCategory(this.ProductsForm)
+    //         .then(console.log(this.ProductsForm), this.getList())
+    //         .catch(err => console.log(err))
+    //       this.$notify({
+    //         title: 'success',
+    //         message: 'Successfully updated Category',
+    //         type: 'success',
+    //         duration: 2000
+    //       })
+    //       this.dialogPvVisible = false
+    //     } else {
+    //       console.log('error submit!!')
+    //       return false
+    //     }
+    //   })
+    // },
+    // Reseting Dialog form
+    resetForm(formName) {
+      this.$refs[formName].resetFields()
+      while (this.ProductsForm.attributes.length > 0) {
+        this.ProductsForm.attributes.pop()
+      }
+    },
+    // Remove attribute dinamically
+    removeattribute(item) {
+      var index = this.ProductsForm.attributes.indexOf(item)
+      if (index !== -1) {
+        this.ProductsForm.attributes.splice(index, 1)
+      }
+    },
+    // Handling update on edit
     handleUpdate(row) {
+      this.ProductsForm = row
       this.temp = Object.assign({}, row) // copy obj
       this.temp.timestamp = new Date(this.temp.timestamp)
       this.dialogStatus = 'update'
-      this.dialogFormVisible = true
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
+      this.dialogPvVisible = true
     },
-    updateData() {
-      this.$refs['dataForm'].validate((valid) => {
-        if (valid) {
-          const tempData = Object.assign({}, this.temp)
-          tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-          updateArticle(tempData).then(() => {
-            for (const v of this.list) {
-              if (v.id === this.temp.id) {
-                const index = this.list.indexOf(v)
-                this.list.splice(index, 1, this.temp)
-                break
-              }
-            }
-            this.dialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '更新成功',
-              type: 'success',
-              duration: 2000
-            })
-          })
-        }
-      })
-    },
-    handleDelete(row) {
-      this.$notify({
-        title: '成功',
-        message: '删除成功',
-        type: 'success',
-        duration: 2000
-      })
-      const index = this.list.indexOf(row)
-      this.list.splice(index, 1)
-    },
-    handleFetchPv(pv) {
-      fetchPv(pv).then(response => {
-        this.pvData = response.data.pvData
-        this.dialogPvVisible = true
-      })
-    },
+
+    // updateData() {
+    //   this.$refs['dataForm'].validate(valid => {
+    //     if (valid) {
+    //       const tempData = Object.assign({}, this.temp)
+    //       tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
+    //       updateArticle(tempData).then(() => {
+    //         for (const v of this.list) {
+    //           if (v.id === this.temp.id) {
+    //             const index = this.list.indexOf(v)
+    //             this.list.splice(index, 1, this.temp)
+    //             break;
+    //           }
+    //         }
+    //         this.dialogFormVisible = false
+    //         this.$notify({
+    //           title: '成功',
+    //           message: '更新成功',
+    //           type: 'success',
+    //           duration: 2000
+    //         })
+    //       })
+    //     }
+    //   })
+    // },
+
+    // handleFetchPv(pv) {
+    //   fetchPv(pv).then(response => {
+    //     this.pvData = response.data.pvData
+    //     this.dialogPvVisible = true
+    //   })
+    // },
     handleDownload() {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['timestamp', 'title', 'type', 'importance', 'status']
-        const filterVal = ['timestamp', 'title', 'type', 'importance', 'status']
+        const tHeader = ['Category', 'Subcategory', 'ACTIVE']
+        const filterVal = ['category', 'subcategory', 'active']
         const data = this.formatJson(filterVal, this.list)
         excel.export_json_to_excel({
           header: tHeader,
@@ -480,15 +621,38 @@ export default {
         this.downloadLoading = false
       })
     },
+    handleStatus() {
+      this.getProductsQuery.status = !this.getProductsQuery.status
+      this.tableStatus = this.getProductsQuery.status
+      this.getList()
+    },
     formatJson(filterVal, jsonData) {
-      return jsonData.map(v => filterVal.map(j => {
-        if (j === 'timestamp') {
-          return parseTime(v[j])
-        } else {
-          return v[j]
-        }
-      }))
+      return jsonData.map(v =>
+        filterVal.map(j => {
+          if (j === 'timestamp') {
+            return parseTime(v[j])
+          } else {
+            return v[j]
+          }
+        })
+      )
     }
   }
 }
 </script>
+<style scoped>
+.input-field {
+  padding-bottom: 2%;
+}
+.filter-container {
+  padding-left: 25%;
+}
+/*
+.dialog-size {
+  width: 50%;
+  margin: 0 auto;
+}
+.select-size {
+  width: 100%;
+} */
+</style>
