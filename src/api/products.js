@@ -42,7 +42,7 @@ export function deleteProduct(subCategoryId, status) {
 
 export function addProduct(data) {
   return request({
-    url: '/api/',
+    url: '/api/products/create',
     method: 'post',
     data
   })
