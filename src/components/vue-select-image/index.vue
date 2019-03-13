@@ -2,18 +2,21 @@
   <div :class="rootClass">
     <ul :class="rootClass + '__wrapper'">
       <li v-for="(dataImage, index) in dataImagesLocal" :key="index" :class="rootClass + '__item'">
-        <div
-          v-if="!isMultiple"
-          :class="classThumbnail(singleSelected.id, dataImage.id)"
-          @click="onSelectImage(dataImage)"
-        >
-          <img
-            :src="dataImage.src"
-            :alt="dataImage.alt"
-            :height="h"
-            :width="w"
-            :class="rootClass + '__img'"
-          >
+        <div v-if="!isMultiple" :class="classThumbnail(singleSelected.id, dataImage.id)">
+          <div class="container">
+            <img
+              :src="dataImage.src"
+              :alt="dataImage.alt"
+              :height="h"
+              :width="w"
+              :class="rootClass + '__img'"
+            >
+            <div class="overlay"/>
+            <div class="inside-container">
+              <el-button type="primary" class="button" @click="onSelectImage(dataImage)">Thumbnail</el-button>
+              <el-button type="danger" class="button" @click="onSelectImageDelete(dataImage)">Delete</el-button>
+            </div>
+          </div>
 
           <label v-if="useLabel" :class="rootClass + '__lbl'">{{ dataImage.alt }}</label>
         </div>
@@ -112,10 +115,21 @@ export default {
       this.singleSelected = Object.assign({}, this.singleSelected, objectImage)
       this.$emit('onselectimage', objectImage)
     },
+    onSelectImageDelete(objectImage) {
+      this.removeItem(this.dataImages, objectImage)
+    },
     isExistInArray(id) {
       return this.multipleSelected.find(item => {
         return id === item.id
       })
+    },
+    removeItem(array, item) {
+      for (var i in array) {
+        if (array[i] === item) {
+          array.splice(i, 1)
+          break
+        }
+      }
     },
     removeFromSingleSelected() {
       this.singleSelected = {}
@@ -201,7 +215,11 @@ export default {
 .vue-select-image__img {
   -webkit-user-drag: none;
   display: block;
-  max-width: 200px;
+  position: relative;
+  max-width: 153px;
+  min-width: 153px;
+  max-height: 153px;
+  min-height: 153px;
   margin-right: auto;
   margin-left: auto;
 }
@@ -214,5 +232,42 @@ export default {
   .vue-select-image__item {
     margin-left: 30px;
   }
+}
+
+.container {
+  position: relative;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0);
+  transition: background 0.5s ease;
+}
+
+.container:hover .overlay {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.button {
+  position: relative;
+  opacity: 0;
+  padding: 5px;
+  cursor: pointer;
+  transition: opacity 0.35s ease;
+}
+
+.container:hover .button {
+  opacity: 1;
+}
+.inside-container {
+  left: 0;
+  position: absolute;
+  text-align: center;
+  bottom: 20px;
+  width: 100%;
 }
 </style>

@@ -152,6 +152,16 @@ export const constantRouterMap = [
         }
       },
       {
+        path: 'products/edit/:id',
+        component: () => import('@/views/catalog/editproduct'),
+        name: 'Edit Product',
+        hidden: true,
+        meta: {
+          title: 'Edit Product',
+          roles: ['admin'] // or you can only set roles in sub nav
+        }
+      },
+      {
         path: 'categories',
         component: () => import('@/views/catalog/categories'),
         name: 'Categories',

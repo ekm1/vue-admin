@@ -1,208 +1,224 @@
 <template>
-  <div id="center" class="app-container">
-    <div class="filter-container">
-      <el-input
-        :placeholder="$t('table.category')"
-        v-model="listQuery.name"
-        style="width: 200px;"
-        class="filter-item"
-        @keyup.enter.native="handleFilter"
-      />
-      <el-button
-        v-waves
-        class="filter-item"
-        type="primary"
-        icon="el-icon-search"
-        @click="handleFilter"
-      >{{ $t('table.search') }}</el-button>
-      <el-button
-        class="filter-item"
-        style="margin-left: 10px;"
-        type="primary"
-        icon="el-icon-edit"
-        @click="handleCreate"
-      >{{ $t('table.add') }}</el-button>
-      <el-button
-        v-waves
-        :loading="downloadLoading"
-        class="filter-item"
-        type="primary"
-        icon="el-icon-download"
-        @click="handleDownload"
-      >{{ $t('table.export') }}</el-button>
-      <el-checkbox
-        v-model="showReviewer"
-        class="filter-item"
-        checked
-        style="margin-left:15px;"
-        @change="handleStatus()"
-      >{{ $t('active') }}</el-checkbox>
-    </div>
-
-    <el-table
-      v-loading="listLoading"
-      :key="tableKey"
-      :data="list"
-      border
-      fit
-      highlight-current-row
-      style="width: 100%;display:table-caption;"
-      @sort-change="sortChange"
-    >
-      <el-table-column :label="$t('table.category')" width="150px" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.category }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('table.subcategory')" width="150px" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.subcategory }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column :label="$t('table.status')" width="150px" align="center">
-        <template slot-scope="scope">
-          <span>{{ scope.row.active }}</span>
-        </template>
-      </el-table-column>
-      <el-table-column
-        :label="$t('table.actions')"
-        align="center"
-        width="230"
-        class-name="small-padding fixed-width"
-      >
-        <template slot-scope="scope">
+  <el-row :gutter="10" type="flex">
+    <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
+      <div id="center" class="app-container">
+        <div class="filter-container">
+          <el-input
+            :placeholder="$t('table.category')"
+            v-model="listQuery.name"
+            style="width: 200px;"
+            class="filter-item"
+            @keyup.enter.native="handleFilter"
+          />
           <el-button
+            v-waves
+            class="filter-item"
             type="primary"
-            size="mini"
-            @click="handleUpdate(scope.row)"
-          >{{ $t('table.edit') }}</el-button>
-
+            icon="el-icon-search"
+            @click="handleFilter"
+          >{{ $t('table.search') }}</el-button>
           <el-button
-            v-if="scope.row.active === true"
-            size="mini"
-            type="delete"
-            @click="handleModifyStatus(scope.row,'deleted')"
-          >{{ $t('table.delete') }}</el-button>
-
+            class="filter-item"
+            style="margin-left: 10px;"
+            type="primary"
+            icon="el-icon-edit"
+            @click="handleCreate"
+          >{{ $t('table.add') }}</el-button>
           <el-button
-            v-if="scope.row.active ===false"
-            size="mini"
-            type="success"
-            @click="handleModifyStatus(scope.row,'activate')"
-          >Activate</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-
-    <pagination
-      v-show="total>0"
-      :total="total"
-      :page.sync="listQuery.page"
-      :limit.sync="listQuery.limit"
-      @pagination="getList"
-    />
-
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" class="dialog-size">
-      <el-form
-        ref="dynamicValidateForm"
-        :model="dynamicValidateForm"
-        label-width="120px"
-        class="demo-dynamic"
-      >
-        <el-form-item prop="category" label="Category">
-          <el-input v-model="dynamicValidateForm.category"/>
-        </el-form-item>
-        <el-form-item prop="subcategory" label="Subcategory">
-          <el-input v-model="dynamicValidateForm.subcategory"/>
-        </el-form-item>
-
-        <el-form-item
-          v-for="(attribute, index) in dynamicValidateForm.attributes"
-          :label="'Attribute '"
-          :key="attribute.key"
-          :prop="'attributes.' + index + '.name'"
-          :rules="{
-            required: true, message: 'attribute can not be null', trigger: 'blur'
-          }"
-          style="padding-left:15%"
-        >
-          <el-input v-model="attribute.name" class="input-field"/>
-          <el-select v-model="attribute.fieldType" class="select-size" placeholder="Select">
-            <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
+            v-waves
+            :loading="downloadLoading"
+            class="filter-item"
+            type="primary"
+            icon="el-icon-download"
+            @click="handleDownload"
+          >{{ $t('table.export') }}</el-button>
           <el-checkbox
-            :prop="'attributes.' + index + '.required'"
-            v-model="attribute.required"
-          >Required</el-checkbox>
+            v-model="showReviewer"
+            class="filter-item"
+            checked
+            style="margin-left:15px;"
+            @change="handleStatus()"
+          >{{ $t('active') }}</el-checkbox>
+        </div>
 
-          <el-button @click.prevent="removeattribute(attribute)">Delete</el-button>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="submitForm('dynamicValidateForm')">Submit</el-button>
-          <el-button @click="addAttribute">Add new Attribute</el-button>
-          <el-button @click="resetForm('dynamicValidateForm')">Reset</el-button>
-        </el-form-item>
-      </el-form>
-    </el-dialog>
-
-    <el-dialog
-      :visible.sync="dialogPvVisible"
-      title="Update Category"
-      class="dialog-size"
-      @click="updateForm('dynamicValidateForm')"
-    >
-      <el-form
-        ref="dynamicValidateForm"
-        :model="dynamicValidateForm"
-        label-width="120px"
-        class="demo-dynamic"
-      >
-        <el-form-item prop="category" label="Category">
-          <el-input v-model="dynamicValidateForm.category"/>
-        </el-form-item>
-        <el-form-item prop="subcategory" label="Subcategory">
-          <el-input v-model="dynamicValidateForm.subcategory"/>
-        </el-form-item>
-
-        <el-form-item
-          v-for="(attribute, index) in dynamicValidateForm.attributes"
-          :label="'Attribute '"
-          :key="attribute.key"
-          :prop="'attributes.' + index + '.name'"
-          :rules="{
-            required: true, message: 'attribute can not be null', trigger: 'blur'
-          }"
-          style="padding-left:15%"
+        <el-table
+          v-loading="listLoading"
+          :key="tableKey"
+          :data="list"
+          border
+          fit
+          highlight-current-row
+          style="width: 100%;"
+          @sort-change="sortChange"
         >
-          <el-input v-model="attribute.name" class="input-field"/>
-          <el-select v-model="attribute.fieldType" placeholder="Select">
-            <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-          <el-checkbox
-            :prop="'attributes.' + index + '.required'"
-            v-model="attribute.required"
-          >Required</el-checkbox>
+          <el-table-column :label="$t('table.category')" width="150px" align="center">
+            <template slot-scope="scope">
+              <span>{{ scope.row.category }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column :label="$t('table.subcategory')" width="150px" align="center">
+            <template slot-scope="scope">
+              <span>{{ scope.row.subcategory }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column :label="$t('table.status')" width="150px" align="center">
+            <template slot-scope="scope">
+              <span>{{ scope.row.active }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            :label="$t('table.actions')"
+            align="center"
+            width="230"
+            class-name="small-padding fixed-width"
+          >
+            <template slot-scope="scope">
+              <el-button
+                type="primary"
+                size="mini"
+                @click="handleUpdate(scope.row)"
+              >{{ $t('table.edit') }}</el-button>
 
-          <el-button class="delete-btn" button @click.prevent="removeattribute(attribute)">Delete</el-button>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="updateForm('dynamicValidateForm')">Update</el-button>
-          <el-button @click="addAttribute">Add new Attribute</el-button>
-          <el-button @click="resetForm('dynamicValidateForm')">Reset</el-button>
-        </el-form-item>
-      </el-form>
-    </el-dialog>
-  </div>
+              <el-button
+                v-if="scope.row.active === true"
+                size="mini"
+                type="delete"
+                @click="handleModifyStatus(scope.row,'deleted')"
+              >{{ $t('table.delete') }}</el-button>
+
+              <el-button
+                v-if="scope.row.active ===false"
+                size="mini"
+                type="success"
+                @click="handleModifyStatus(scope.row,'activate')"
+              >Activate</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+
+        <pagination
+          v-show="total>0"
+          :total="total"
+          :page.sync="listQuery.page"
+          :limit.sync="listQuery.limit"
+          @pagination="getList"
+        />
+
+        <el-dialog
+          :title="textMap[dialogStatus]"
+          :visible.sync="dialogFormVisible"
+          class="dialog-size"
+        >
+          <el-row :gutter="10" type="flex">
+            <el-col :xs="21" :sm="22" :md="20" :lg="16" :xl="16">
+              <el-form
+                ref="dynamicValidateForm"
+                :model="dynamicValidateForm"
+                label-width="120px"
+                class="demo-dynamic"
+              >
+                <el-form-item prop="category" label="Category">
+                  <el-input v-model="dynamicValidateForm.category"/>
+                </el-form-item>
+                <el-form-item prop="subcategory" label="Subcategory">
+                  <el-input v-model="dynamicValidateForm.subcategory"/>
+                </el-form-item>
+
+                <el-form-item
+                  v-for="(attribute, index) in dynamicValidateForm.attributes"
+                  :label="'Attribute '"
+                  :key="attribute.key"
+                  :prop="'attributes.' + index + '.name'"
+                  :rules="{
+                    required: true, message: 'attribute can not be null', trigger: 'blur'
+                  }"
+                  style="padding-left:15%"
+                >
+                  <el-input v-model="attribute.name" class="input-field"/>
+                  <el-select v-model="attribute.fieldType" class="select-size" placeholder="Select">
+                    <el-option
+                      v-for="item in options"
+                      :key="item.value"
+                      :label="item.label"
+                      :value="item.value"
+                    />
+                  </el-select>
+                  <el-checkbox
+                    :prop="'attributes.' + index + '.required'"
+                    v-model="attribute.required"
+                  >Required</el-checkbox>
+
+                  <el-button @click.prevent="removeattribute(attribute)">Delete</el-button>
+                </el-form-item>
+                <el-form-item>
+                  <el-button type="primary" @click="submitForm('dynamicValidateForm')">Submit</el-button>
+                  <el-button @click="addAttribute">Add new Attribute</el-button>
+                  <el-button @click="resetForm('dynamicValidateForm')">Reset</el-button>
+                </el-form-item>
+              </el-form>
+            </el-col>
+          </el-row>
+        </el-dialog>
+
+        <el-dialog
+          :visible.sync="dialogPvVisible"
+          title="Update Category"
+          class="dialog-size"
+          @click="updateForm('dynamicValidateForm')"
+        >
+          <el-form
+            ref="dynamicValidateForm"
+            :model="dynamicValidateForm"
+            label-width="120px"
+            class="demo-dynamic"
+          >
+            <el-form-item prop="category" label="Category">
+              <el-input v-model="dynamicValidateForm.category"/>
+            </el-form-item>
+            <el-form-item prop="subcategory" label="Subcategory">
+              <el-input v-model="dynamicValidateForm.subcategory"/>
+            </el-form-item>
+
+            <el-form-item
+              v-for="(attribute, index) in dynamicValidateForm.attributes"
+              :label="'Attribute '"
+              :key="attribute.key"
+              :prop="'attributes.' + index + '.name'"
+              :rules="{
+                required: true, message: 'attribute can not be null', trigger: 'blur'
+              }"
+              style="padding-left:15%"
+            >
+              <el-input v-model="attribute.name" class="input-field"/>
+              <el-select v-model="attribute.fieldType" placeholder="Select">
+                <el-option
+                  v-for="item in options"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+              <el-checkbox
+                :prop="'attributes.' + index + '.required'"
+                v-model="attribute.required"
+              >Required</el-checkbox>
+
+              <el-button
+                class="delete-btn"
+                button
+                @click.prevent="removeattribute(attribute)"
+              >Delete</el-button>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="updateForm('dynamicValidateForm')">Update</el-button>
+              <el-button @click="addAttribute">Add new Attribute</el-button>
+              <el-button @click="resetForm('dynamicValidateForm')">Reset</el-button>
+            </el-form-item>
+          </el-form>
+        </el-dialog>
+      </div>
+    </el-col>
+  </el-row>
 </template>
 
 <script>
@@ -268,7 +284,7 @@ export default {
       listLoading: true,
       listQuery: {
         page: 1,
-        limit: 20,
+        limit: 10,
         importance: undefined,
         name: undefined,
         type: undefined,
@@ -579,7 +595,8 @@ export default {
 </script>
 <style scoped>
 .app-container {
-  padding-left: 25%;
+  margin: 0 auto;
+  max-width: 723px;
 }
 
 .input-field {

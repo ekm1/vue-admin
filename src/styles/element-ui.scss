@@ -6,7 +6,7 @@
 }
 
 .el-upload {
-  input[type="file"] {
+  input[type='file'] {
     display: none !important;
   }
 }
@@ -80,6 +80,23 @@
 //dropdown
 .el-dropdown-menu {
   a {
-    display: block
+    display: block;
   }
+}
+.el-table tr {
+  border: 1px solid 47c58c;
+}
+
+.el-table th {
+  background-color: #47c58c;
+  color: white;
+}
+
+.el-pagination.is-background .el-pager li:not(.disabled).active {
+  background-color: #47c58c;
+}
+.el-table--border::after,
+.el-table--group::after,
+.el-table::before {
+  background-color: rgba(255, 0, 0, 0);
 }

@@ -1,7 +1,7 @@
 <template>
   <div id="center" class="app-container">
     <el-row :gutter="10" type="flex">
-      <el-col :xs="24" :sm="16" :md="16" :lg="12" :xl="10">
+      <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="10">
         <div class="filter-container">
           <router-link :to="{ path: '/catalog/products' }">
             <el-button
@@ -111,13 +111,8 @@
               step="1"
             >
           </el-form-item>
-
           <el-form-item>
-            <el-button
-              :disabled="isDisabled"
-              type="primary"
-              @click="submitForm('ProductsForm')"
-            >Submit</el-button>
+            <el-button type="primary" @click="submitForm('ProductsForm')">Submit</el-button>
             <el-button @click="resetForm('ProductsForm')">Reset</el-button>
           </el-form-item>
         </el-form>
@@ -127,13 +122,14 @@
 </template>
 
 <script>
-import { getSelectedSubcategory, addProduct } from '@/api/products'
+import { getSelectedSubcategory, updateProduct } from '@/api/products'
 import axios from 'axios'
+import store from '../../store'
 import VueSelectImage from '@/components/vue-select-image'
 import waves from '@/directive/waves' // Waves directive
 
 export default {
-  name: 'AddProduct',
+  name: 'EditProduct',
   components: { VueSelectImage },
   directives: { waves },
   filters: {
@@ -155,9 +151,8 @@ export default {
       ProductsForm: {
         active: true,
         isAuction: false,
-        date: Date.now(),
         data: {
-          name: '',
+          name: undefined,
           category: '',
           subcategory: '',
           description: '',
@@ -169,28 +164,16 @@ export default {
           stock_status: false
         }
       },
+      temp: [],
       // Images Delcaration
       dataImages: [],
       url: [],
       values: [],
       images: [],
-      filesToUpload: undefined,
+      filesToUpload: [],
       mediaLinks: [],
       arrayOfURL: [],
-      options: [
-        {
-          value: 'String',
-          label: 'String'
-        },
-        {
-          value: 'Number',
-          label: 'Number'
-        },
-        {
-          value: 'Boolean',
-          label: 'Boolean'
-        }
-      ],
+      productUrl: this.$route.params.id,
       list: null,
       attributesList: [],
       listSubcategories: [],
@@ -201,38 +184,56 @@ export default {
         limit: 999,
         status: true
       },
-      getProductsQuery: {
-        page: 1,
-        limit: 20,
-        importance: undefined,
-        name: undefined,
-        type: undefined,
-        status: true
-      },
       urlObject: {}
     }
   },
-
-  computed: {
-    isDisabled() {
-      // evaluate whatever you need to determine disabled here...
-      if (this.ProductsForm.data.images <= this.dataImages) {
-        return true
-      } else return false
+  watch: {
+    dataImages: function() {
+      var i = 0
+      var entry1
+      while (i < this.ProductsForm.data.images.length) {
+        entry1 = this.ProductsForm.data.images[i]
+        if (
+          this.dataImages.some(function(entry2) {
+            return entry1 === entry2.src
+          })
+        ) {
+          // Found, progress to next
+          ++i
+        } else {
+          // Not found, remove
+          this.ProductsForm.data.images.splice(i, 1)
+        }
+      }
     }
   },
-  created() {},
+  created() {
+    if (store.state.products.productDetails.length <= 0) {
+      this.$router.push({ path: '/catalog/products' })
+    } else {
+      this.ProductsForm = store.state.products.productDetails
+      this.attributesList = this.ProductsForm.data.specificProperties
+
+      this.ProductsForm.data.images.forEach((image, index) => {
+        this.dataImages[index] = { id: index, src: image }
+        // if (this.ProductsForm.data.thumbnail === image) {
+        //   this.onSelectImage(this.dataImages[index]);
+        // }
+      })
+    }
+  },
+
   methods: {
     // Get category based on Subcategory
     getCategory(value) {
       const obj = this.listSubcategories.filter(category => {
         return category.subcategory === value
       })
+
       this.getSubcategoryAttributes()
 
       this.ProductsForm.data.category = obj[0].category
     },
-
     // Show images thumbnails and remove duplicates
     onFileChange(e) {
       this.filesToUpload = e.target.files
@@ -254,18 +255,21 @@ export default {
 
       this.images = [...this.url]
 
-      this.images.forEach(value => {
-        this.dataImages.push({
-          id: value.id,
-          src: value.value,
-          alt: value.name
-        })
+      this.images.forEach((value, index) => {
+        if (this.ProductsForm.data.images.length >= 0) {
+          this.dataImages.push({
+            id: index,
+            src: value.value,
+            alt: value.name
+          })
+        } else {
+          this.dataImages.push({
+            id: this.ProductsForm.data.images.length + 1,
+            src: value.value,
+            alt: value.name
+          })
+        }
       })
-
-      this.dataImages = this.dataImages.filter(
-        (thing, index, self) =>
-          index === self.findIndex(t => t.alt === thing.alt)
-      )
     },
 
     // Manipulate Stock Status via stock value
@@ -292,26 +296,19 @@ export default {
       })
       return reset
     },
-    submitUpload() {
-      const files = [...this.filesToUpload]
-      // Remove elements if they dont exist in dataImages
-      var i = 0
-      var entry1
-      while (i < files.length) {
-        entry1 = files[i]
-        if (
-          this.dataImages.some(function(entry2) {
-            return entry1.name === entry2.alt
-          })
-        ) {
-          // Found, progress to next
-          ++i
-        } else {
-          // Not found, remove
-          files.splice(i, 1)
+    async submitUpload() {
+      this.ProductsForm.data.specificProperties.forEach((value, index) => {
+        if (value.fieldType === 'Number') {
+          this.ProductsForm.data.specificProperties[
+            index
+          ].fieldValue = parseInt(value.fieldValue)
         }
-      }
+      })
 
+      const files = [...this.filesToUpload]
+
+      // Remove elements if they dont exist in dataImages
+      let dataLinks
       if (!files) {
         this.$notify.error({
           title: 'Error',
@@ -319,6 +316,24 @@ export default {
           duration: 2000
         })
       } else {
+        if (files.length >= 0) {
+          var i = 0
+          var entry1
+          while (i < files.length) {
+            entry1 = files[i]
+            if (
+              this.dataImages.some(function(entry2) {
+                return entry1.name === entry2.alt
+              })
+            ) {
+              // Found, progress to next
+              ++i
+            } else {
+              // Not found, remove
+              files.splice(i, 1)
+            }
+          }
+        }
         Object.entries(files).forEach(element => {
           const data = new FormData()
           data.append('image', element[1])
@@ -329,12 +344,14 @@ export default {
             }
           }
 
-          axios
+          dataLinks = axios
             .post('http://localhost:3000/api/images', data, config)
             .then(response => {
               this.mediaLinks.push(response.data)
 
-              this.ProductsForm.data.images = this.mediaLinks
+              this.mediaLinks.forEach(image => {
+                this.ProductsForm.data.images.push(image)
+              })
               this.$notify({
                 title: 'success',
                 message: 'Uploaded Successfully',
@@ -346,9 +363,10 @@ export default {
             })
             .catch(err => console.log(err))
         })
+        return dataLinks
       }
     },
-
+    // Search Subcategory
     searchSubcategory(query) {
       if (query !== '' && query.length >= 3) {
         this.loading = true
@@ -359,6 +377,7 @@ export default {
         this.listSubcategories = []
       }
     },
+    // Event for image selection
     onSelectImage: function(data) {
       this.imageSelected = data
       this.dataImages.filter((selected, index) => {
@@ -372,6 +391,9 @@ export default {
     submitForm(ProductsForm) {
       this.$refs[ProductsForm].validate(valid => {
         if (valid) {
+          const images = [...new Set(this.ProductsForm.data.images)]
+          this.ProductsForm.data.images = images
+
           this.ProductsForm.data.images.forEach((value, index) => {
             if (this.selectedThumbnail === index) {
               this.ProductsForm.data.thumbnail = value
@@ -387,10 +409,8 @@ export default {
             duration: 2000
           })
 
-          addProduct(this.ProductsForm).then(
-            this.$router.push({ path: '/catalog/products' }),
-
-            console.log(this.ProductsForm)
+          updateProduct(this.ProductsForm, this.productUrl).then(
+            response => {}
           )
 
           // that.submitUpload();
@@ -412,10 +432,12 @@ export default {
       const obj = this.listSubcategories.filter(attributes => {
         return attributes.subcategory === this.ProductsForm.data.subcategory
       })
+      this.ProductsForm.data.specificProperties = []
+
       this.attributesList = obj[0].attributes
       this.attributesList.forEach((obj, index) => {
         this.ProductsForm.data.specificProperties[index] = {
-          fieldName: obj.name,
+          name: obj.name,
           fieldType: obj.fieldType
         }
       })

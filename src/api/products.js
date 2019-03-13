@@ -41,6 +41,8 @@ export function deleteProduct(subCategoryId, status) {
 }
 
 export function addProduct(data) {
+  console.log('dataaaaaaa')
+  console.log(data)
   return request({
     url: '/api/products/create',
     method: 'post',
@@ -48,9 +50,9 @@ export function addProduct(data) {
   })
 }
 
-export function updateProduct(data) {
+export function updateProduct(data, url) {
   return request({
-    url: '/api/categories/update',
+    url: '/api/products/updateProduct',
     method: 'post',
     data
   })
