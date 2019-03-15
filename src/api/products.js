@@ -57,3 +57,22 @@ export function updateProduct(data, url) {
     data
   })
 }
+
+export function searchProducts(data) {
+  return request({
+    url: '/api/products/dynamicSearch',
+    method: 'post',
+    data
+  })
+}
+export function changeProductStatus(data, status) {
+  return request({
+    url:
+      '/api/products/changeStatus?id=' +
+      data +
+      '&status=' +
+      status +
+      '&field=active',
+    method: 'get'
+  })
+}

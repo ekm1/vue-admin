@@ -82,7 +82,7 @@
               <el-button
                 v-if="scope.row.active === true"
                 size="mini"
-                type="delete"
+                type="danger"
                 @click="handleModifyStatus(scope.row,'deleted')"
               >{{ $t('table.delete') }}</el-button>
 

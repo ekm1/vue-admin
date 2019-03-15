@@ -40,18 +40,17 @@
           v-loading="listLoading"
           :key="tableKey"
           :data="list"
-          border
           fit
           class="table-class"
           highlight-current-row
           style="width: 100%;"
           @sort-change="sortChange"
         >
-          <el-table-column :label="$t('Date')" sortable="custom" width="165px" align="center">
+          <el-table-column :label="$t('Date')" sortable="custom" width="295px" align="center">
             <template slot-scope="scope">
               <i class="el-icon-time"/>
 
-              <span>{{ scope.row.date }}</span>
+              <span>{{ moment(scope.row.date) }}</span>
             </template>
           </el-table-column>
           <el-table-column :label="$t('Name')" width="150px" align="center">
@@ -61,7 +60,7 @@
           </el-table-column>
           <el-table-column :label="$t('Description')" width="300px" align="center">
             <template slot-scope="scope">
-              <span>{{ scope.row.data.description }}</span>
+              <span>{{ hideDescription(scope.row.data.description) }}</span>
             </template>
           </el-table-column>
           <el-table-column :label="$t('Price')" width="100px" align="center">
@@ -69,12 +68,12 @@
               <span>{{ scope.row.data.price }}$</span>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('Auction')" width="100px" align="center">
+          <el-table-column :label="$t('Auction')" width="80px" align="center">
             <template slot-scope="scope">
               <span>{{ scope.row.isAuction }}</span>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('Category')" width="120px" align="center">
+          <el-table-column :label="$t('Category')" width="140px" align="center">
             <template slot-scope="scope">
               <span>{{ scope.row.data.category }}</span>
             </template>
@@ -84,7 +83,7 @@
               <span>{{ scope.row.data.productType }}</span>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('Stock')" width="120px" align="center">
+          <el-table-column :label="$t('Stock')" width="80px" align="center">
             <template slot-scope="scope">
               <span>{{ scope.row.data.stock_level }}</span>
             </template>
@@ -94,7 +93,7 @@
               <span>{{ scope.row.data.stock_status }}</span>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('table.status')" width="150px" align="center">
+          <el-table-column :label="$t('table.status')" width="64px" align="center">
             <template slot-scope="scope">
               <span>{{ scope.row.active }}</span>
             </template>
@@ -106,6 +105,9 @@
             class-name="small-padding fixed-width"
           >
             <template slot-scope="scope">
+              <router-link :to="{ name: 'Product Details',params:{id:scope.row._id}, }">
+                <el-button type="info" size="mini" @click="changed(scope.row)">{{ $t('Open') }}</el-button>
+              </router-link>
               <router-link :to="{ name: 'Edit Product',params:{id:scope.row._id}, }">
                 <el-button
                   type="primary"
@@ -117,7 +119,7 @@
               <el-button
                 v-if="scope.row.active === true"
                 size="mini"
-                type="delete"
+                type="danger"
                 @click="handleModifyStatus(scope.row,'deleted')"
               >{{ $t('table.delete') }}</el-button>
 
@@ -136,32 +138,31 @@
           :total="total"
           :page.sync="getProductsQuery.page"
           :limit.sync="getProductsQuery.limit"
+          class="pagination"
           @pagination="getList"
         />
       </div>
-      <el-dialog :visible.sync="centerDialogVisible" title="Search" width="20%" center>
-        <el-form ref="dynamicValidateForm" label-width="120px" class="demo-dynamic">
+      <el-dialog
+        :visible.sync="centerDialogVisible"
+        :model="SearchForm"
+        title="Search"
+        width="20%"
+        center
+      >
+        <el-form ref="SearchForm" :model="SearchForm" label-width="120px" class="demo-dynamic">
           <el-form-item prop="product" label="Product Name">
-            <el-input/>
+            <el-input v-model="SearchForm.name"/>
           </el-form-item>
           <el-form-item prop="category" label="Category">
-            <el-input/>
+            <el-input v-model="SearchForm.category"/>
           </el-form-item>
           <el-form-item prop="subcategory" label="Subcategory">
-            <el-input/>
-          </el-form-item>
-          <el-form-item prop="subcategory" label="Active">
-            <el-switch v-model="SearchForm.active" active-color="#13ce66" inactive-color="#ff4949"/>
+            <el-input v-model="SearchForm.subcategory"/>
           </el-form-item>
 
           <el-form-item>
-            <el-button
-              style="background-color:#47c58c;border-color:#47c58c"
-              type="primary"
-              @click="updateForm('dynamicValidateForm')"
-            >Update</el-button>
-
-            <el-button @click="resetForm('dynamicValidateForm')">Reset</el-button>
+            <el-button type="primary" @click="SearchSubmit('SearchForm')">Submit</el-button>
+            <el-button @click="resetForm('SearchForm')">Reset</el-button>
           </el-form-item>
         </el-form>
       </el-dialog>
@@ -170,11 +171,17 @@
 </template>
 
 <script>
-import { getAllProducts, getSelectedSubcategory } from '@/api/products'
+import {
+  getAllProducts,
+  getSelectedSubcategory,
+  searchProducts,
+  changeProductStatus
+} from '@/api/products'
 import waves from '@/directive/waves' // Waves directive
 import { parseTime } from '@/utils'
 import store from '../../store'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
+import * as moment from 'moment'
 
 export default {
   name: 'Categories',
@@ -211,9 +218,7 @@ export default {
       SearchForm: {
         name: '',
         category: '',
-        subcategory: '',
-        active: false,
-        auction: ''
+        subcategory: ''
       },
       centerDialogVisible: false,
       value10: [],
@@ -355,7 +360,51 @@ export default {
       })
       return reset
     },
+    // Search form
+    SearchSubmit() {
+      this.listLoading = true
+      this.SearchForm.page = this.getProductsQuery.page
+      this.SearchForm.limit = this.getProductsQuery.limit
+      this.SearchForm.sortType = this.getProductsQuery.sortType
 
+      searchProducts(this.SearchForm).then(results => {
+        this.list = results.data.docs
+        this.total = results.data.total
+        this.listLoading = false
+      })
+      this.centerDialogVisible = false
+    },
+    handleModifyStatus(row, status) {
+      if (status === 'deleted') {
+        changeProductStatus(row._id, 'false').then(res => {
+          if (res.status) {
+            this.$message({
+              message: 'success',
+              type: 'success'
+            })
+            this.list = this.list.filter(el => {
+              return el._id !== row._id
+            })
+            row.status = status
+          }
+        })
+      } else if (status === 'activate') {
+        changeProductStatus(row._id, 'true').then(res => {
+          if (res.status) {
+            this.$notify({
+              title: 'success',
+              message: 'Successfully deleted Subcategory',
+              type: 'success',
+              duration: 2000
+            })
+            this.list = this.list.filter(el => {
+              return el._id !== row._id
+            })
+            row.status = status
+          }
+        })
+      }
+    },
     // Handle Creating new Product
     handleCreate() {
       this.ProductsForm = this.resetTemp()
@@ -406,7 +455,9 @@ export default {
         }
       })
     },
-
+    moment: function(date) {
+      return moment(date).format('MMMM Do YYYY, h:mm:ss a')
+    },
     // Reseting Dialog form
     resetForm(formName) {
       this.$refs[formName].resetFields()
@@ -425,12 +476,16 @@ export default {
     changed: function(row) {
       store.commit('CHANGE', row)
     },
+    getProduct: function(event) {
+      console.log(event)
+      this.$router.push({ name: 'ProductDetails' })
+    },
 
     handleDownload() {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['Category', 'Subcategory', 'ACTIVE']
-        const filterVal = ['category', 'subcategory', 'active']
+        const tHeader = ['DATE', 'Product Name', 'CATEGORY', 'SUBCATEGORY']
+        const filterVal = ['date', 'Name', 'category', 'subcategory']
         const data = this.formatJson(filterVal, this.list)
         excel.export_json_to_excel({
           header: tHeader,
@@ -445,6 +500,12 @@ export default {
       this.tableStatus = this.getProductsQuery.status
       this.getList()
     },
+    hideDescription(string) {
+      return string.length > length
+        ? string.substring(0, 30 - 3) + '...'
+        : string
+    },
+
     formatJson(filterVal, jsonData) {
       return jsonData.map(v =>
         filterVal.map(j => {
@@ -466,11 +527,7 @@ export default {
 .filter-container {
   padding-left: 25%;
 }
-.image-thumbnail {
-  width: 32px;
-  border-radius: 50%;
-}
-.el-table th {
-  background-color: red;
+.pagination {
+  text-align: center;
 }
 </style>

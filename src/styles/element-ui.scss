@@ -100,3 +100,20 @@
 .el-table::before {
   background-color: rgba(255, 0, 0, 0);
 }
+
+@media screen and (max-width: 40em) {
+  .el-dialog {
+    width: 60% !important;
+  }
+}
+@media screen and (max-width: 60rem) {
+  .el-dialog {
+    width: 60% !important;
+  }
+}
+
+@media screen and (max-width: 100rem) {
+  .el-dialog {
+    width: 60% !important;
+  }
+}

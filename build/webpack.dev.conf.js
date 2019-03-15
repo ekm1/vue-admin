@@ -1,20 +1,20 @@
-'use strict';
-const path = require('path');
-const utils = require('./utils');
-const webpack = require('webpack');
-const config = require('../config');
-const merge = require('webpack-merge');
-const baseWebpackConfig = require('./webpack.base.conf');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin');
-const portfinder = require('portfinder');
+'use strict'
+const path = require('path')
+const utils = require('./utils')
+const webpack = require('webpack')
+const config = require('../config')
+const merge = require('webpack-merge')
+const baseWebpackConfig = require('./webpack.base.conf')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
+const portfinder = require('portfinder')
 
 function resolve(dir) {
-  return path.join(__dirname, '..', dir);
+  return path.join(__dirname, '..', dir)
 }
 
-const HOST = '192.168.37.223';
-const PORT = process.env.PORT && Number(process.env.PORT);
+const HOST = process.env.HOST
+const PORT = process.env.PORT && Number(process.env.PORT)
 
 const devWebpackConfig = merge(baseWebpackConfig, {
   mode: 'development',
@@ -59,22 +59,22 @@ const devWebpackConfig = merge(baseWebpackConfig, {
       favicon: resolve('favicon.ico'),
       title: 'vue-element-admin',
       templateParameters: {
-        BASE_URL: config.dev.assetsPublicPath + config.dev.assetsSubDirectory
-      }
-    })
+        BASE_URL: config.dev.assetsPublicPath + config.dev.assetsSubDirectory,
+      },
+    }),
   ]
-});
+})
 
 module.exports = new Promise((resolve, reject) => {
-  portfinder.basePort = process.env.PORT || config.dev.port;
+  portfinder.basePort = process.env.PORT || config.dev.port
   portfinder.getPort((err, port) => {
     if (err) {
-      reject(err);
+      reject(err)
     } else {
       // publish the new Port, necessary for e2e tests
-      process.env.PORT = port;
+      process.env.PORT = port
       // add port to devServer config
-      devWebpackConfig.devServer.port = port;
+      devWebpackConfig.devServer.port = port
 
       // Add FriendlyErrorsPlugin
       devWebpackConfig.plugins.push(
@@ -90,9 +90,9 @@ module.exports = new Promise((resolve, reject) => {
             ? utils.createNotifierCallback()
             : undefined
         })
-      );
+      )
 
-      resolve(devWebpackConfig);
+      resolve(devWebpackConfig)
     }
-  });
-});
+  })
+})
