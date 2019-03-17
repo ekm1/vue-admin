@@ -1,19 +1,21 @@
 <template>
   <div id="center" class="app-container">
-    <el-row :gutter="10" type="flex">
-      <el-col :xs="24" :sm="16" :md="16" :lg="12" :xl="10">
-        <div class="filter-container">
+     <el-row :gutter="10" type="flex">
+      <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12"  >
+    <el-card class="box-card">
+  <div slot="header" class="clearfix">
+    <span class="header-text">Add Product</span>
+ <div class="filter-container">
           <router-link :to="{ path: '/catalog/products' }">
             <el-button
               class="filter-item"
-              style="margin-left: 10px;"
+             style="float: right"
               type="primary"
               icon="el-icon-back"
             >{{ $t("Back") }}</el-button>
           </router-link>
-        </div>
-
-        <el-form ref="ProductsForm" :model="ProductsForm" label-width="120px" class="demo-dynamic">
+        </div>  </div>
+  <el-form ref="ProductsForm" :model="ProductsForm" label-width="120px" class="demo-dynamic">
           <el-form-item prop="category" label="Product Name">
             <el-input v-model="ProductsForm.data.name"/>
           </el-form-item>
@@ -121,6 +123,11 @@
             <el-button @click="resetForm('ProductsForm')">Reset</el-button>
           </el-form-item>
         </el-form>
+</el-card>
+   
+       
+
+       
       </el-col>
     </el-row>
   </div>
@@ -505,4 +512,20 @@ input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+.header-text{
+  font-size: 130%;
+  font-weight: 600;
+  text-align: center;
+}
+
+@media only screen and (min-width: 990px) {
+ .box-card{
+  
+  position: relative;
+  left: 50%;
+}
+}
+
+
+
 </style>
