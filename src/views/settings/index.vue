@@ -50,7 +50,7 @@
       <el-col :xs="10" :sm="6" :md="6" :lg="6" :xl="12">
         <h3>Saved Settings</h3>
         <div class="card-div">
-          <div :v-for="(store,index) in savedSettings">
+          <div v-for="(store,index) in savedSettings">
             <div class="column">
               <div class="card">
                 <el-button
@@ -89,19 +89,19 @@ import {
   changeSelectedSettings,
   UpdateSettings,
   deleteStoreSettings
-} from '@/api/store'
-import VueSelectImage from '@/components/vue-select-image'
-import axios from 'axios'
+} from "@/api/store";
+import VueSelectImage from "@/components/vue-select-image";
+import axios from "axios";
 
 export default {
-  name: 'Settings',
+  name: "Settings",
   components: { VueSelectImage },
   data() {
     return {
       storeForm: {
-        storeName: '',
-        storeDescription: '',
-        storeImage: '',
+        storeName: "",
+        storeDescription: "",
+        storeImage: "",
         active: false
       },
       changeActive: { id: null },
@@ -109,152 +109,152 @@ export default {
       dataImages: [],
       savedSettings: [],
       selected: false,
-      buttonName: 'Create Store'
-    }
+      buttonName: "Create Store"
+    };
   },
   created() {
-    this.getList()
+    this.getList();
   },
   methods: {
     submitForm(formName) {
       this.$refs[formName].validate(valid => {
         if (valid && this.selected === false) {
-          addStore(this.storeForm).then()
+          addStore(this.storeForm).then();
         } else if (valid && this.selected === true) {
-          UpdateSettings(this.storeForm).then()
+          UpdateSettings(this.storeForm).then();
         } else {
-          console.log('error submit!!')
-          return false
+          console.log("error submit!!");
+          return false;
         }
-        this.getList()
-      })
+        this.getList();
+      });
     },
     deleteSettings(store) {
       if (store.active === true) {
-        store.softDelete = false
+        store.softDelete = false;
       } else {
-        store.softDelete = true
+        store.softDelete = true;
         deleteStoreSettings(store.softDelete, store._id).then(response => {
-          this.getList()
-        })
+          this.getList();
+        });
       }
     },
     getList() {
       getAllStoreSettings(this.softDelete).then(response => {
-        this.savedSettings = response.data
-      })
+        this.savedSettings = response.data;
+      });
     },
 
     checkCreateOrUpdate() {
       if (this.selected === true) {
-        this.buttonName = 'Update Store'
+        this.buttonName = "Update Store";
       } else {
-        this.buttonName = 'Create Store'
+        this.buttonName = "Create Store";
       }
     },
     // Switch form infos
     selectedStore(store) {
-      this.selected = true
-      this.checkCreateOrUpdate()
-      this.storeForm = store
-      this.dataImages = []
+      this.selected = true;
+      this.checkCreateOrUpdate();
+      this.storeForm = store;
+      this.dataImages = [];
 
-      this.dataImages.push({ id: 0, src: store.storeImage })
+      this.dataImages.push({ id: 0, src: store.storeImage });
     },
     resetForm(formName) {
-      this.selected = false
-      this.checkCreateOrUpdate()
+      this.selected = false;
+      this.checkCreateOrUpdate();
 
-      this.storeForm = {}
-      this.dataImages = []
+      this.storeForm = {};
+      this.dataImages = [];
     },
     onFileChange(e) {
-      this.filesToUpload = e.target.files
-      const file = e.target.files
+      this.filesToUpload = e.target.files;
+      const file = e.target.files;
 
       // get the name of the file, will be used as a key
       if (file[0]) {
-        this.objectURL = URL.createObjectURL(file[0])
-        this.dataImages = []
+        this.objectURL = URL.createObjectURL(file[0]);
+        this.dataImages = [];
         this.dataImages.push({
           id: 0,
           src: this.objectURL,
           alt: file[0].name
-        })
+        });
       }
     },
     checkSwitch(id) {
-      this.changeActive.id = id._id
+      this.changeActive.id = id._id;
       changeSelectedSettings(this.changeActive).then(response => {
-        this.getList()
-      })
+        this.getList();
+      });
     },
 
     onSelectImage: function(data) {
-      this.imageSelected = data
+      this.imageSelected = data;
       this.dataImages.filter((selected, index) => {
         if (index === data.id) {
-          this.selectedThumbnail = selected.id
+          this.selectedThumbnail = selected.id;
         }
-      })
+      });
     },
     submitUpload() {
-      const files = this.filesToUpload
+      const files = this.filesToUpload;
       // Remove elements if they dont exist in dataImages
-      var i = 0
-      var entry1
+      var i = 0;
+      var entry1;
       while (i < files.length) {
-        entry1 = files[i]
+        entry1 = files[i];
         if (
           this.dataImages.some(function(entry2) {
-            return entry1.name === entry2.alt
+            return entry1.name === entry2.alt;
           })
         ) {
           // Found, progress to next
-          ++i
+          ++i;
         } else {
           // Not found, remove
-          files.splice(i, 1)
+          files.splice(i, 1);
         }
       }
 
       if (!files) {
         this.$notify.error({
-          title: 'Error',
-          message: 'Upload Failed',
+          title: "Error",
+          message: "Upload Failed",
           duration: 2000
-        })
+        });
       } else {
         Object.entries(files).forEach(element => {
-          const data = new FormData()
-          data.append('image', element[1])
+          const data = new FormData();
+          data.append("image", element[1]);
 
           const config = {
             header: {
-              'Content-Type': 'multipart/form-data'
+              "Content-Type": "multipart/form-data"
             }
-          }
+          };
 
           axios
-            .post('http://localhost:3000/api/images', data, config)
+            .post("http://localhost:3000/api/images", data, config)
             .then(response => {
-              this.storeForm.storeImage = response.data
+              this.storeForm.storeImage = response.data;
 
               this.$notify({
-                title: 'success',
-                message: 'Uploaded Successfully',
-                type: 'success',
+                title: "success",
+                message: "Uploaded Successfully",
+                type: "success",
                 duration: 2000
-              })
+              });
 
-              return this.mediaLinks
+              return this.mediaLinks;
             })
-            .catch(err => console.log(err))
-        })
+            .catch(err => console.log(err));
+        });
       }
     }
   }
-}
+};
 </script>
 
 <style rel="stylesheet/scss" lang="scss" scoped>
