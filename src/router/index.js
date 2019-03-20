@@ -128,7 +128,7 @@ export const constantRouterMap = [
     redirect: '/sales/index',
     alwaysShow: true, // will always show the root menu
     meta: {
-      title: 'Catalog Section',
+      title: 'Catalog',
       icon: 'lock',
       roles: ['admin', 'editor'] // you can set roles in root nav
     },
@@ -182,17 +182,38 @@ export const constantRouterMap = [
       }
     ]
   },
-
   {
-    path: '/documentation',
+    path: '/Customers',
     component: Layout,
-    redirect: '/documentation/index',
+    redirect: '/sales/index',
+    alwaysShow: true, // will always show the root menu
+    meta: {
+      title: 'Customers',
+      icon: 'lock',
+      roles: ['admin', 'editor'] // you can set roles in root nav
+    },
     children: [
       {
-        path: 'index',
-        component: () => import('@/views/documentation/index'),
-        name: 'Documentation',
-        meta: { title: 'documentation', icon: 'documentation', affix: true }
+        path: 'users',
+        component: () => import('@/views/customers/users'),
+        name: 'Registered Users',
+        meta: {
+          title: 'Registered Users'
+        }
+      }
+    ]
+  },
+
+  {
+    path: '/settings',
+    component: Layout,
+    redirect: '/settings',
+    children: [
+      {
+        path: '',
+        component: () => import('@/views/settings/index'),
+        name: 'Settings',
+        meta: { title: 'Settings', icon: 'setting', affix: true }
       }
     ]
   },

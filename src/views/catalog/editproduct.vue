@@ -1,121 +1,131 @@
 <template>
   <div id="center" class="app-container">
     <el-row :gutter="10" type="flex">
-      <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="10">
-        <div class="filter-container">
-          <router-link :to="{ path: '/catalog/products' }">
-            <el-button
-              class="filter-item"
-              style="margin-left: 10px;"
-              type="primary"
-              icon="el-icon-back"
-            >{{ $t("Back") }}</el-button>
-          </router-link>
-        </div>
+      <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+        <el-card class="box-card">
+          <div slot="header" class="clearfix">
+            <span class="header-text">Edit {{ ProductsForm.data.name }}</span>
+            <div class="filter-container">
+              <router-link :to="{ path: '/catalog/products' }">
+                <el-button
+                  class="filter-item"
+                  style="float: right"
+                  type="primary"
+                  icon="el-icon-back"
+                >{{ $t("Back") }}</el-button>
+              </router-link>
+            </div>
+          </div>
 
-        <el-form ref="ProductsForm" :model="ProductsForm" label-width="120px" class="demo-dynamic">
-          <el-form-item prop="category" label="Product Name">
-            <el-input v-model="ProductsForm.data.name"/>
-          </el-form-item>
-          <el-form-item prop="description" label="Description">
-            <el-input v-model="ProductsForm.data.description" type="textarea" rows="5"/>
-          </el-form-item>
-          <el-form-item prop="price" label="Price">
-            <el-input-number v-model="ProductsForm.data.price" :precision="2" :min="0" :step="1"/>
-          </el-form-item>
-          <el-form-item prop="subcategory" label="Auction">
-            <el-switch
-              v-model="ProductsForm.isAuction"
-              inactive-text="Inactive"
-              active-text="Active"
-            />
-          </el-form-item>
-          <el-form-item prop="subcategory" label="Subcategory">
-            <el-col :span="11">
-              <el-select
-                v-model="ProductsForm.data.subcategory"
-                :remote-method="searchSubcategory"
-                filterable
-                remote
-                reserve-keyword
-                placeholder="Please enter a Subcategory"
-                @change="getCategory"
-              >
-                <el-option
-                  v-for="(category, index) in listSubcategories"
-                  :key="index"
-                  :label="category.subcategory"
-                  :value="category.subcategory"
-                />
-              </el-select>
-            </el-col>
-            <el-col :span="11">
-              <el-input v-model="ProductsForm.data.category" :disabled="true"/>
-            </el-col>
-          </el-form-item>
-          <el-form-item prop="subcategory" label="Stock">
-            <el-input-number
-              v-model="ProductsForm.data.stock_level"
-              :step="1"
-              :min="0"
-              @change="stockChanger"
-            />
-          </el-form-item>
-
-          <el-form-item>
-            <el-container id="preview" class="images-thumbnail">
-              <vue-select-image
-                ref="single-select-image"
-                :data-images="dataImages"
-                class="test"
-                @onselectimage="onSelectImage"
-              />
-            </el-container>
-            <label for="file-input" class="custom-file-upload">
-              <i class="el-icon-upload"/> Choose Files
-            </label>
-            <input
-              id="file-input"
-              type="file"
-              multiple="multiple"
-              accept="image/x-png, image/jpeg"
-              @change="onFileChange"
-            >
-            <el-button type="primary" plain @click="submitUpload">Upload</el-button>
-          </el-form-item>
-          <el-form-item/>
-          <el-form-item
-            v-for="(attribute, index) in attributesList"
-            :label="attribute.name "
-            :key="attribute._id"
-            style="padding-left:15%"
+          <el-form
+            ref="ProductsForm"
+            :model="ProductsForm"
+            label-width="120px"
+            class="demo-dynamic"
           >
-            <el-input
-              v-if="attribute.fieldType === 'String'"
-              v-model="ProductsForm.data.specificProperties[index].fieldValue"
-              class="input-field"
-            />
-            <input
-              v-if="attribute.fieldType === 'Boolean'"
-              v-model="ProductsForm.data.specificProperties[index].fieldValue"
-              type="checkbox"
-              class="flipswitch"
-            >
+            <el-form-item prop="category" label="Product Name">
+              <el-input v-model="ProductsForm.data.name"/>
+            </el-form-item>
+            <el-form-item prop="description" label="Description">
+              <el-input v-model="ProductsForm.data.description" type="textarea" rows="5"/>
+            </el-form-item>
+            <el-form-item prop="price" label="Price">
+              <el-input-number v-model="ProductsForm.data.price" :precision="2" :min="0" :step="1"/>
+            </el-form-item>
+            <el-form-item prop="subcategory" label="Auction">
+              <el-switch
+                v-model="ProductsForm.isAuction"
+                inactive-text="Inactive"
+                active-text="Active"
+              />
+            </el-form-item>
+            <el-form-item prop="subcategory" label="Subcategory">
+              <el-col :span="11">
+                <el-select
+                  v-model="ProductsForm.data.subcategory"
+                  :remote-method="searchSubcategory"
+                  filterable
+                  remote
+                  reserve-keyword
+                  placeholder="Please enter a Subcategory"
+                  @change="getCategory"
+                >
+                  <el-option
+                    v-for="(category, index) in listSubcategories"
+                    :key="index"
+                    :label="category.subcategory"
+                    :value="category.subcategory"
+                  />
+                </el-select>
+              </el-col>
+              <el-col :span="11">
+                <el-input v-model="ProductsForm.data.category" :disabled="true"/>
+              </el-col>
+            </el-form-item>
+            <el-form-item prop="subcategory" label="Stock">
+              <el-input-number
+                v-model="ProductsForm.data.stock_level"
+                :step="1"
+                :min="0"
+                @change="stockChanger"
+              />
+            </el-form-item>
 
-            <input
-              v-if="attribute.fieldType === 'Number'"
-              v-model="ProductsForm.data.specificProperties[index].fieldValue"
-              type="number"
-              class="input-number"
-              min="0"
-              step="1"
+            <el-form-item>
+              <el-container id="preview" class="images-thumbnail">
+                <vue-select-image
+                  ref="single-select-image"
+                  :data-images="dataImages"
+                  class="test"
+                  @onselectimage="onSelectImage"
+                />
+              </el-container>
+              <label for="file-input" class="custom-file-upload">
+                <i class="el-icon-upload"/> Choose Files
+              </label>
+              <input
+                id="file-input"
+                type="file"
+                multiple="multiple"
+                accept="image/x-png, image/jpeg"
+                @change="onFileChange"
+              >
+              <el-button type="primary" plain @click="submitUpload">Upload</el-button>
+            </el-form-item>
+            <el-form-item/>
+            <el-form-item
+              v-for="(attribute, index) in attributesList"
+              :label="attribute.name "
+              :key="attribute._id"
+              style="padding-left:15%"
             >
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" @click="submitForm('ProductsForm')">Submit</el-button>
-            <el-button @click="resetForm('ProductsForm')">Reset</el-button>
-          </el-form-item>
-        </el-form>
+              <el-input
+                v-if="attribute.fieldType === 'String'"
+                v-model="ProductsForm.data.specificProperties[index].fieldValue"
+                class="input-field"
+              />
+              <input
+                v-if="attribute.fieldType === 'Boolean'"
+                v-model="ProductsForm.data.specificProperties[index].fieldValue"
+                type="checkbox"
+                class="flipswitch"
+              >
+
+              <input
+                v-if="attribute.fieldType === 'Number'"
+                v-model="ProductsForm.data.specificProperties[index].fieldValue"
+                type="number"
+                class="input-number"
+                min="0"
+                step="1"
+              >
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="submitForm('ProductsForm')">Submit</el-button>
+              <el-button @click="resetForm('ProductsForm')">Reset</el-button>
+            </el-form-item>
+          </el-form>
+        </el-card>
       </el-col>
     </el-row>
   </div>
@@ -213,6 +223,7 @@ export default {
     } else {
       this.ProductsForm = store.state.products.productDetails
       this.attributesList = this.ProductsForm.data.specificProperties
+      console.log(this.attributesList)
 
       this.ProductsForm.data.images.forEach((image, index) => {
         this.dataImages[index] = { id: index, src: image }
@@ -526,5 +537,17 @@ input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+.header-text {
+  font-size: 130%;
+  font-weight: 600;
+  text-align: center;
+}
+
+@media only screen and (min-width: 990px) {
+  .box-card {
+    position: relative;
+    left: 50%;
+  }
 }
 </style>

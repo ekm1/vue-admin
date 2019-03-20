@@ -27,13 +27,15 @@
             icon="el-icon-download"
             @click="handleDownload"
           >{{ $t('table.export') }}</el-button>
-          <el-checkbox
+          <el-button
             v-model="showReviewer"
+            :type="type"
+            :icon="icon"
             class="filter-item"
-            checked
+            circle
             style="margin-left:15px;"
-            @change="handleStatus()"
-          >{{ $t('active') }}</el-checkbox>
+            @click="handleStatus()"
+          />
         </div>
 
         <el-table
@@ -42,6 +44,7 @@
           :data="list"
           fit
           class="table-class"
+          align="center"
           highlight-current-row
           style="width: 100%;"
           @sort-change="sortChange"
@@ -224,6 +227,8 @@ export default {
       value10: [],
       tableKey: 0,
       list: null,
+      type: 'success',
+      icon: 'el-icon-check',
       listSubcategories: [],
       total: 0,
       listLoading: true,
@@ -302,19 +307,7 @@ export default {
         this.getFilerResults()
       }
     },
-    // getFilerResults() {
-    //   this.listLoading = true
-    //   searchByCategoryName(
-    //     this.getProductsQuery.name,
-    //     this.getProductsQuery.page,
-    //     this.getProductsQuery.limit
-    //   ).then(results => {
-    //     this.list = results.data.docs
-    //     this.total = results.data.total
-    //     this.listLoading = false
-    //   })
-    // },
-    // Searching in the table
+
     handleFilter() {
       if (
         this.getProductsQuery.name === undefined ||
@@ -497,6 +490,13 @@ export default {
     },
     handleStatus() {
       this.getProductsQuery.status = !this.getProductsQuery.status
+      if (this.getProductsQuery.status === true) {
+        this.type = 'success'
+        this.icon = 'el-icon-check'
+      } else {
+        this.type = 'danger'
+        this.icon = 'el-icon-delete'
+      }
       this.tableStatus = this.getProductsQuery.status
       this.getList()
     },
@@ -525,8 +525,9 @@ export default {
   padding-bottom: 2%;
 }
 .filter-container {
-  padding-left: 25%;
+  text-align: center;
 }
+
 .pagination {
   text-align: center;
 }

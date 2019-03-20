@@ -117,3 +117,19 @@
     width: 60% !important;
   }
 }
+
+input[type='file'] {
+  display: none;
+}
+
+.upload-image {
+  width: 50%;
+  height: 40%;
+}
+.test {
+  display: contents;
+}
+.custom-file-upload {
+  cursor: -webkit-grabbing;
+  cursor: grabbing;
+}

@@ -13,7 +13,12 @@
             >
             <div class="overlay"/>
             <div class="inside-container">
-              <el-button type="primary" class="button" @click="onSelectImage(dataImage)">Thumbnail</el-button>
+              <el-button
+                v-if="isMultiple"
+                type="primary"
+                class="button"
+                @click="onSelectImage(dataImage)"
+              >Thumbnail</el-button>
               <el-button type="danger" class="button" @click="onSelectImageDelete(dataImage)">Delete</el-button>
             </div>
           </div>

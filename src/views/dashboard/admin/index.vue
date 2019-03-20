@@ -43,7 +43,7 @@
         :xl="{ span: 8 }"
         style="margin-bottom:30px;"
       >
-        <new-costumer/>
+        <new-customer/>
       </el-col>
 
       <el-col
@@ -67,7 +67,7 @@ import RaddarChart from './components/RaddarChart'
 import PieChart from './components/PieChart'
 import BarChart from './components/BarChart'
 import TransactionTable from './components/TransactionTable'
-import NewCostumer from './components/NewCostumer'
+import NewCustomer from './components/NewCustomer'
 import TodoList from './components/TodoList'
 import BoxCard from './components/BoxCard'
 
@@ -99,7 +99,7 @@ export default {
     PieChart,
     BarChart,
     TransactionTable,
-    NewCostumer,
+    NewCustomer,
     TodoList,
     BoxCard
   },

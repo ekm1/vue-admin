@@ -17,13 +17,7 @@
             icon="el-icon-search"
             @click="handleFilter"
           >{{ $t('table.search') }}</el-button>
-          <el-button
-            class="filter-item"
-            style="margin-left: 10px;"
-            type="primary"
-            icon="el-icon-edit"
-            @click="handleCreate"
-          >{{ $t('table.add') }}</el-button>
+
           <el-button
             v-waves
             :loading="downloadLoading"
@@ -53,19 +47,56 @@
           style="width: 100%;"
           @sort-change="sortChange"
         >
-          <el-table-column :label="$t('table.category')" width="150px" align="center">
+          <el-table-column :label="$t('Register date')" width="150px" align="center">
             <template slot-scope="scope">
-              <span>{{ scope.row.category }}</span>
+              <span>{{ scope.row.registe_date }}</span>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('table.subcategory')" width="150px" align="center">
+          <el-table-column :label="$t('Full name')" width="150px" align="center">
             <template slot-scope="scope">
-              <span>{{ scope.row.subcategory }}</span>
+              <span>{{ scope.row.name }} {{ scope.row.lastname }}</span>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('table.status')" width="150px" align="center">
+          <el-table-column :label="$t('Email')" width="160px" align="center">
             <template slot-scope="scope">
-              <span>{{ scope.row.active }}</span>
+              <span>{{ scope.row.email }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column :label="$t('Role')" width="150px" align="center">
+            <template slot-scope="scope">
+              <div :v-for=" role in scope.row.roles">
+                <span>{{ role }}</span>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column :label="$t('Country')" width="160px" align="center">
+            <template slot-scope="scope">
+              <span>{{ scope.row.user_address.country }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column :label="$t('City')" width="160px" align="center">
+            <template slot-scope="scope">
+              <span>{{ scope.row.user_address.city }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column :label="$t('Phone')" width="160px" align="center">
+            <template slot-scope="scope">
+              <span>{{ scope.row.user_address.phone }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column :label="$t('Street name')" width="160px" align="center">
+            <template slot-scope="scope">
+              <span>{{ scope.row.user_address.address }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column :label="$t('House/Apartment number')" width="200px" align="center">
+            <template slot-scope="scope">
+              <span>{{ scope.row.user_address.address2 }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column :label="$t('Zip code')" width="160px" align="center">
+            <template slot-scope="scope">
+              <span>{{ scope.row.user_address.zip_code }}</span>
             </template>
           </el-table-column>
           <el-table-column
@@ -76,21 +107,15 @@
           >
             <template slot-scope="scope">
               <el-button
-                type="primary"
-                size="mini"
-                @click="handleUpdate(scope.row)"
-              >{{ $t('table.edit') }}</el-button>
-
-              <el-button
-                v-if="scope.row.active === true"
-                size="mini"
+                v-if="scope.row.isActive === true"
+                size="small"
                 type="danger"
                 @click="handleModifyStatus(scope.row,'deleted')"
-              >{{ $t('table.delete') }}</el-button>
+              >{{ $t('Deactivate') }}</el-button>
 
               <el-button
-                v-if="scope.row.active ===false"
-                size="mini"
+                v-if="scope.row.isActive ===false"
+                size="small"
                 type="success"
                 @click="handleModifyStatus(scope.row,'activate')"
               >Activate</el-button>
@@ -111,113 +136,54 @@
           :title="textMap[dialogStatus]"
           :visible.sync="dialogFormVisible"
           class="dialog-size"
+          width="30%"
         >
           <el-row :gutter="10" type="flex">
-            <el-col :xs="21" :sm="22" :md="20" :lg="16" :xl="16">
-              <el-form
-                ref="dynamicValidateForm"
-                :model="dynamicValidateForm"
-                label-width="120px"
-                class="demo-dynamic"
-              >
-                <el-form-item prop="category" label="Category">
-                  <el-input v-model="dynamicValidateForm.category"/>
+            <el-col :xs="21" :sm="22" :md="20" :lg="16" :xl="24">
+              <el-form ref="dynamicValidateForm" :model="dynamicValidateForm" class="demo-dynamic">
+                <h4>Basic Info</h4>
+                <el-form-item prop="category">
+                  <el-input :placeholder="$t('First name')" v-model="dynamicValidateForm.category"/>
                 </el-form-item>
-                <el-form-item prop="subcategory" label="Subcategory">
-                  <el-input v-model="dynamicValidateForm.subcategory"/>
+                <el-form-item prop="category">
+                  <el-input :placeholder="$t('Last name')" v-model="dynamicValidateForm.category"/>
+                </el-form-item>
+                <el-form-item prop="subcategory">
+                  <el-input
+                    :placeholder="$t('Email')"
+                    v-model="dynamicValidateForm.subcategory"
+                    name="email"
+                    type="text"
+                  />
+                </el-form-item>
+                <el-form-item prop="subcategory">
+                  <el-input
+                    v-model="dynamicValidateForm.password"
+                    :placeholder="$t('login.password')"
+                    type="password"
+                    name="password"
+                    auto-complete="on"
+                    @keyup.enter.native="handleLogin"
+                  />
+                </el-form-item>
+                <el-form-item prop="subcategory">
+                  <el-input
+                    v-model="dynamicValidateForm.password"
+                    :placeholder="$t('Confirm Password')"
+                    type="password"
+                    name="password"
+                    auto-complete="on"
+                    @keyup.enter.native="handleLogin"
+                  />
                 </el-form-item>
 
-                <el-form-item
-                  v-for="(attribute, index) in dynamicValidateForm.attributes"
-                  :label="'Attribute '"
-                  :key="attribute.key"
-                  :prop="'attributes.' + index + '.name'"
-                  :rules="{
-                    required: true, message: 'attribute can not be null', trigger: 'blur'
-                  }"
-                  style="padding-left:15%"
-                >
-                  <el-input v-model="attribute.name" class="input-field"/>
-                  <el-select v-model="attribute.fieldType" class="select-size" placeholder="Select">
-                    <el-option
-                      v-for="item in options"
-                      :key="item.value"
-                      :label="item.label"
-                      :value="item.value"
-                    />
-                  </el-select>
-                  <el-checkbox
-                    :prop="'attributes.' + index + '.required'"
-                    v-model="attribute.required"
-                  >Required</el-checkbox>
-
-                  <el-button @click.prevent="removeattribute(attribute)">Delete</el-button>
-                </el-form-item>
                 <el-form-item>
                   <el-button type="primary" @click="submitForm('dynamicValidateForm')">Submit</el-button>
-                  <el-button @click="addAttribute">Add new Attribute</el-button>
                   <el-button @click="resetForm('dynamicValidateForm')">Reset</el-button>
                 </el-form-item>
               </el-form>
             </el-col>
           </el-row>
-        </el-dialog>
-
-        <el-dialog
-          :visible.sync="dialogPvVisible"
-          title="Update Category"
-          class="dialog-size"
-          @click="updateForm('dynamicValidateForm')"
-        >
-          <el-form
-            ref="dynamicValidateForm"
-            :model="dynamicValidateForm"
-            label-width="120px"
-            class="demo-dynamic"
-          >
-            <el-form-item prop="category" label="Category">
-              <el-input v-model="dynamicValidateForm.category"/>
-            </el-form-item>
-            <el-form-item prop="subcategory" label="Subcategory">
-              <el-input v-model="dynamicValidateForm.subcategory"/>
-            </el-form-item>
-
-            <el-form-item
-              v-for="(attribute, index) in dynamicValidateForm.attributes"
-              :label="'Attribute '"
-              :key="attribute.key"
-              :prop="'attributes.' + index + '.name'"
-              :rules="{
-                required: true, message: 'attribute can not be null', trigger: 'blur'
-              }"
-              style="padding-left:15%"
-            >
-              <el-input v-model="attribute.name" class="input-field"/>
-              <el-select v-model="attribute.fieldType" placeholder="Select">
-                <el-option
-                  v-for="item in options"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-              <el-checkbox
-                :prop="'attributes.' + index + '.required'"
-                v-model="attribute.required"
-              >Required</el-checkbox>
-
-              <el-button
-                class="delete-btn"
-                button
-                @click.prevent="removeattribute(attribute)"
-              >Delete</el-button>
-            </el-form-item>
-            <el-form-item>
-              <el-button type="primary" @click="updateForm('dynamicValidateForm')">Update</el-button>
-              <el-button @click="addAttribute">Add new Attribute</el-button>
-              <el-button @click="resetForm('dynamicValidateForm')">Reset</el-button>
-            </el-form-item>
-          </el-form>
         </el-dialog>
       </div>
     </el-col>
@@ -226,16 +192,10 @@
 
 <script>
 // TODO: Validation & on Enter Submit form.
-import { fetchList, fetchPv, updateArticle } from '@/api/article'
+import { getAllUsers, searchByName, deleteSubCategory } from '@/api/users'
 import waves from '@/directive/waves' // Waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
-import {
-  searchByCategoryName,
-  deleteSubCategory,
-  addCategory,
-  updateCategory
-} from '@/api/categories'
 
 export default {
   name: 'Categories',
@@ -283,16 +243,15 @@ export default {
       ],
       tableKey: 0,
       list: null,
-      total: 0,
       type: 'success',
       icon: 'el-icon-check',
+      total: 0,
       listLoading: true,
       listQuery: {
         page: 1,
         limit: 10,
-        importance: undefined,
-        name: undefined,
-        type: undefined,
+        active: true,
+        roles: ['user'],
         status: true
       },
       importanceOptions: [1, 2, 3],
@@ -312,7 +271,7 @@ export default {
       dialogStatus: '',
       textMap: {
         update: 'Edit',
-        create: 'Create Category'
+        create: 'Create User'
       },
       dialogPvVisible: false,
       pvData: [],
@@ -347,7 +306,8 @@ export default {
         this.listQuery.name === ' '
       ) {
         this.listLoading = true
-        fetchList(this.listQuery).then(response => {
+        getAllUsers(this.listQuery).then(response => {
+          console.log(response.data)
           this.list = response.data.docs
           this.total = response.data.total
           this.listLoading = false
@@ -358,7 +318,7 @@ export default {
     },
     getFilerResults() {
       this.listLoading = true
-      searchByCategoryName(
+      searchByName(
         this.listQuery.name,
         this.listQuery.page,
         this.listQuery.limit,
@@ -386,7 +346,9 @@ export default {
     // Handle status change
     handleModifyStatus(row, status) {
       if (status === 'deleted') {
-        deleteSubCategory(row._id, 'false').then(res => {
+        row.isActive = false
+
+        deleteSubCategory(row).then(res => {
           if (res.status) {
             this.$message({
               message: 'success',
@@ -399,7 +361,9 @@ export default {
           }
         })
       } else if (status === 'activate') {
-        deleteSubCategory(row._id, 'true').then(res => {
+        row.isActive = true
+
+        deleteSubCategory(row).then(res => {
           if (res.status) {
             this.$notify({
               title: 'success',
@@ -467,49 +431,7 @@ export default {
       })
     },
 
-    // Submit Dialog form for Adding
-    submitForm(dynamicValidateForm) {
-      this.$refs[dynamicValidateForm].validate(valid => {
-        if (valid) {
-          addCategory(this.dynamicValidateForm)
-            .then(this.getList())
-            .catch(err => console.log(err))
-          // this.resetForm('dynamicValidateForm')
-
-          this.$notify({
-            title: 'success',
-            message: 'Successfully created new Category',
-            type: 'success',
-            duration: 2000
-          })
-
-          this.dialogFormVisible = false
-        } else {
-          console.log('error submit!!')
-          return false
-        }
-      })
-    },
     // Edit Enitity
-    updateForm(dynamicValidateForm) {
-      this.$refs[dynamicValidateForm].validate(valid => {
-        if (valid) {
-          updateCategory(this.dynamicValidateForm)
-            .then(console.log(this.dynamicValidateForm), this.getList())
-            .catch(err => console.log(err))
-          this.$notify({
-            title: 'success',
-            message: 'Successfully updated Category',
-            type: 'success',
-            duration: 2000
-          })
-          this.dialogPvVisible = false
-        } else {
-          console.log('error submit!!')
-          return false
-        }
-      })
-    },
 
     // Reseting Dialog form
     resetForm(formName) {
@@ -534,37 +456,6 @@ export default {
       this.dialogPvVisible = true
     },
 
-    updateData() {
-      this.$refs['dataForm'].validate(valid => {
-        if (valid) {
-          const tempData = Object.assign({}, this.temp)
-          tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-          updateArticle(tempData).then(() => {
-            for (const v of this.list) {
-              if (v.id === this.temp.id) {
-                const index = this.list.indexOf(v)
-                this.list.splice(index, 1, this.temp)
-                break
-              }
-            }
-            this.dialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '更新成功',
-              type: 'success',
-              duration: 2000
-            })
-          })
-        }
-      })
-    },
-
-    handleFetchPv(pv) {
-      fetchPv(pv).then(response => {
-        this.pvData = response.data.pvData
-        this.dialogPvVisible = true
-      })
-    },
     handleDownload() {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {
@@ -580,6 +471,7 @@ export default {
       })
     },
     handleStatus() {
+      this.listQuery.active = !this.listQuery.active
       this.listQuery.status = !this.listQuery.status
       if (this.listQuery.status === true) {
         this.type = 'success'
@@ -588,7 +480,7 @@ export default {
         this.type = 'danger'
         this.icon = 'el-icon-delete'
       }
-      this.tableStatus = this.listQuery.status
+      this.tableStatus = this.listQuery.active
       this.getList()
     },
     formatJson(filterVal, jsonData) {
@@ -608,7 +500,6 @@ export default {
 <style scoped>
 .app-container {
   margin: 0 auto;
-  max-width: 723px;
 }
 
 .input-field {
