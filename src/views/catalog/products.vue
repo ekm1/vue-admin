@@ -216,7 +216,8 @@ export default {
         category: '',
         active: true,
         subcategory: '',
-        searchValue: ''
+        searchValue: '',
+        isBundle: false
       },
       SearchForm: {
         name: '',
@@ -240,9 +241,7 @@ export default {
       getProductsQuery: {
         page: 1,
         limit: 20,
-        importance: undefined,
-        name: undefined,
-        type: undefined,
+        isBundle: false,
         status: true,
         sortType: 'desc'
       },
@@ -359,7 +358,9 @@ export default {
       this.SearchForm.page = this.getProductsQuery.page
       this.SearchForm.limit = this.getProductsQuery.limit
       this.SearchForm.sortType = this.getProductsQuery.sortType
+      debugger
 
+      console.log(this.SearchForm)
       searchProducts(this.SearchForm).then(results => {
         this.list = results.data.docs
         this.total = results.data.total
@@ -448,7 +449,7 @@ export default {
         }
       })
     },
-    moment: function(date) {
+    moment: function (date) {
       return moment(date).format('MMMM Do YYYY, h:mm:ss a')
     },
     // Reseting Dialog form
@@ -466,10 +467,10 @@ export default {
       }
     },
     // Handling update on edit
-    changed: function(row) {
+    changed: function (row) {
       store.commit('CHANGE', row)
     },
-    getProduct: function(event) {
+    getProduct: function (event) {
       console.log(event)
       this.$router.push({ name: 'ProductDetails' })
     },

@@ -134,11 +134,29 @@ export const constantRouterMap = [
     },
     children: [
       {
+        path: 'categories',
+        component: () => import('@/views/catalog/categories'),
+        name: 'Categories',
+        meta: {
+          title: 'Categories'
+          // if do not set roles, means: this page does not require permission
+        }
+      },
+      {
         path: 'products',
         component: () => import('@/views/catalog/products'),
         name: 'Products',
         meta: {
           title: 'Products',
+          roles: ['admin'] // or you can only set roles in sub nav
+        }
+      },
+      {
+        path: 'bundles',
+        component: () => import('@/views/catalog/bundles'),
+        name: 'Bundles',
+        meta: {
+          title: 'Bundles',
           roles: ['admin'] // or you can only set roles in sub nav
         }
       },
@@ -169,15 +187,6 @@ export const constantRouterMap = [
         meta: {
           title: 'Product Details',
           roles: ['admin'] // or you can only set roles in sub nav
-        }
-      },
-      {
-        path: 'categories',
-        component: () => import('@/views/catalog/categories'),
-        name: 'Categories',
-        meta: {
-          title: 'Categories'
-          // if do not set roles, means: this page does not require permission
         }
       }
     ]

@@ -1,10 +1,10 @@
 <template>
   <div id="center" class="app-container">
     <el-row :gutter="10" type="flex">
-      <el-col :xs="24" :sm="24" :md="24" :lg="12" :xl="12">
+      <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
         <el-card class="box-card">
           <div slot="header" class="clearfix">
-            <span class="header-text">Edit {{ ProductsForm.data.name }}</span>
+            <span class="header-text">Add Product</span>
             <div class="filter-container">
               <router-link :to="{ path: '/catalog/products' }">
                 <el-button
@@ -16,13 +16,38 @@
               </router-link>
             </div>
           </div>
-
           <el-form
             ref="ProductsForm"
             :model="ProductsForm"
             label-width="120px"
             class="demo-dynamic"
           >
+            <el-form-item prop="products" label="Add Products">
+              <el-col :span="11">
+                <el-select
+                  v-model="selectedProduct"
+                  :remote-method="searchProductsforBundle"
+                  filterable
+                  remote
+                  reserve-keyword
+                  placeholder="Please enter a product"
+                  @input="getProductsBundle"
+                >
+                  <el-option
+                    v-for="(product, index) in listProducts"
+                    :key="index"
+                    :label="product.data.name"
+                    :value="product.data.name"
+                  />
+                </el-select>
+              </el-col>
+              <el-col :span="11">
+                <el-tag v-for="tag in tagProducts" class="tag" :key="tag" closable>
+                  {{tag}}
+                  <input type="number" class="input-product" min="0" step="1">
+                </el-tag>
+              </el-col>
+            </el-form-item>
             <el-form-item prop="category" label="Product Name">
               <el-input v-model="ProductsForm.data.name"/>
             </el-form-item>
@@ -90,7 +115,6 @@
                 accept="image/x-png, image/jpeg"
                 @change="onFileChange"
               >
-              <el-button type="primary" plain @click="submitUpload">Upload</el-button>
             </el-form-item>
             <el-form-item/>
             <el-form-item
@@ -119,9 +143,31 @@
                 min="0"
                 step="1"
               >
+              <el-select
+                v-if="attribute.fieldType === 'List'"
+                v-model="selectable"
+                multiple
+                filterable
+                @change="makeSelectable(selectable,index)"
+                allow-create
+                default-first-option
+                placeholder="Choose add your list"
+              >
+                <el-option
+                  v-for="item in selectableOptions"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                ></el-option>
+              </el-select>
             </el-form-item>
+
             <el-form-item>
-              <el-button type="primary" @click="submitForm('ProductsForm')">Submit</el-button>
+              <el-button
+                :disabled="isDisabled"
+                type="primary"
+                @click="submitForm('ProductsForm')"
+              >Submit</el-button>
               <el-button @click="resetForm('ProductsForm')">Reset</el-button>
             </el-form-item>
           </el-form>
@@ -132,14 +178,14 @@
 </template>
 
 <script>
-import { getSelectedSubcategory, updateProduct } from '@/api/products'
+import { getSelectedSubcategory, addProduct, deleteImages, searchProducts } from '@/api/products'
 import axios from 'axios'
-import store from '../../store'
 import VueSelectImage from '@/components/vue-select-image'
 import waves from '@/directive/waves' // Waves directive
 
+
 export default {
-  name: 'EditProduct',
+  name: 'Bundles',
   components: { VueSelectImage },
   directives: { waves },
   filters: {
@@ -161,8 +207,11 @@ export default {
       ProductsForm: {
         active: true,
         isAuction: false,
+        date: Date.now(),
+        isBundle: true,
+        products_items: [],
         data: {
-          name: undefined,
+          name: '',
           category: '',
           subcategory: '',
           description: '',
@@ -174,16 +223,40 @@ export default {
           stock_status: false
         }
       },
-      temp: [],
+      SearchForm: {
+        name: '',
+        sortType: 'desc',
+        page: 1,
+        isBundle: false,
+        limit: 9999
+      },
+      selectableOptions: [],
+      selectable: '',
       // Images Delcaration
       dataImages: [],
       url: [],
       values: [],
+      selectedProduct: '',
+      tagProducts: [],
       images: [],
-      filesToUpload: [],
+      filesToUpload: undefined,
       mediaLinks: [],
       arrayOfURL: [],
-      productUrl: this.$route.params.id,
+      options: [
+        {
+          value: 'String',
+          label: 'String'
+        },
+        {
+          value: 'Number',
+          label: 'Number'
+        },
+        {
+          value: 'Boolean',
+          label: 'Boolean'
+        }
+      ],
+      listProducts: null,
       list: null,
       attributesList: [],
       listSubcategories: [],
@@ -194,59 +267,60 @@ export default {
         limit: 999,
         status: true
       },
+      getProductsQuery: {
+        page: 1,
+        limit: 20,
+        importance: undefined,
+        name: undefined,
+        type: undefined,
+        status: true
+      },
       urlObject: {}
     }
   },
-  watch: {
-    dataImages: function () {
-      var i = 0
-      var entry1
-      while (i < this.ProductsForm.data.images.length) {
-        entry1 = this.ProductsForm.data.images[i]
-        if (
-          this.dataImages.some(function (entry2) {
-            return entry1 === entry2.src
-          })
-        ) {
-          // Found, progress to next
-          ++i
-        } else {
-          // Not found, remove
-          this.ProductsForm.data.images.splice(i, 1)
-        }
-      }
-    }
-  },
-  created() {
-    if (store.state.products.productDetails.length <= 0) {
-      this.$router.push({ path: '/catalog/products' })
-    } else {
-      this.ProductsForm = store.state.products.productDetails
-      this.attributesList = this.ProductsForm.data.specificProperties
-      console.log(this.attributesList)
 
-      this.ProductsForm.data.images.forEach((image, index) => {
-        this.dataImages[index] = { id: index, src: image }
-        // if (this.ProductsForm.data.thumbnail === image) {
-        //   this.onSelectImage(this.dataImages[index]);
-        // }
-      })
+  computed: {
+    isDisabled() {
+      // evaluate whatever you need to determine disabled here...
+      if (this.ProductsForm.data.images <= this.dataImages) {
+        return true
+      } else return false
     }
   },
+
+
 
   methods: {
+    getProductsBundle(product) {
+
+
+      this.listProducts.forEach(value => {
+        if (value.data.name === product) {
+          this.tagProducts.push(value.data.name)
+          console.log(value)
+          this.ProductsForm.products_items.push({ id: value._id })
+        }
+
+      })
+
+      console.log(this.ProductsForm.products_items)
+
+      this.selectedProduct = ''
+    },
     // Get category based on Subcategory
     getCategory(value) {
       const obj = this.listSubcategories.filter(category => {
         return category.subcategory === value
       })
-
       this.getSubcategoryAttributes()
 
       this.ProductsForm.data.category = obj[0].category
     },
+
     // Show images thumbnails and remove duplicates
     onFileChange(e) {
+      console.log(this.selectableOptions)
+
       this.filesToUpload = e.target.files
       const file = e.target.files
 
@@ -266,21 +340,19 @@ export default {
 
       this.images = [...this.url]
 
-      this.images.forEach((value, index) => {
-        if (this.ProductsForm.data.images.length >= 0) {
-          this.dataImages.push({
-            id: index,
-            src: value.value,
-            alt: value.name
-          })
-        } else {
-          this.dataImages.push({
-            id: this.ProductsForm.data.images.length + 1,
-            src: value.value,
-            alt: value.name
-          })
-        }
+      this.images.forEach(value => {
+        this.dataImages.push({
+          id: value.id,
+          src: value.value,
+          alt: value.name
+        })
       })
+
+      this.dataImages = this.dataImages.filter(
+        (thing, index, self) =>
+          index === self.findIndex(t => t.alt === thing.alt)
+      )
+      this.submitUpload()
     },
 
     // Manipulate Stock Status via stock value
@@ -291,6 +363,10 @@ export default {
         this.ProductsForm.data.stock_status = true
       }
     },
+    makeSelectable(value, index) {
+      this.ProductsForm.data.specificProperties[index].fieldValue = value
+    },
+
     // Reset Modal form fields
     resetTemp() {
       const reset = (this.temp = {
@@ -307,19 +383,26 @@ export default {
       })
       return reset
     },
-    async submitUpload() {
-      this.ProductsForm.data.specificProperties.forEach((value, index) => {
-        if (value.fieldType === 'Number') {
-          this.ProductsForm.data.specificProperties[
-            index
-          ].fieldValue = parseInt(value.fieldValue)
-        }
-      })
-
+    submitUpload() {
       const files = [...this.filesToUpload]
-
       // Remove elements if they dont exist in dataImages
-      let dataLinks
+      var i = 0
+      var entry1
+      while (i < files.length) {
+        entry1 = files[i]
+        if (
+          this.dataImages.some(function (entry2) {
+            return entry1.name === entry2.alt
+          })
+        ) {
+          // Found, progress to next
+          ++i
+        } else {
+          // Not found, remove
+          files.splice(i, 1)
+        }
+      }
+
       if (!files) {
         this.$notify.error({
           title: 'Error',
@@ -327,24 +410,6 @@ export default {
           duration: 2000
         })
       } else {
-        if (files.length >= 0) {
-          var i = 0
-          var entry1
-          while (i < files.length) {
-            entry1 = files[i]
-            if (
-              this.dataImages.some(function (entry2) {
-                return entry1.name === entry2.alt
-              })
-            ) {
-              // Found, progress to next
-              ++i
-            } else {
-              // Not found, remove
-              files.splice(i, 1)
-            }
-          }
-        }
         Object.entries(files).forEach(element => {
           const data = new FormData()
           data.append('image', element[1])
@@ -355,14 +420,12 @@ export default {
             }
           }
 
-          dataLinks = axios
+          axios
             .post('http://localhost:3000/api/images', data, config)
             .then(response => {
               this.mediaLinks.push(response.data)
 
-              this.mediaLinks.forEach(image => {
-                this.ProductsForm.data.images.push(image)
-              })
+              this.ProductsForm.data.images = this.mediaLinks
               this.$notify({
                 title: 'success',
                 message: 'Uploaded Successfully',
@@ -374,11 +437,22 @@ export default {
             })
             .catch(err => console.log(err))
         })
-        return dataLinks
       }
     },
-    // Search Subcategory
+    searchProductsforBundle(query) {
+      if (query !== '' && query.length >= 3) {
+        this.loading = true
+        this.SearchForm.name = query
+        searchProducts(this.SearchForm).then(response => {
+          this.listProducts = response.data.docs
+          console.log(this.listProducts)
+        })
+      } else {
+        this.listProducts = []
+      }
+    },
     searchSubcategory(query) {
+
       if (query !== '' && query.length >= 3) {
         this.loading = true
         getSelectedSubcategory(query).then(response => {
@@ -388,7 +462,6 @@ export default {
         this.listSubcategories = []
       }
     },
-    // Event for image selection
     onSelectImage: function (data) {
       this.imageSelected = data
       this.dataImages.filter((selected, index) => {
@@ -402,9 +475,6 @@ export default {
     submitForm(ProductsForm) {
       this.$refs[ProductsForm].validate(valid => {
         if (valid) {
-          const images = [...new Set(this.ProductsForm.data.images)]
-          this.ProductsForm.data.images = images
-
           this.ProductsForm.data.images.forEach((value, index) => {
             if (this.selectedThumbnail === index) {
               this.ProductsForm.data.thumbnail = value
@@ -420,8 +490,10 @@ export default {
             duration: 2000
           })
 
-          updateProduct(this.ProductsForm, this.productUrl).then(
-            response => { }
+          addProduct(this.ProductsForm).then(
+            this.$router.push({ path: '/catalog/products' }),
+
+            console.log(this.ProductsForm)
           )
 
           // that.submitUpload();
@@ -432,10 +504,19 @@ export default {
       })
     },
     resetForm(formName) {
-      this.$refs[formName].resetFields()
-      while (this.ProductsForm.attributes.length > 0) {
-        this.ProductsForm.attributes.pop()
-      }
+
+      let uploadedImages = []
+      this.ProductsForm.data.images.forEach(value => {
+        let deleteImages = value.split('/')
+        uploadedImages.push(deleteImages[7] + "/" + deleteImages[8].split('.')[0])
+
+
+      })
+      deleteImages(uploadedImages).then(response => {
+        console.log(response.data)
+      })
+      Object.assign(this.$data, this.$options.data.call(this));
+
     },
 
     // get Subcategory Attributes
@@ -443,8 +524,6 @@ export default {
       const obj = this.listSubcategories.filter(attributes => {
         return attributes.subcategory === this.ProductsForm.data.subcategory
       })
-      this.ProductsForm.data.specificProperties = []
-
       this.attributesList = obj[0].attributes
       this.attributesList.forEach((obj, index) => {
         this.ProductsForm.data.specificProperties[index] = {
@@ -458,11 +537,38 @@ export default {
 </script>
 <style scoped>
 @import "./style.scss";
-
 @media only screen and (min-width: 990px) {
   .box-card {
     position: relative;
     left: 50%;
   }
+}
+.tag {
+  font-size: 17px;
+  margin: 1%;
+  display: inherit;
+  flex-wrap: wrap;
+}
+.input-product {
+  -webkit-appearance: none;
+  background-color: #fff;
+  background-image: none;
+  border-radius: 4px;
+  border: 1px solid #dcdfe6;
+
+  color: #606266;
+  font-size: inherit;
+  text-align: center;
+  outline: 0;
+  width: 60%;
+  display: inline-flex;
+
+  -webkit-transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+  transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 </style>

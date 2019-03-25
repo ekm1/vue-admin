@@ -279,6 +279,10 @@ export default {
         {
           value: 'Boolean',
           label: 'Boolean'
+        },
+        {
+          value: 'List',
+          label: 'List'
         }
       ],
       tableKey: 0,

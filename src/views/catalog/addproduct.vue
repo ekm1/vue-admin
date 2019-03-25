@@ -89,7 +89,6 @@
                 accept="image/x-png, image/jpeg"
                 @change="onFileChange"
               >
-              <el-button type="primary" plain @click="submitUpload">Upload</el-button>
             </el-form-item>
             <el-form-item/>
             <el-form-item
@@ -118,6 +117,23 @@
                 min="0"
                 step="1"
               >
+              <el-select
+                v-if="attribute.fieldType === 'List'"
+                v-model="selectable"
+                multiple
+                filterable
+                @change="makeSelectable(selectable,index)"
+                allow-create
+                default-first-option
+                placeholder="Choose add your list"
+              >
+                <el-option
+                  v-for="item in selectableOptions"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                ></el-option>
+              </el-select>
             </el-form-item>
 
             <el-form-item>
@@ -136,10 +152,11 @@
 </template>
 
 <script>
-import { getSelectedSubcategory, addProduct } from '@/api/products'
+import { getSelectedSubcategory, addProduct, deleteImages } from '@/api/products'
 import axios from 'axios'
 import VueSelectImage from '@/components/vue-select-image'
 import waves from '@/directive/waves' // Waves directive
+
 
 export default {
   name: 'AddProduct',
@@ -165,6 +182,7 @@ export default {
         active: true,
         isAuction: false,
         date: Date.now(),
+        isBundle: false,
         data: {
           name: '',
           category: '',
@@ -178,6 +196,8 @@ export default {
           stock_status: false
         }
       },
+      selectableOptions: [],
+      selectable: '',
       // Images Delcaration
       dataImages: [],
       url: [],
@@ -230,7 +250,9 @@ export default {
       } else return false
     }
   },
-  created() {},
+
+
+
   methods: {
     // Get category based on Subcategory
     getCategory(value) {
@@ -244,6 +266,8 @@ export default {
 
     // Show images thumbnails and remove duplicates
     onFileChange(e) {
+      console.log(this.selectableOptions)
+
       this.filesToUpload = e.target.files
       const file = e.target.files
 
@@ -275,6 +299,7 @@ export default {
         (thing, index, self) =>
           index === self.findIndex(t => t.alt === thing.alt)
       )
+      this.submitUpload()
     },
 
     // Manipulate Stock Status via stock value
@@ -285,6 +310,10 @@ export default {
         this.ProductsForm.data.stock_status = true
       }
     },
+    makeSelectable(value, index) {
+      this.ProductsForm.data.specificProperties[index].fieldValue = value
+    },
+
     // Reset Modal form fields
     resetTemp() {
       const reset = (this.temp = {
@@ -309,7 +338,7 @@ export default {
       while (i < files.length) {
         entry1 = files[i]
         if (
-          this.dataImages.some(function(entry2) {
+          this.dataImages.some(function (entry2) {
             return entry1.name === entry2.alt
           })
         ) {
@@ -368,7 +397,7 @@ export default {
         this.listSubcategories = []
       }
     },
-    onSelectImage: function(data) {
+    onSelectImage: function (data) {
       this.imageSelected = data
       this.dataImages.filter((selected, index) => {
         if (index === data.id) {
@@ -410,10 +439,19 @@ export default {
       })
     },
     resetForm(formName) {
-      this.$refs[formName].resetFields()
-      while (this.ProductsForm.attributes.length > 0) {
-        this.ProductsForm.attributes.pop()
-      }
+
+      let uploadedImages = []
+      this.ProductsForm.data.images.forEach(value => {
+        let deleteImages = value.split('/')
+        uploadedImages.push(deleteImages[7] + "/" + deleteImages[8].split('.')[0])
+
+
+      })
+      deleteImages(uploadedImages).then(response => {
+        console.log(response.data)
+      })
+      Object.assign(this.$data, this.$options.data.call(this));
+
     },
 
     // get Subcategory Attributes
@@ -433,92 +471,7 @@ export default {
 }
 </script>
 <style scoped>
-input[type="file"] {
-  display: none;
-}
-
-.upload-image {
-  width: 50%;
-  height: 40%;
-}
-.test {
-  display: contents;
-}
-.custom-file-upload {
-  cursor: -webkit-grabbing;
-  cursor: grabbing;
-}
-.flipswitch {
-  position: relative;
-  background: white;
-  width: 100px;
-  height: 40px;
-  -webkit-appearance: initial;
-  border-radius: 3px;
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-  outline: none;
-  font-size: 14px;
-  font-family: Trebuchet, Arial, sans-serif;
-  font-weight: bold;
-  cursor: pointer;
-  border: 1px solid #ddd;
-}
-
-.flipswitch:after {
-  position: absolute;
-  top: 5%;
-  display: block;
-  line-height: 32px;
-  width: 45%;
-  height: 90%;
-  background: #fff;
-  box-sizing: border-box;
-  text-align: center;
-  transition: all 0.3s ease-in 0s;
-  color: black;
-  border: #888 1px solid;
-  border-radius: 3px;
-}
-
-.flipswitch:after {
-  left: 2%;
-  content: "NO";
-}
-
-.flipswitch:checked:after {
-  left: 53%;
-  content: "YES";
-}
-.input-number {
-  -webkit-appearance: none;
-  background-color: #fff;
-  background-image: none;
-  border-radius: 4px;
-  border: 1px solid #dcdfe6;
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-  color: #606266;
-  display: inline-block;
-  font-size: inherit;
-  height: 40px;
-  text-align: center;
-  line-height: 40px;
-  outline: 0;
-  padding: 0 15px;
-  -webkit-transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
-  transition: border-color 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
-  width: 20%;
-}
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-.header-text {
-  font-size: 130%;
-  font-weight: 600;
-  text-align: center;
-}
+@import "./style.scss";
 
 @media only screen and (min-width: 990px) {
   .box-card {

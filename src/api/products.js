@@ -76,3 +76,15 @@ export function changeProductStatus(data, status) {
     method: 'get'
   })
 }
+
+export function deleteImages(imagesId) {
+  let data = {
+    imagesId: imagesId
+  }
+  console.log(data)
+  return request({
+    url: '/api/delete',
+    method: 'post',
+    data
+  })
+}
