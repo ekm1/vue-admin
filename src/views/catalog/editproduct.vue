@@ -12,9 +12,7 @@
                   style="float: right"
                   type="primary"
                   icon="el-icon-back"
-                >
-                  {{ $t("Back") }}
-                </el-button>
+                >{{ $t("Back") }}</el-button>
               </router-link>
             </div>
           </div>
@@ -26,13 +24,13 @@
             class="demo-dynamic"
           >
             <el-form-item prop="category" label="Product Name">
-              <el-input v-model="ProductsForm.data.name" />
+              <el-input v-model="ProductsForm.data.name"/>
             </el-form-item>
             <el-form-item prop="description" label="Description">
-              <el-input v-model="ProductsForm.data.description" type="textarea" rows="5" />
+              <el-input v-model="ProductsForm.data.description" type="textarea" rows="5"/>
             </el-form-item>
             <el-form-item prop="price" label="Price">
-              <el-input-number v-model="ProductsForm.data.price" :precision="2" :min="0" :step="1" />
+              <el-input-number v-model="ProductsForm.data.price" :precision="2" :min="0" :step="1"/>
             </el-form-item>
             <el-form-item prop="subcategory" label="Auction">
               <el-switch
@@ -61,7 +59,7 @@
                 </el-select>
               </el-col>
               <el-col :span="11">
-                <el-input v-model="ProductsForm.data.category" :disabled="true" />
+                <el-input v-model="ProductsForm.data.category" :disabled="true"/>
               </el-col>
             </el-form-item>
             <el-form-item prop="subcategory" label="Stock">
@@ -83,7 +81,7 @@
                 />
               </el-container>
               <label for="file-input" class="custom-file-upload">
-                <i class="el-icon-upload" /> Choose Files
+                <i class="el-icon-upload"/> Choose Files
               </label>
               <input
                 id="file-input"
@@ -92,11 +90,9 @@
                 accept="image/x-png, image/jpeg"
                 @change="onFileChange"
               >
-              <el-button type="primary" plain @click="submitUpload">
-                Upload
-              </el-button>
+              <el-button type="primary" plain @click="submitUpload">Upload</el-button>
             </el-form-item>
-            <el-form-item />
+            <el-form-item/>
             <el-form-item
               v-for="(attribute, index) in attributesList"
               :key="attribute._id"
@@ -125,12 +121,8 @@
               >
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="submitForm('ProductsForm')">
-                Submit
-              </el-button>
-              <el-button @click="resetForm('ProductsForm')">
-                Reset
-              </el-button>
+              <el-button type="primary" @click="submitForm('ProductsForm')">Submit</el-button>
+              <el-button @click="resetForm('ProductsForm')">Reset</el-button>
             </el-form-item>
           </el-form>
         </el-card>
@@ -140,27 +132,27 @@
 </template>
 
 <script>
-import { getSelectedSubcategory, updateProduct } from '@/api/products'
-import axios from 'axios'
-import store from '../../store'
-import VueSelectImage from '@/components/vue-select-image'
-import waves from '@/directive/waves' // Waves directive
+import { getSelectedSubcategory, updateProduct } from "@/api/products";
+import axios from "axios";
+import store from "../../store";
+import VueSelectImage from "@/components/vue-select-image";
+import waves from "@/directive/waves"; // Waves directive
 
 export default {
-  name: 'EditProduct',
+  name: "EditProduct",
   components: { VueSelectImage },
   directives: { waves },
   filters: {
     statusFilter(status) {
       const statusMap = {
-        published: 'success',
-        draft: 'info',
-        deleted: 'danger'
-      }
-      return statusMap[status]
+        published: "success",
+        draft: "info",
+        deleted: "danger"
+      };
+      return statusMap[status];
     },
     typeFilter(type) {
-      return true
+      return true;
     }
   },
   data() {
@@ -171,11 +163,11 @@ export default {
         isAuction: false,
         data: {
           name: undefined,
-          category: '',
-          subcategory: '',
-          description: '',
+          category: "",
+          subcategory: "",
+          description: "",
           images: [],
-          thumbnail: '',
+          thumbnail: "",
           price: 1,
           stock_level: 0,
           specificProperties: [],
@@ -203,42 +195,42 @@ export default {
         status: true
       },
       urlObject: {}
-    }
+    };
   },
   watch: {
     dataImages: function() {
-      var i = 0
-      var entry1
+      var i = 0;
+      var entry1;
       while (i < this.ProductsForm.data.images.length) {
-        entry1 = this.ProductsForm.data.images[i]
+        entry1 = this.ProductsForm.data.images[i];
         if (
           this.dataImages.some(function(entry2) {
-            return entry1 === entry2.src
+            return entry1 === entry2.src;
           })
         ) {
           // Found, progress to next
-          ++i
+          ++i;
         } else {
           // Not found, remove
-          this.ProductsForm.data.images.splice(i, 1)
+          this.ProductsForm.data.images.splice(i, 1);
         }
       }
     }
   },
   created() {
     if (store.state.products.productDetails.length <= 0) {
-      this.$router.push({ path: '/catalog/products' })
+      this.$router.push({ path: "/catalog/products" });
     } else {
-      this.ProductsForm = store.state.products.productDetails
-      this.attributesList = this.ProductsForm.data.specificProperties
-      console.log(this.attributesList)
+      this.ProductsForm = store.state.products.productDetails;
+      this.attributesList = this.ProductsForm.data.specificProperties;
+      console.log(this.attributesList);
 
       this.ProductsForm.data.images.forEach((image, index) => {
-        this.dataImages[index] = { id: index, src: image }
+        this.dataImages[index] = { id: index, src: image };
         // if (this.ProductsForm.data.thumbnail === image) {
         //   this.onSelectImage(this.dataImages[index]);
         // }
-      })
+      });
     }
   },
 
@@ -246,33 +238,33 @@ export default {
     // Get category based on Subcategory
     getCategory(value) {
       const obj = this.listSubcategories.filter(category => {
-        return category.subcategory === value
-      })
+        return category.subcategory === value;
+      });
 
-      this.getSubcategoryAttributes()
+      this.getSubcategoryAttributes();
 
-      this.ProductsForm.data.category = obj[0].category
+      this.ProductsForm.data.category = obj[0].category;
     },
     // Show images thumbnails and remove duplicates
     onFileChange(e) {
-      this.filesToUpload = e.target.files
-      const file = e.target.files
+      this.filesToUpload = e.target.files;
+      const file = e.target.files;
 
       Object.entries(file).forEach(entry => {
         // get the name of the file, will be used as a key
-        const ent = entry[1].name
+        const ent = entry[1].name;
 
         // push to an object all the data
-        this.urlObject[ent] = URL.createObjectURL(entry[1])
-      })
+        this.urlObject[ent] = URL.createObjectURL(entry[1]);
+      });
 
-      this.url = new Set()
+      this.url = new Set();
 
       Object.entries(this.urlObject).forEach((el, index) => {
-        this.url.add({ id: index, value: el[1], name: el[0] })
-      })
+        this.url.add({ id: index, value: el[1], name: el[0] });
+      });
 
-      this.images = [...this.url]
+      this.images = [...this.url];
 
       this.images.forEach((value, index) => {
         if (this.ProductsForm.data.images.length >= 0) {
@@ -280,23 +272,23 @@ export default {
             id: index,
             src: value.value,
             alt: value.name
-          })
+          });
         } else {
           this.dataImages.push({
             id: this.ProductsForm.data.images.length + 1,
             src: value.value,
             alt: value.name
-          })
+          });
         }
-      })
+      });
     },
 
     // Manipulate Stock Status via stock value
     stockChanger() {
       if (this.ProductsForm.data.stock_level === 0) {
-        this.ProductsForm.data.stock_status = false
+        this.ProductsForm.data.stock_status = false;
       } else {
-        this.ProductsForm.data.stock_status = true
+        this.ProductsForm.data.stock_status = true;
       }
     },
     // Reset Modal form fields
@@ -304,165 +296,165 @@ export default {
       const reset = (this.temp = {
         attributes: [
           {
-            name: '',
+            name: "",
             required: true
           }
         ],
-        category: '',
+        category: "",
         active: true,
-        subcategory: '',
+        subcategory: "",
         price: 1
-      })
-      return reset
+      });
+      return reset;
     },
     async submitUpload() {
       this.ProductsForm.data.specificProperties.forEach((value, index) => {
-        if (value.fieldType === 'Number') {
+        if (value.fieldType === "Number") {
           this.ProductsForm.data.specificProperties[
             index
-          ].fieldValue = parseInt(value.fieldValue)
+          ].fieldValue = parseInt(value.fieldValue);
         }
-      })
+      });
 
-      const files = [...this.filesToUpload]
+      const files = [...this.filesToUpload];
 
       // Remove elements if they dont exist in dataImages
-      let dataLinks
+      let dataLinks;
       if (!files) {
         this.$notify.error({
-          title: 'Error',
-          message: 'Upload Failed',
+          title: "Error",
+          message: "Upload Failed",
           duration: 2000
-        })
+        });
       } else {
         if (files.length >= 0) {
-          var i = 0
-          var entry1
+          var i = 0;
+          var entry1;
           while (i < files.length) {
-            entry1 = files[i]
+            entry1 = files[i];
             if (
               this.dataImages.some(function(entry2) {
-                return entry1.name === entry2.alt
+                return entry1.name === entry2.alt;
               })
             ) {
               // Found, progress to next
-              ++i
+              ++i;
             } else {
               // Not found, remove
-              files.splice(i, 1)
+              files.splice(i, 1);
             }
           }
         }
         Object.entries(files).forEach(element => {
-          const data = new FormData()
-          data.append('image', element[1])
+          const data = new FormData();
+          data.append("image", element[1]);
 
           const config = {
             header: {
-              'Content-Type': 'multipart/form-data'
+              "Content-Type": "multipart/form-data"
             }
-          }
+          };
 
           dataLinks = axios
-            .post('http://localhost:3000/api/images', data, config)
+            .post("http://localhost:3000/api/images", data, config)
             .then(response => {
-              this.mediaLinks.push(response.data)
+              this.mediaLinks.push(response.data);
 
               this.mediaLinks.forEach(image => {
-                this.ProductsForm.data.images.push(image)
-              })
+                this.ProductsForm.data.images.push(image);
+              });
               this.$notify({
-                title: 'success',
-                message: 'Uploaded Successfully',
-                type: 'success',
+                title: "success",
+                message: "Uploaded Successfully",
+                type: "success",
                 duration: 2000
-              })
+              });
 
-              return this.mediaLinks
+              return this.mediaLinks;
             })
-            .catch(err => console.log(err))
-        })
-        return dataLinks
+            .catch(err => console.log(err));
+        });
+        return dataLinks;
       }
     },
     // Search Subcategory
     searchSubcategory(query) {
-      if (query !== '' && query.length >= 3) {
-        this.loading = true
+      if (query !== "" && query.length >= 3) {
+        this.loading = true;
         getSelectedSubcategory(query).then(response => {
-          this.listSubcategories = response.data
-        })
+          this.listSubcategories = response.data;
+        });
       } else {
-        this.listSubcategories = []
+        this.listSubcategories = [];
       }
     },
     // Event for image selection
     onSelectImage: function(data) {
-      this.imageSelected = data
+      this.imageSelected = data;
       this.dataImages.filter((selected, index) => {
         if (index === data.id) {
-          this.selectedThumbnail = selected.id
+          this.selectedThumbnail = selected.id;
         }
-      })
+      });
     },
 
     // Submit Dialog form for Adding
     submitForm(ProductsForm) {
       this.$refs[ProductsForm].validate(valid => {
         if (valid) {
-          const images = [...new Set(this.ProductsForm.data.images)]
-          this.ProductsForm.data.images = images
+          const images = [...new Set(this.ProductsForm.data.images)];
+          this.ProductsForm.data.images = images;
 
           this.ProductsForm.data.images.forEach((value, index) => {
             if (this.selectedThumbnail === index) {
-              this.ProductsForm.data.thumbnail = value
+              this.ProductsForm.data.thumbnail = value;
             } else {
-              this.ProductsForm.data.thumbnail = this.ProductsForm.data.images[0]
+              this.ProductsForm.data.thumbnail = this.ProductsForm.data.images[0];
             }
-          })
+          });
 
           this.$notify({
-            title: 'success',
-            message: 'Submit Successfully',
-            type: 'success',
+            title: "success",
+            message: "Submit Successfully",
+            type: "success",
             duration: 2000
-          })
+          });
 
           updateProduct(this.ProductsForm, this.productUrl).then(
-            response => { }
-          )
+            response => {}
+          );
 
           // that.submitUpload();
         } else {
-          console.log('error submit!!')
-          return false
+          console.log("error submit!!");
+          return false;
         }
-      })
+      });
     },
     resetForm(formName) {
-      this.$refs[formName].resetFields()
+      this.$refs[formName].resetFields();
       while (this.ProductsForm.attributes.length > 0) {
-        this.ProductsForm.attributes.pop()
+        this.ProductsForm.attributes.pop();
       }
     },
 
     // get Subcategory Attributes
     getSubcategoryAttributes() {
       const obj = this.listSubcategories.filter(attributes => {
-        return attributes.subcategory === this.ProductsForm.data.subcategory
-      })
-      this.ProductsForm.data.specificProperties = []
+        return attributes.subcategory === this.ProductsForm.data.subcategory;
+      });
+      this.ProductsForm.data.specificProperties = [];
 
-      this.attributesList = obj[0].attributes
+      this.attributesList = obj[0].attributes;
       this.attributesList.forEach((obj, index) => {
         this.ProductsForm.data.specificProperties[index] = {
           name: obj.name,
           fieldType: obj.fieldType
-        }
-      })
+        };
+      });
     }
   }
-}
+};
 </script>
 <style scoped>
 @import "./style.scss";

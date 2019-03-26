@@ -11,32 +11,30 @@
               :width="w"
               :class="rootClass + '__img'"
             >
-            <div class="overlay" />
+            <div class="overlay"/>
             <div class="inside-container">
-              <el-button type="primary" class="button" @click="onSelectImage(dataImage)">
-                Thumbnail
-              </el-button>
-              <el-button type="danger" class="button" @click="onSelectImageDelete(dataImage)">
-                Delete
-              </el-button>
+              <el-button type="primary" class="button" @click="onSelectImage(dataImage)">Thumbnail</el-button>
+              <el-button type="danger" class="button" @click="onSelectImageDelete(dataImage)">Delete</el-button>
             </div>
           </div>
 
           <label v-if="useLabel" :class="rootClass + '__lbl'">{{ dataImage.alt }}</label>
         </div>
 
-        <div
-          v-if="isMultiple"
-          :class="classThumbnailMultiple(dataImage.id)"
-          @click="onSelectMultipleImage(dataImage)"
-        >
-          <img
-            :src="dataImage.src"
-            :alt="dataImage.alt"
-            :height="h"
-            :width="w"
-            :class="rootClass + '__img'"
-          >
+        <div v-if="isMultiple" :class="classThumbnail(singleSelected.id, dataImage.id)">
+          <div class="container">
+            <img
+              :src="dataImage.src"
+              :alt="dataImage.alt"
+              :height="h"
+              :width="w"
+              :class="rootClass + '__img'"
+            >
+            <div class="overlay"/>
+            <div class="inside-container">
+              <el-button type="danger" class="button" @click="onSelectImageDelete(dataImage)">Delete</el-button>
+            </div>
+          </div>
 
           <label v-if="useLabel" :class="rootClass + '__lbl'">{{ dataImage.alt }}</label>
         </div>
@@ -47,7 +45,7 @@
 
 <script>
 export default {
-  name: 'VueSelectImage',
+  name: "VueSelectImage",
   props: {
     dataImages: {
       type: Array,
@@ -67,109 +65,109 @@ export default {
     },
     rootClass: {
       type: String,
-      default: 'vue-select-image'
+      default: "vue-select-image"
     },
     activeClass: {
       type: String,
-      default: '--selected'
+      default: "--selected"
     },
     h: {
       type: String,
-      default: 'auto'
+      default: "auto"
     },
     w: {
       type: String,
-      default: 'auto'
+      default: "auto"
     }
   },
   data() {
     return {
       singleSelected: {
-        id: ''
+        id: ""
       },
       multipleSelected: []
-    }
+    };
   },
   computed: {
     dataImagesLocal: function() {
-      return this.dataImages || []
+      return this.dataImages || [];
     }
   },
   mounted() {
     // set initial selectedImage
-    this.setInitialSelection()
+    this.setInitialSelection();
   },
   methods: {
     classThumbnail(selectedId, imageId) {
-      const baseClass = `${this.rootClass}__thumbnail`
+      const baseClass = `${this.rootClass}__thumbnail`;
       if (selectedId === imageId) {
-        return `${baseClass} ${baseClass}${this.activeClass}`
+        return `${baseClass} ${baseClass}${this.activeClass}`;
       }
-      return `${baseClass}`
+      return `${baseClass}`;
     },
     classThumbnailMultiple(id) {
-      const baseClass = `${this.rootClass}__thumbnail`
-      const baseMultipleClass = `${baseClass} is--multiple`
+      const baseClass = `${this.rootClass}__thumbnail`;
+      const baseMultipleClass = `${baseClass} is--multiple`;
       if (this.isExistInArray(id)) {
-        return `${baseMultipleClass} ${baseClass}${this.activeClass}`
+        return `${baseMultipleClass} ${baseClass}${this.activeClass}`;
       }
-      return `${baseMultipleClass}`
+      return `${baseMultipleClass}`;
     },
     onSelectImage(objectImage) {
-      this.singleSelected = Object.assign({}, this.singleSelected, objectImage)
-      this.$emit('onselectimage', objectImage)
+      this.singleSelected = Object.assign({}, this.singleSelected, objectImage);
+      this.$emit("onselectimage", objectImage);
     },
     onSelectImageDelete(objectImage) {
-      this.removeItem(this.dataImages, objectImage)
+      this.removeItem(this.dataImages, objectImage);
     },
     isExistInArray(id) {
       return this.multipleSelected.find(item => {
-        return id === item.id
-      })
+        return id === item.id;
+      });
     },
     removeItem(array, item) {
       for (var i in array) {
         if (array[i] === item) {
-          array.splice(i, 1)
-          break
+          array.splice(i, 1);
+          break;
         }
       }
     },
     removeFromSingleSelected() {
-      this.singleSelected = {}
-      this.$emit('onselectimage', {})
+      this.singleSelected = {};
+      this.$emit("onselectimage", {});
     },
     removeFromMultipleSelected(id, dontFireEmit) {
       this.multipleSelected = this.multipleSelected.filter(item => {
-        return id !== item.id
-      })
+        return id !== item.id;
+      });
       if (!dontFireEmit) {
-        this.$emit('onselectmultipleimage', this.multipleSelected)
+        this.$emit("onselectmultipleimage", this.multipleSelected);
       }
     },
     resetMultipleSelection() {
-      this.multipleSelected = []
+      this.multipleSelected = [];
     },
     onSelectMultipleImage(objectImage) {
       if (!this.isExistInArray(objectImage.id)) {
-        this.multipleSelected.push(objectImage)
+        this.multipleSelected.push(objectImage);
       } else {
-        this.removeFromMultipleSelected(objectImage.id, true)
+        this.removeFromMultipleSelected(objectImage.id, true);
       }
 
-      this.$emit('onselectmultipleimage', this.multipleSelected)
+      this.$emit("onselectmultipleimage", this.multipleSelected);
     },
     setInitialSelection() {
       if (this.selectedImages) {
         if (!this.isMultiple && this.selectedImages.length === 1) {
-          this.singleSelected = Object.assign({}, this.selectedImages[0])
+          this.singleSelected = Object.assign({}, this.selectedImages[0]);
         } else {
-          this.multipleSelected = [].concat(this.selectedImages)
+          this.multipleSelected = [].concat(this.selectedImages);
         }
       }
     }
   }
-}
+};
 </script>
 
 <style scoped>

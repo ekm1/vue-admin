@@ -13,10 +13,10 @@
             class="demo-storeForm"
           >
             <el-form-item label="Store Title" prop="name">
-              <el-input v-model="storeForm.storeName" />
+              <el-input v-model="storeForm.storeName"/>
             </el-form-item>
             <el-form-item label="Store Description" prop="desc">
-              <el-input v-model="storeForm.storeDescription" type="textarea" />
+              <el-input v-model="storeForm.storeDescription" type="textarea"/>
             </el-form-item>
             <el-form-item>
               <el-container id="preview" class="images-thumbnail">
@@ -24,11 +24,12 @@
                   ref="single-select-image"
                   :data-images="dataImages"
                   class="test"
+                  :is-multiple="true"
                   @onselectimage="onSelectImage"
                 />
               </el-container>
               <label for="file-input" class="custom-file-upload">
-                <i class="el-icon-upload" /> Choose Files
+                <i class="el-icon-upload"/> Choose Files
               </label>
               <input
                 id="file-input"
@@ -37,18 +38,12 @@
                 accept="image/x-png, image/jpeg"
                 @change="onFileChange"
               >
-              <el-button type="primary" plain @click="submitUpload">
-                Upload
-              </el-button>
+              <el-button type="primary" plain @click="submitUpload">Upload</el-button>
             </el-form-item>
 
             <el-form-item>
-              <el-button type="primary" @click="submitForm('storeForm')">
-                {{ buttonName }}
-              </el-button>
-              <el-button @click="resetForm('storeForm')">
-                Reset
-              </el-button>
+              <el-button type="primary" @click="submitForm('storeForm')">{{ buttonName }}</el-button>
+              <el-button @click="resetForm('storeForm')">Reset</el-button>
             </el-form-item>
           </el-form>
         </el-card>
@@ -68,7 +63,7 @@
                 />
                 <div class="hitbox" @click="selectedStore(store)">
                   <h3>{{ store.storeName }}</h3>
-                  <svg-icon icon-class="edit" class="edit" />
+                  <svg-icon icon-class="edit" class="edit"/>
 
                   <p>{{ store.storeDescription }}</p>
                 </div>
@@ -95,19 +90,19 @@ import {
   changeSelectedSettings,
   UpdateSettings,
   deleteStoreSettings
-} from '@/api/store'
-import VueSelectImage from '@/components/vue-select-image'
-import axios from 'axios'
+} from "@/api/store";
+import VueSelectImage from "@/components/vue-select-image";
+import axios from "axios";
 
 export default {
-  name: 'Settings',
+  name: "Settings",
   components: { VueSelectImage },
   data() {
     return {
       storeForm: {
-        storeName: '',
-        storeDescription: '',
-        storeImage: '',
+        storeName: "",
+        storeDescription: "",
+        storeImage: "",
         active: false
       },
       changeActive: { id: null },
@@ -115,152 +110,160 @@ export default {
       dataImages: [],
       savedSettings: [],
       selected: false,
-      buttonName: 'Create Store'
-    }
+      buttonName: "Create Store"
+    };
   },
   created() {
-    this.getList()
+    this.getList();
+  },
+  watch: {
+    dataImages: function() {
+      if (this.dataImages.length <= 0) {
+        this.storeForm.storeImage = "";
+        console.log(this.storeForm);
+      }
+    }
   },
   methods: {
     submitForm(formName) {
       this.$refs[formName].validate(valid => {
         if (valid && this.selected === false) {
-          addStore(this.storeForm).then()
+          addStore(this.storeForm).then();
         } else if (valid && this.selected === true) {
-          UpdateSettings(this.storeForm).then()
+          UpdateSettings(this.storeForm).then();
         } else {
-          console.log('error submit!!')
-          return false
+          console.log("error submit!!");
+          return false;
         }
-        this.getList()
-      })
+        this.getList();
+      });
     },
     deleteSettings(store) {
       if (store.active === true) {
-        store.softDelete = false
+        store.softDelete = false;
       } else {
-        store.softDelete = true
+        store.softDelete = true;
         deleteStoreSettings(store.softDelete, store._id).then(response => {
-          this.getList()
-        })
+          this.getList();
+        });
       }
     },
     getList() {
       getAllStoreSettings(this.softDelete).then(response => {
-        this.savedSettings = response.data
-      })
+        this.savedSettings = response.data;
+      });
     },
 
     checkCreateOrUpdate() {
       if (this.selected === true) {
-        this.buttonName = 'Update Store'
+        this.buttonName = "Update Store";
       } else {
-        this.buttonName = 'Create Store'
+        this.buttonName = "Create Store";
       }
     },
     // Switch form infos
     selectedStore(store) {
-      this.selected = true
-      this.checkCreateOrUpdate()
-      this.storeForm = store
-      this.dataImages = []
+      this.selected = true;
+      this.checkCreateOrUpdate();
+      this.storeForm = store;
+      this.dataImages = [];
 
-      this.dataImages.push({ id: 0, src: store.storeImage })
+      this.dataImages.push({ id: 0, src: store.storeImage });
     },
     resetForm(formName) {
-      this.selected = false
-      this.checkCreateOrUpdate()
+      this.selected = false;
+      this.checkCreateOrUpdate();
 
-      this.storeForm = {}
-      this.dataImages = []
+      this.storeForm = {};
+      this.dataImages = [];
     },
     onFileChange(e) {
-      this.filesToUpload = e.target.files
-      const file = e.target.files
+      this.filesToUpload = e.target.files;
+      const file = e.target.files;
 
       // get the name of the file, will be used as a key
       if (file[0]) {
-        this.objectURL = URL.createObjectURL(file[0])
-        this.dataImages = []
+        this.objectURL = URL.createObjectURL(file[0]);
+        this.dataImages = [];
         this.dataImages.push({
           id: 0,
           src: this.objectURL,
           alt: file[0].name
-        })
+        });
       }
     },
     checkSwitch(id) {
-      this.changeActive.id = id._id
+      this.changeActive.id = id._id;
       changeSelectedSettings(this.changeActive).then(response => {
-        this.getList()
-      })
+        this.getList();
+      });
     },
 
     onSelectImage: function(data) {
-      this.imageSelected = data
+      this.imageSelected = data;
       this.dataImages.filter((selected, index) => {
         if (index === data.id) {
-          this.selectedThumbnail = selected.id
+          this.selectedThumbnail = selected.id;
         }
-      })
+      });
     },
     submitUpload() {
-      const files = this.filesToUpload
+      const files = this.filesToUpload;
       // Remove elements if they dont exist in dataImages
-      var i = 0
-      var entry1
+      var i = 0;
+      var entry1;
       while (i < files.length) {
-        entry1 = files[i]
+        entry1 = files[i];
         if (
           this.dataImages.some(function(entry2) {
-            return entry1.name === entry2.alt
+            return entry1.name === entry2.alt;
           })
         ) {
           // Found, progress to next
-          ++i
+          ++i;
         } else {
           // Not found, remove
-          files.splice(i, 1)
+          files.splice(i, 1);
         }
       }
 
       if (!files) {
         this.$notify.error({
-          title: 'Error',
-          message: 'Upload Failed',
+          title: "Error",
+          message: "Upload Failed",
           duration: 2000
-        })
+        });
       } else {
         Object.entries(files).forEach(element => {
-          const data = new FormData()
-          data.append('image', element[1])
+          const data = new FormData();
+          data.append("image", element[1]);
 
           const config = {
             header: {
-              'Content-Type': 'multipart/form-data'
+              "Content-Type": "multipart/form-data"
             }
-          }
+          };
 
           axios
-            .post('http://localhost:3000/api/images', data, config)
+            .post("http://localhost:3000/api/images", data, config)
             .then(response => {
-              this.storeForm.storeImage = response.data
+              this.storeForm.storeImage = response.data;
 
               this.$notify({
-                title: 'success',
-                message: 'Uploaded Successfully',
-                type: 'success',
+                title: "success",
+                message: "Uploaded Successfully",
+                type: "success",
                 duration: 2000
-              })
+              });
 
-              return this.mediaLinks
+              return this.mediaLinks;
             })
-            .catch(err => console.log(err))
-        })
+            .catch(err => console.log(err));
+        });
       }
     }
   }
-}
+};
 </script>
 
 <style rel="stylesheet/scss" lang="scss" scoped>
