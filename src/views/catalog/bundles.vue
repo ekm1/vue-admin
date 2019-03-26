@@ -1,20 +1,11 @@
 <template>
   <div id="center" class="app-container">
     <el-row :gutter="10" type="flex">
-      <el-col :xs="24" :sm="24" :md="12" :lg="12" :xl="12">
+      <el-col :xs="12" :sm="12" :md="16" :lg="12" :xl="12">
         <el-card class="box-card">
           <div slot="header" class="clearfix">
-            <span class="header-text">Add Product</span>
-            <div class="filter-container">
-              <router-link :to="{ path: '/catalog/products' }">
-                <el-button
-                  class="filter-item"
-                  style="float: right"
-                  type="primary"
-                  icon="el-icon-back"
-                >{{ $t("Back") }}</el-button>
-              </router-link>
-            </div>
+            <span class="header-text">Create Bundles</span>
+            <div class="filter-container" />
           </div>
           <el-form
             ref="ProductsForm"
@@ -42,20 +33,26 @@
                 </el-select>
               </el-col>
               <el-col :span="11">
-                <el-tag v-for="tag in tagProducts" class="tag" :key="tag" closable>
-                  {{tag}}
-                  <input type="number" class="input-product" min="0" step="1">
+                <el-tag v-for="(tag,index) in tagProducts" :key="tag" class="tag" closable>
+                  {{ tag }}
+                  <input
+                    v-model="ProductsForm.data.products_items[index].productQuantity"
+                    type="number"
+                    class="input-product"
+                    min="0"
+                    step="1"
+                  >
                 </el-tag>
               </el-col>
             </el-form-item>
-            <el-form-item prop="category" label="Product Name">
-              <el-input v-model="ProductsForm.data.name"/>
+            <el-form-item prop="category" label="Bundle Name">
+              <el-input v-model="ProductsForm.data.name" />
             </el-form-item>
             <el-form-item prop="description" label="Description">
-              <el-input v-model="ProductsForm.data.description" type="textarea" rows="5"/>
+              <el-input v-model="ProductsForm.data.description" type="textarea" rows="5" />
             </el-form-item>
             <el-form-item prop="price" label="Price">
-              <el-input-number v-model="ProductsForm.data.price" :precision="2" :min="0" :step="1"/>
+              <el-input-number v-model="ProductsForm.data.price" :precision="2" :min="0" :step="1" />
             </el-form-item>
             <el-form-item prop="subcategory" label="Auction">
               <el-switch
@@ -84,7 +81,7 @@
                 </el-select>
               </el-col>
               <el-col :span="11">
-                <el-input v-model="ProductsForm.data.category" :disabled="true"/>
+                <el-input v-model="ProductsForm.data.category" :disabled="true" />
               </el-col>
             </el-form-item>
             <el-form-item prop="subcategory" label="Stock">
@@ -106,7 +103,7 @@
                 />
               </el-container>
               <label for="file-input" class="custom-file-upload">
-                <i class="el-icon-upload"/> Choose Files
+                <i class="el-icon-upload" /> Choose Files
               </label>
               <input
                 id="file-input"
@@ -116,11 +113,11 @@
                 @change="onFileChange"
               >
             </el-form-item>
-            <el-form-item/>
+            <el-form-item />
             <el-form-item
               v-for="(attribute, index) in attributesList"
-              :label="attribute.name "
               :key="attribute._id"
+              :label="attribute.name "
               style="padding-left:15%"
             >
               <el-input
@@ -148,17 +145,17 @@
                 v-model="selectable"
                 multiple
                 filterable
-                @change="makeSelectable(selectable,index)"
                 allow-create
                 default-first-option
                 placeholder="Choose add your list"
+                @change="makeSelectable(selectable,index)"
               >
                 <el-option
                   v-for="item in selectableOptions"
                   :key="item.value"
                   :label="item.label"
                   :value="item.value"
-                ></el-option>
+                />
               </el-select>
             </el-form-item>
 
@@ -167,10 +164,128 @@
                 :disabled="isDisabled"
                 type="primary"
                 @click="submitForm('ProductsForm')"
-              >Submit</el-button>
-              <el-button @click="resetForm('ProductsForm')">Reset</el-button>
+              >
+                Submit
+              </el-button>
+              <el-button @click="resetForm('ProductsForm')">
+                Reset
+              </el-button>
             </el-form-item>
           </el-form>
+        </el-card>
+      </el-col>
+      <el-col :xs="12" :sm="12" :md="8" :lg="12" :xl="16">
+        <el-card>
+          <div slot="header" class="clearfix">
+            <span class="header-text">Bundles List</span>
+            <div class="filter-container" />
+          </div>
+
+          <el-table
+            :key="tableKey"
+            v-loading="listLoading"
+            :data="list"
+            fit
+            class="table-class"
+            align="center"
+            highlight-current-row
+            style="width: 100%;"
+          >
+            <el-table-column :label="$t('Name')" width="150px" align="center">
+              <template slot-scope="scope">
+                <span>{{ scope.row.data.name }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('Description')" width="100px" align="center">
+              <template slot-scope="scope">
+                <span>{{ hideDescription(scope.row.data.description) }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('Price')" width="100px" align="center">
+              <template slot-scope="scope">
+                <span>{{ scope.row.data.price }}$</span>
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('Auction')" width="80px" align="center">
+              <template slot-scope="scope">
+                <span>{{ scope.row.isAuction }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('Category')" width="140px" align="center">
+              <template slot-scope="scope">
+                <span>{{ scope.row.data.category }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('Type')" width="120px" align="center">
+              <template slot-scope="scope">
+                <span>{{ scope.row.data.productType }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('Stock')" width="80px" align="center">
+              <template slot-scope="scope">
+                <span>{{ scope.row.data.stock_level }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('Stock Status')" width="120px" align="center">
+              <template slot-scope="scope">
+                <span>{{ scope.row.data.stock_status }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('table.status')" width="64px" align="center">
+              <template slot-scope="scope">
+                <span>{{ scope.row.active }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column
+              :label="$t('table.actions')"
+              align="center"
+              width="230"
+              class-name="small-padding fixed-width"
+            >
+              <template slot-scope="scope">
+                <router-link :to="{ name: 'Product Details',params:{id:scope.row._id}, }">
+                  <el-button type="info" size="mini" @click="changed(scope.row)">
+                    {{ $t('Open') }}
+                  </el-button>
+                </router-link>
+
+                <el-button
+                  type="primary"
+                  size="mini"
+                  @click="changed(scope.row)"
+                >
+                  {{ $t('table.edit') }}
+                </el-button>
+
+                <el-button
+                  v-if="scope.row.active === true"
+                  size="mini"
+                  type="danger"
+                  @click="handleModifyStatus(scope.row,'deleted')"
+                >
+                  {{ $t('table.delete') }}
+                </el-button>
+
+                <el-button
+                  v-if="scope.row.active ===false"
+                  size="mini"
+                  type="success"
+                  @click="handleModifyStatus(scope.row,'activate')"
+                >
+                  Activate
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+
+          <pagination
+            v-show="total>0"
+            :total="total"
+            :page.sync="getProductsQuery.page"
+            :limit.sync="getProductsQuery.limit"
+            class="pagination"
+            @pagination="getList"
+          />
         </el-card>
       </el-col>
     </el-row>
@@ -178,15 +293,15 @@
 </template>
 
 <script>
-import { getSelectedSubcategory, addProduct, deleteImages, searchProducts } from '@/api/products'
+import { getSelectedSubcategory, addProduct, deleteImages, searchProducts, getAllProducts, getDetails } from '@/api/products'
 import axios from 'axios'
 import VueSelectImage from '@/components/vue-select-image'
 import waves from '@/directive/waves' // Waves directive
-
+import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 
 export default {
   name: 'Bundles',
-  components: { VueSelectImage },
+  components: { VueSelectImage, Pagination },
   directives: { waves },
   filters: {
     statusFilter(status) {
@@ -209,7 +324,6 @@ export default {
         isAuction: false,
         date: Date.now(),
         isBundle: true,
-        products_items: [],
         data: {
           name: '',
           category: '',
@@ -220,7 +334,9 @@ export default {
           price: 1,
           stock_level: 0,
           specificProperties: [],
-          stock_status: false
+          stock_status: false,
+          products_items: []
+
         }
       },
       SearchForm: {
@@ -239,6 +355,8 @@ export default {
       selectedProduct: '',
       tagProducts: [],
       images: [],
+      total: 0,
+      tableKey: 0,
       filesToUpload: undefined,
       mediaLinks: [],
       arrayOfURL: [],
@@ -270,15 +388,14 @@ export default {
       getProductsQuery: {
         page: 1,
         limit: 20,
-        importance: undefined,
         name: undefined,
-        type: undefined,
-        status: true
+        status: true,
+        isBundle: true,
+        sortType: 'desc'
       },
       urlObject: {}
     }
   },
-
   computed: {
     isDisabled() {
       // evaluate whatever you need to determine disabled here...
@@ -288,24 +405,49 @@ export default {
     }
   },
 
-
+  created() {
+    this.getList()
+  },
 
   methods: {
     getProductsBundle(product) {
-
-
       this.listProducts.forEach(value => {
         if (value.data.name === product) {
           this.tagProducts.push(value.data.name)
-          console.log(value)
-          this.ProductsForm.products_items.push({ id: value._id })
+
+          this.ProductsForm.data.products_items.push({ productId: value._id.toString(), productQuantity: null })
         }
+        const set = new Set(this.tagProducts)
+        this.tagProducts = [...set]
 
+        this.ProductsForm.data.products_items = this.uniqueValues(this.ProductsForm.data.products_items, 'productId')
+        console.log(this.ProductsForm.data.products_items)
       })
-
-      console.log(this.ProductsForm.products_items)
-
       this.selectedProduct = ''
+    },
+
+    getList() {
+      if (
+        this.getProductsQuery.name === undefined ||
+        this.getProductsQuery.name === '' ||
+        this.getProductsQuery.name === ' '
+      ) {
+        this.listLoading = true
+        getAllProducts(this.getProductsQuery).then(response => {
+          console.log(response.data)
+          this.list = response.data.docs
+          this.total = response.data.total
+          this.listLoading = false
+        })
+      } else {
+        this.getFilerResults()
+      }
+    },
+    // Clear duplicates
+    uniqueValues(arr, key) {
+      var uniq = {}
+
+      return arr.filter(obj => !uniq[obj.productId] && (uniq[obj.productId] = true))
     },
     // Get category based on Subcategory
     getCategory(value) {
@@ -315,6 +457,12 @@ export default {
       this.getSubcategoryAttributes()
 
       this.ProductsForm.data.category = obj[0].category
+    },
+    // Hide excess description
+    hideDescription(string) {
+      return string.length > length
+        ? string.substring(0, 30 - 3) + '...'
+        : string
     },
 
     // Show images thumbnails and remove duplicates
@@ -383,6 +531,7 @@ export default {
       })
       return reset
     },
+    // Submitting Image Upload
     submitUpload() {
       const files = [...this.filesToUpload]
       // Remove elements if they dont exist in dataImages
@@ -391,7 +540,7 @@ export default {
       while (i < files.length) {
         entry1 = files[i]
         if (
-          this.dataImages.some(function (entry2) {
+          this.dataImages.some(function(entry2) {
             return entry1.name === entry2.alt
           })
         ) {
@@ -439,6 +588,7 @@ export default {
         })
       }
     },
+    // Search Products to add on the bundles
     searchProductsforBundle(query) {
       if (query !== '' && query.length >= 3) {
         this.loading = true
@@ -451,8 +601,8 @@ export default {
         this.listProducts = []
       }
     },
+    // Search Subcategories
     searchSubcategory(query) {
-
       if (query !== '' && query.length >= 3) {
         this.loading = true
         getSelectedSubcategory(query).then(response => {
@@ -462,13 +612,51 @@ export default {
         this.listSubcategories = []
       }
     },
-    onSelectImage: function (data) {
+    onSelectImage: function(data) {
       this.imageSelected = data
       this.dataImages.filter((selected, index) => {
         if (index === data.id) {
           this.selectedThumbnail = selected.id
         }
       })
+    },
+
+    async changed(row) {
+      this.resetDefault()
+
+      const response = await getDetails(row._id)
+
+      response.data.items.forEach(value => {
+        this.tagProducts.push(value.data.name)
+      })
+
+      this.ProductsForm = response.data.body
+
+      console.log(this.ProductsForm)
+    },
+    resetDefault() {
+      this.ProductsForm = {
+        active: true,
+        isAuction: false,
+        date: Date.now(),
+        isBundle: true,
+        data: {
+          name: '',
+          category: '',
+          subcategory: '',
+          description: '',
+          images: [],
+          thumbnail: '',
+          price: 1,
+          stock_level: 0,
+          specificProperties: [],
+          stock_status: false,
+          products_items: []
+
+        }
+      }
+      this.tagProducts = []
+      this.dataImages = []
     },
 
     // Submit Dialog form for Adding
@@ -491,9 +679,7 @@ export default {
           })
 
           addProduct(this.ProductsForm).then(
-            this.$router.push({ path: '/catalog/products' }),
-
-            console.log(this.ProductsForm)
+            this.getList()
           )
 
           // that.submitUpload();
@@ -504,19 +690,16 @@ export default {
       })
     },
     resetForm(formName) {
-
-      let uploadedImages = []
+      const uploadedImages = []
       this.ProductsForm.data.images.forEach(value => {
-        let deleteImages = value.split('/')
-        uploadedImages.push(deleteImages[7] + "/" + deleteImages[8].split('.')[0])
-
-
+        const deleteImages = value.split('/')
+        uploadedImages.push(deleteImages[7] + '/' + deleteImages[8].split('.')[0])
       })
       deleteImages(uploadedImages).then(response => {
         console.log(response.data)
       })
-      Object.assign(this.$data, this.$options.data.call(this));
-
+      Object.assign(this.$data, this.$options.data.call(this))
+      this.getList()
     },
 
     // get Subcategory Attributes
@@ -538,10 +721,6 @@ export default {
 <style scoped>
 @import "./style.scss";
 @media only screen and (min-width: 990px) {
-  .box-card {
-    position: relative;
-    left: 50%;
-  }
 }
 .tag {
   font-size: 17px;
@@ -570,5 +749,8 @@ input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+.pagination {
+  text-align: center;
 }
 </style>

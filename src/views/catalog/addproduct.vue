@@ -12,7 +12,9 @@
                   style="float: right"
                   type="primary"
                   icon="el-icon-back"
-                >{{ $t("Back") }}</el-button>
+                >
+                  {{ $t("Back") }}
+                </el-button>
               </router-link>
             </div>
           </div>
@@ -23,13 +25,13 @@
             class="demo-dynamic"
           >
             <el-form-item prop="category" label="Product Name">
-              <el-input v-model="ProductsForm.data.name"/>
+              <el-input v-model="ProductsForm.data.name" />
             </el-form-item>
             <el-form-item prop="description" label="Description">
-              <el-input v-model="ProductsForm.data.description" type="textarea" rows="5"/>
+              <el-input v-model="ProductsForm.data.description" type="textarea" rows="5" />
             </el-form-item>
             <el-form-item prop="price" label="Price">
-              <el-input-number v-model="ProductsForm.data.price" :precision="2" :min="0" :step="1"/>
+              <el-input-number v-model="ProductsForm.data.price" :precision="2" :min="0" :step="1" />
             </el-form-item>
             <el-form-item prop="subcategory" label="Auction">
               <el-switch
@@ -58,7 +60,7 @@
                 </el-select>
               </el-col>
               <el-col :span="11">
-                <el-input v-model="ProductsForm.data.category" :disabled="true"/>
+                <el-input v-model="ProductsForm.data.category" :disabled="true" />
               </el-col>
             </el-form-item>
             <el-form-item prop="subcategory" label="Stock">
@@ -80,7 +82,7 @@
                 />
               </el-container>
               <label for="file-input" class="custom-file-upload">
-                <i class="el-icon-upload"/> Choose Files
+                <i class="el-icon-upload" /> Choose Files
               </label>
               <input
                 id="file-input"
@@ -90,11 +92,11 @@
                 @change="onFileChange"
               >
             </el-form-item>
-            <el-form-item/>
+            <el-form-item />
             <el-form-item
               v-for="(attribute, index) in attributesList"
-              :label="attribute.name "
               :key="attribute._id"
+              :label="attribute.name "
               style="padding-left:15%"
             >
               <el-input
@@ -122,17 +124,17 @@
                 v-model="selectable"
                 multiple
                 filterable
-                @change="makeSelectable(selectable,index)"
                 allow-create
                 default-first-option
                 placeholder="Choose add your list"
+                @change="makeSelectable(selectable,index)"
               >
                 <el-option
                   v-for="item in selectableOptions"
                   :key="item.value"
                   :label="item.label"
                   :value="item.value"
-                ></el-option>
+                />
               </el-select>
             </el-form-item>
 
@@ -141,8 +143,12 @@
                 :disabled="isDisabled"
                 type="primary"
                 @click="submitForm('ProductsForm')"
-              >Submit</el-button>
-              <el-button @click="resetForm('ProductsForm')">Reset</el-button>
+              >
+                Submit
+              </el-button>
+              <el-button @click="resetForm('ProductsForm')">
+                Reset
+              </el-button>
             </el-form-item>
           </el-form>
         </el-card>
@@ -156,7 +162,6 @@ import { getSelectedSubcategory, addProduct, deleteImages } from '@/api/products
 import axios from 'axios'
 import VueSelectImage from '@/components/vue-select-image'
 import waves from '@/directive/waves' // Waves directive
-
 
 export default {
   name: 'AddProduct',
@@ -251,8 +256,6 @@ export default {
     }
   },
 
-
-
   methods: {
     // Get category based on Subcategory
     getCategory(value) {
@@ -338,7 +341,7 @@ export default {
       while (i < files.length) {
         entry1 = files[i]
         if (
-          this.dataImages.some(function (entry2) {
+          this.dataImages.some(function(entry2) {
             return entry1.name === entry2.alt
           })
         ) {
@@ -397,7 +400,7 @@ export default {
         this.listSubcategories = []
       }
     },
-    onSelectImage: function (data) {
+    onSelectImage: function(data) {
       this.imageSelected = data
       this.dataImages.filter((selected, index) => {
         if (index === data.id) {
@@ -439,19 +442,15 @@ export default {
       })
     },
     resetForm(formName) {
-
-      let uploadedImages = []
+      const uploadedImages = []
       this.ProductsForm.data.images.forEach(value => {
-        let deleteImages = value.split('/')
-        uploadedImages.push(deleteImages[7] + "/" + deleteImages[8].split('.')[0])
-
-
+        const deleteImages = value.split('/')
+        uploadedImages.push(deleteImages[7] + '/' + deleteImages[8].split('.')[0])
       })
       deleteImages(uploadedImages).then(response => {
         console.log(response.data)
       })
-      Object.assign(this.$data, this.$options.data.call(this));
-
+      Object.assign(this.$data, this.$options.data.call(this))
     },
 
     // get Subcategory Attributes

@@ -17,7 +17,9 @@
               style="margin-left: 10px;"
               type="primary"
               icon="el-icon-edit"
-            >{{ $t('table.add') }}</el-button>
+            >
+              {{ $t('table.add') }}
+            </el-button>
           </router-link>
           <el-button
             v-waves
@@ -26,7 +28,9 @@
             type="primary"
             icon="el-icon-download"
             @click="handleDownload"
-          >{{ $t('table.export') }}</el-button>
+          >
+            {{ $t('table.export') }}
+          </el-button>
           <el-button
             v-model="showReviewer"
             :type="type"
@@ -39,8 +43,8 @@
         </div>
 
         <el-table
-          v-loading="listLoading"
           :key="tableKey"
+          v-loading="listLoading"
           :data="list"
           fit
           class="table-class"
@@ -51,7 +55,7 @@
         >
           <el-table-column :label="$t('Date')" sortable="custom" width="295px" align="center">
             <template slot-scope="scope">
-              <i class="el-icon-time"/>
+              <i class="el-icon-time" />
 
               <span>{{ moment(scope.row.date) }}</span>
             </template>
@@ -109,14 +113,18 @@
           >
             <template slot-scope="scope">
               <router-link :to="{ name: 'Product Details',params:{id:scope.row._id}, }">
-                <el-button type="info" size="mini" @click="changed(scope.row)">{{ $t('Open') }}</el-button>
+                <el-button type="info" size="mini" @click="changed(scope.row)">
+                  {{ $t('Open') }}
+                </el-button>
               </router-link>
               <router-link :to="{ name: 'Edit Product',params:{id:scope.row._id}, }">
                 <el-button
                   type="primary"
                   size="mini"
                   @click="changed(scope.row)"
-                >{{ $t('table.edit') }}</el-button>
+                >
+                  {{ $t('table.edit') }}
+                </el-button>
               </router-link>
 
               <el-button
@@ -124,14 +132,18 @@
                 size="mini"
                 type="danger"
                 @click="handleModifyStatus(scope.row,'deleted')"
-              >{{ $t('table.delete') }}</el-button>
+              >
+                {{ $t('table.delete') }}
+              </el-button>
 
               <el-button
                 v-if="scope.row.active ===false"
                 size="mini"
                 type="success"
                 @click="handleModifyStatus(scope.row,'activate')"
-              >Activate</el-button>
+              >
+                Activate
+              </el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -154,18 +166,22 @@
       >
         <el-form ref="SearchForm" :model="SearchForm" label-width="120px" class="demo-dynamic">
           <el-form-item prop="product" label="Product Name">
-            <el-input v-model="SearchForm.name"/>
+            <el-input v-model="SearchForm.name" />
           </el-form-item>
           <el-form-item prop="category" label="Category">
-            <el-input v-model="SearchForm.category"/>
+            <el-input v-model="SearchForm.category" />
           </el-form-item>
           <el-form-item prop="subcategory" label="Subcategory">
-            <el-input v-model="SearchForm.subcategory"/>
+            <el-input v-model="SearchForm.subcategory" />
           </el-form-item>
 
           <el-form-item>
-            <el-button type="primary" @click="SearchSubmit('SearchForm')">Submit</el-button>
-            <el-button @click="resetForm('SearchForm')">Reset</el-button>
+            <el-button type="primary" @click="SearchSubmit('SearchForm')">
+              Submit
+            </el-button>
+            <el-button @click="resetForm('SearchForm')">
+              Reset
+            </el-button>
           </el-form-item>
         </el-form>
       </el-dialog>
@@ -358,7 +374,6 @@ export default {
       this.SearchForm.page = this.getProductsQuery.page
       this.SearchForm.limit = this.getProductsQuery.limit
       this.SearchForm.sortType = this.getProductsQuery.sortType
-      debugger
 
       console.log(this.SearchForm)
       searchProducts(this.SearchForm).then(results => {
@@ -449,7 +464,7 @@ export default {
         }
       })
     },
-    moment: function (date) {
+    moment: function(date) {
       return moment(date).format('MMMM Do YYYY, h:mm:ss a')
     },
     // Reseting Dialog form
@@ -467,10 +482,10 @@ export default {
       }
     },
     // Handling update on edit
-    changed: function (row) {
+    changed: function(row) {
       store.commit('CHANGE', row)
     },
-    getProduct: function (event) {
+    getProduct: function(event) {
       console.log(event)
       this.$router.push({ name: 'ProductDetails' })
     },

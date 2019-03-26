@@ -41,12 +41,17 @@ export function deleteProduct(subCategoryId, status) {
 }
 
 export function addProduct(data) {
-  console.log('dataaaaaaa')
-  console.log(data)
   return request({
     url: '/api/products/create',
     method: 'post',
     data
+  })
+}
+
+export function getDetails(id) {
+  return request({
+    url: '/api/products/details?id=' + id,
+    method: 'get'
   })
 }
 
@@ -78,7 +83,7 @@ export function changeProductStatus(data, status) {
 }
 
 export function deleteImages(imagesId) {
-  let data = {
+  const data = {
     imagesId: imagesId
   }
   console.log(data)
