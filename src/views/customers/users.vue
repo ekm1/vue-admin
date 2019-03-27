@@ -5,7 +5,7 @@
         <div class="filter-container">
           <el-input
             v-model="listQuery.name"
-            :placeholder="$t('table.category')"
+            :placeholder="$t('Search by name')"
             style="width: 200px;"
             class="filter-item"
             @keyup.enter.native="handleFilter"
@@ -16,9 +16,7 @@
             type="primary"
             icon="el-icon-search"
             @click="handleFilter"
-          >
-            {{ $t('table.search') }}
-          </el-button>
+          >{{ $t('table.search') }}</el-button>
 
           <el-button
             v-waves
@@ -27,9 +25,7 @@
             type="primary"
             icon="el-icon-download"
             @click="handleDownload"
-          >
-            {{ $t('table.export') }}
-          </el-button>
+          >{{ $t('table.export') }}</el-button>
           <el-button
             v-model="showReviewer"
             :type="type"
@@ -53,7 +49,7 @@
         >
           <el-table-column :label="$t('Register date')" width="150px" align="center">
             <template slot-scope="scope">
-              <span>{{ scope.row.registe_date }}</span>
+              <span>{{ moment(scope.row.register_date) }}</span>
             </template>
           </el-table-column>
           <el-table-column :label="$t('Full name')" width="150px" align="center">
@@ -75,32 +71,32 @@
           </el-table-column>
           <el-table-column :label="$t('Country')" width="160px" align="center">
             <template slot-scope="scope">
-              <span>{{ scope.row.user_address.country }}</span>
+              <span>{{ scope.row.address.country_id }}</span>
             </template>
           </el-table-column>
           <el-table-column :label="$t('City')" width="160px" align="center">
             <template slot-scope="scope">
-              <span>{{ scope.row.user_address.city }}</span>
+              <span>{{ scope.row.address.city }}</span>
             </template>
           </el-table-column>
           <el-table-column :label="$t('Phone')" width="160px" align="center">
             <template slot-scope="scope">
-              <span>{{ scope.row.user_address.phone }}</span>
+              <span>{{ scope.row.address.telephone }}</span>
             </template>
           </el-table-column>
           <el-table-column :label="$t('Street name')" width="160px" align="center">
             <template slot-scope="scope">
-              <span>{{ scope.row.user_address.address }}</span>
+              <span>{{ scope.row.address.street }}</span>
             </template>
           </el-table-column>
           <el-table-column :label="$t('House/Apartment number')" width="200px" align="center">
             <template slot-scope="scope">
-              <span>{{ scope.row.user_address.address2 }}</span>
+              <span>{{ scope.row.address.apartment }}</span>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('Zip code')" width="160px" align="center">
+          <el-table-column :label="$t('Postal Code')" width="160px" align="center">
             <template slot-scope="scope">
-              <span>{{ scope.row.user_address.zip_code }}</span>
+              <span>{{ scope.row.address.postcode }}</span>
             </template>
           </el-table-column>
           <el-table-column
@@ -115,18 +111,14 @@
                 size="small"
                 type="danger"
                 @click="handleModifyStatus(scope.row,'deleted')"
-              >
-                {{ $t('Deactivate') }}
-              </el-button>
+              >{{ $t('Deactivate') }}</el-button>
 
               <el-button
                 v-if="scope.row.isActive ===false"
                 size="small"
                 type="success"
                 @click="handleModifyStatus(scope.row,'activate')"
-              >
-                Activate
-              </el-button>
+              >Activate</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -151,10 +143,10 @@
               <el-form ref="dynamicValidateForm" :model="dynamicValidateForm" class="demo-dynamic">
                 <h4>Basic Info</h4>
                 <el-form-item prop="category">
-                  <el-input v-model="dynamicValidateForm.category" :placeholder="$t('First name')" />
+                  <el-input v-model="dynamicValidateForm.category" :placeholder="$t('First name')"/>
                 </el-form-item>
                 <el-form-item prop="category">
-                  <el-input v-model="dynamicValidateForm.category" :placeholder="$t('Last name')" />
+                  <el-input v-model="dynamicValidateForm.category" :placeholder="$t('Last name')"/>
                 </el-form-item>
                 <el-form-item prop="subcategory">
                   <el-input
@@ -186,12 +178,8 @@
                 </el-form-item>
 
                 <el-form-item>
-                  <el-button type="primary" @click="submitForm('dynamicValidateForm')">
-                    Submit
-                  </el-button>
-                  <el-button @click="resetForm('dynamicValidateForm')">
-                    Reset
-                  </el-button>
+                  <el-button type="primary" @click="submitForm('dynamicValidateForm')">Submit</el-button>
+                  <el-button @click="resetForm('dynamicValidateForm')">Reset</el-button>
                 </el-form-item>
               </el-form>
             </el-col>
@@ -208,6 +196,7 @@ import { getAllUsers, searchByName, deleteSubCategory } from '@/api/users'
 import waves from '@/directive/waves' // Waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
+import * as moment from 'moment'
 
 export default {
   name: 'Categories',
@@ -310,6 +299,22 @@ export default {
   created() {
     this.getList()
   },
+  watch: {
+    list() {
+      this.list.forEach((value, index1) => {
+        if (value.addresses.length > 0) {
+          value.addresses.forEach(value => {            if (value.defaultAddress === true) {
+              this.list[index1].address = value
+            }          })        } else {
+          this.list[index1].address = { city: 'N/A', country_id: 'N/A', telephone: 'N/A', postcode: 'N/A', street: 'N/A', apartment: 'N/A' }
+        }
+      })
+      console.log(this.list)
+
+    }
+
+  },
+
   methods: {
     getList() {
       if (
@@ -319,7 +324,6 @@ export default {
       ) {
         this.listLoading = true
         getAllUsers(this.listQuery).then(response => {
-          console.log(response.data)
           this.list = response.data.docs
           this.total = response.data.total
           this.listLoading = false
@@ -355,8 +359,13 @@ export default {
         this.getFilerResults()
       }
     },
+    moment: function (date) {
+      return moment(date).format('MMMM Do YYYY, h:mm:ss a')
+    },
+
     // Handle status change
     handleModifyStatus(row, status) {
+
       if (status === 'deleted') {
         row.isActive = false
 

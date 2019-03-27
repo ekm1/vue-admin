@@ -5,7 +5,6 @@
         <el-card class="box-card">
           <div slot="header" class="clearfix">
             <span class="header-text">Create Bundles</span>
-            <div class="filter-container"/>
           </div>
           <el-form
             ref="ProductsForm"
@@ -176,7 +175,16 @@
             <span class="header-text">Bundles List</span>
             <div class="filter-container"/>
           </div>
-
+          <div class="filter-container">
+            <el-button
+              :type="type"
+              :icon="icon"
+              class="filter-item"
+              circle
+              style="margin-left:15px;"
+              @click="handleStatus()"
+            />
+          </div>
           <el-table
             :key="tableKey"
             v-loading="listLoading"
@@ -283,7 +291,9 @@ import {
   deleteImages,
   searchProducts,
   getAllProducts,
-  getDetails
+  getDetails,
+  updateProduct,
+  changeProductStatus
 } from "@/api/products";
 import axios from "axios";
 import VueSelectImage from "@/components/vue-select-image";
@@ -347,8 +357,12 @@ export default {
       images: [],
       total: 0,
       tableKey: 0,
+      icon: 'el-icon-check',
+      type: 'success',
+      createOrEdit: false,
       filesToUpload: undefined,
       mediaLinks: [],
+      productUrl: "",
       arrayOfURL: [],
       options: [
         {
@@ -447,6 +461,37 @@ export default {
       return arr.filter(
         obj => !uniq[obj.productId] && (uniq[obj.productId] = true)
       );
+    },
+    handleModifyStatus(row, status) {
+      if (status === "deleted") {
+        changeProductStatus(row._id, "false").then(res => {
+          if (res.status) {
+            this.$message({
+              message: "success",
+              type: "success"
+            });
+            this.list = this.list.filter(el => {
+              return el._id !== row._id;
+            });
+            row.status = status;
+          }
+        });
+      } else if (status === "activate") {
+        changeProductStatus(row._id, "true").then(res => {
+          if (res.status) {
+            this.$notify({
+              title: "success",
+              message: "Successfully deleted Subcategory",
+              type: "success",
+              duration: 2000
+            });
+            this.list = this.list.filter(el => {
+              return el._id !== row._id;
+            });
+            row.status = status;
+          }
+        });
+      }
     },
     // Get category based on Subcategory
     getCategory(value) {
@@ -551,7 +596,7 @@ export default {
           while (i < files.length) {
             entry1 = files[i];
             if (
-              this.dataImages.some(function(entry2) {
+              this.dataImages.some(function (entry2) {
                 return entry1.name === entry2.alt;
               })
             ) {
@@ -619,7 +664,7 @@ export default {
         this.listSubcategories = [];
       }
     },
-    onSelectImage: function(data) {
+    onSelectImage: function (data) {
       this.imageSelected = data;
       this.dataImages.filter((selected, index) => {
         if (index === data.id) {
@@ -627,11 +672,13 @@ export default {
         }
       });
     },
-
+    //Fires when EDIT Button is pressed
     async changed(row) {
+      this.createOrEdit = true
       this.resetDefault();
 
       const response = await getDetails(row._id);
+      this.productUrl = row._id
 
       response.data.items.forEach(value => {
         this.tagProducts.push(value.data.name);
@@ -670,7 +717,7 @@ export default {
 
     // Submit Dialog form for Adding
     submitForm(ProductsForm) {
-      this.$refs[ProductsForm].validate(valid => {
+      this.$refs[ProductsForm].validate(async valid => {
         if (valid) {
           this.ProductsForm.data.images.forEach((value, index) => {
             if (this.selectedThumbnail === index) {
@@ -687,7 +734,14 @@ export default {
             duration: 2000
           });
 
-          addProduct(this.ProductsForm).then(this.getList());
+          if (this.createOrEdit === true) {
+            await updateProduct(this.ProductsForm, this.productUrl);
+            this.getList()
+          } else {
+
+            await addProduct(this.ProductsForm);
+            this.getList()
+          }
 
           // that.submitUpload();
         } else {
@@ -710,6 +764,18 @@ export default {
       Object.assign(this.$data, this.$options.data.call(this));
       this.getList();
     },
+    handleStatus() {
+      this.getProductsQuery.status = !this.getProductsQuery.status;
+      if (this.getProductsQuery.status === true) {
+        this.type = "success";
+        this.icon = "el-icon-check";
+      } else {
+        this.type = "danger";
+        this.icon = "el-icon-delete";
+      }
+      this.tableStatus = this.getProductsQuery.status;
+      this.getList();
+    },
 
     // get Subcategory Attributes
     getSubcategoryAttributes() {
@@ -726,13 +792,13 @@ export default {
     }
   },
   watch: {
-    dataImages: function() {
+    dataImages: function () {
       var i = 0;
       var entry1;
       while (i < this.ProductsForm.data.images.length) {
         entry1 = this.ProductsForm.data.images[i];
         if (
-          this.dataImages.some(function(entry2) {
+          this.dataImages.some(function (entry2) {
             return entry1 === entry2.src;
           })
         ) {
@@ -781,6 +847,12 @@ input[type="number"]::-webkit-outer-spin-button {
   margin: 0;
 }
 .pagination {
+  text-align: center;
+}
+.el-button + .el-button {
+  margin-left: 0px;
+}
+.filter-container {
   text-align: center;
 }
 </style>

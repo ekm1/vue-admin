@@ -117,7 +117,7 @@ export default {
     this.getList();
   },
   watch: {
-    dataImages: function() {
+    dataImages: function () {
       if (this.dataImages.length <= 0) {
         this.storeForm.storeImage = "";
         console.log(this.storeForm);
@@ -199,7 +199,7 @@ export default {
       });
     },
 
-    onSelectImage: function(data) {
+    onSelectImage: function (data) {
       this.imageSelected = data;
       this.dataImages.filter((selected, index) => {
         if (index === data.id) {
@@ -210,22 +210,7 @@ export default {
     submitUpload() {
       const files = this.filesToUpload;
       // Remove elements if they dont exist in dataImages
-      var i = 0;
-      var entry1;
-      while (i < files.length) {
-        entry1 = files[i];
-        if (
-          this.dataImages.some(function(entry2) {
-            return entry1.name === entry2.alt;
-          })
-        ) {
-          // Found, progress to next
-          ++i;
-        } else {
-          // Not found, remove
-          files.splice(i, 1);
-        }
-      }
+
 
       if (!files) {
         this.$notify.error({
