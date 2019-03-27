@@ -1,6 +1,43 @@
 <template>
   <el-row :gutter="10" type="flex" justify="center">
-    <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
+    <el-col :xs="10" :sm="8" :md="8" :lg="6" :xl="5" class="column">
+      <div class="column">
+        <el-card class="box-card">
+          <div slot="header" class="clearfix">
+            <span>Filters</span>
+          </div>
+          <div>
+            <el-form ref="form" :model="searchForm" label-width="120px">
+              <el-form-item label="Product">
+                <el-input v-model="searchForm.name" class="block" placeholder="Product"></el-input>
+              </el-form-item>
+              <el-form-item label="Category">
+                <el-input v-model="searchForm.category" class="block" placeholder="Category"></el-input>
+              </el-form-item>
+              <el-form-item label="Subcategory">
+                <el-input v-model="searchForm.subcategory" class="block" placeholder="Subcategory"></el-input>
+              </el-form-item>
+              <el-form-item label="Activity zone">
+                <el-radio-group v-model="searchForm.isAuction" size="mini">
+                  <el-radio-button label="Inactive"></el-radio-button>
+                  <el-radio-button label="|"></el-radio-button>
+                  <el-radio-button label="Active"></el-radio-button>
+                </el-radio-group>
+              </el-form-item>
+              <el-form-item label="Stock Status">
+                <el-radio-group v-model="searchForm.stock_status" size="mini">
+                  <el-radio-button label="Inactive"></el-radio-button>
+                  <el-radio-button label="|"></el-radio-button>
+                  <el-radio-button label="Active"></el-radio-button>
+                </el-radio-group>
+              </el-form-item>
+            </el-form>
+          </div>
+        </el-card>
+      </div>
+    </el-col>
+
+    <el-col :xs="14" :sm="16" :md="16" :lg="18" :xl="19">
       <div id="center" class="app-container">
         <div class="filter-container">
           <el-button
@@ -43,13 +80,14 @@
           v-loading="listLoading"
           :data="list"
           fit
+          size="mini"
           class="table-class"
           align="center"
           highlight-current-row
           style="width: 100%;"
           @sort-change="sortChange"
         >
-          <el-table-column :label="$t('Date')" sortable="custom" width="295px" align="center">
+          <el-table-column :label="$t('Date')" sortable="custom" width="265px" align="center">
             <template slot-scope="scope">
               <i class="el-icon-time"/>
 
@@ -61,7 +99,7 @@
               <span>{{ scope.row.data.name }}</span>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('Description')" width="300px" align="center">
+          <el-table-column :label="$t('Description')" width="100px" align="center">
             <template slot-scope="scope">
               <span>{{ hideDescription(scope.row.data.description) }}</span>
             </template>
@@ -81,11 +119,7 @@
               <span>{{ scope.row.data.category }}</span>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('Type')" width="120px" align="center">
-            <template slot-scope="scope">
-              <span>{{ scope.row.data.productType }}</span>
-            </template>
-          </el-table-column>
+
           <el-table-column :label="$t('Stock')" width="80px" align="center">
             <template slot-scope="scope">
               <span>{{ scope.row.data.stock_level }}</span>
@@ -223,6 +257,12 @@ export default {
         name: '',
         category: '',
         subcategory: ''
+      },
+      searchForm: {
+        isAuction: null,
+        category: '',
+        subcategory: '',
+        stock_status: null
       },
       centerDialogVisible: false,
       value10: [],
@@ -530,5 +570,13 @@ export default {
 
 .pagination {
   text-align: center;
+}
+.box-card {
+  border: 1px solid #47c58c;
+}
+.column {
+  position: relative;
+  top: 15%;
+  left: 1%;
 }
 </style>

@@ -341,7 +341,7 @@ export default {
       while (i < files.length) {
         entry1 = files[i];
         if (
-          this.dataImages.some(function(entry2) {
+          this.dataImages.some(function (entry2) {
             return entry1.name === entry2.alt;
           })
         ) {
@@ -401,7 +401,7 @@ export default {
       }
     },
     //Event for handling image select
-    onSelectImage: function(data) {
+    onSelectImage: function (data) {
       this.imageSelected = data;
       this.dataImages.filter((selected, index) => {
         if (index === data.id) {
