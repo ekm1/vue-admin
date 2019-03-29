@@ -43,11 +43,12 @@
           :data="list"
           border
           fit
+          size="mini"
           highlight-current-row
           style="width: 100%;"
           @sort-change="sortChange"
         >
-          <el-table-column :label="$t('Register date')" width="150px" align="center">
+          <el-table-column :label="$t('Register date')" width="200px" align="center">
             <template slot-scope="scope">
               <span>{{ moment(scope.row.register_date) }}</span>
             </template>
@@ -62,7 +63,7 @@
               <span>{{ scope.row.email }}</span>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('Role')" width="150px" align="center">
+          <el-table-column :label="$t('Role')" width="110px" align="center">
             <template slot-scope="scope">
               <div v-for=" role in scope.row.roles">
                 <span>{{ role }}</span>
@@ -94,7 +95,7 @@
               <span>{{ scope.row.address.apartment }}</span>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('Postal Code')" width="160px" align="center">
+          <el-table-column :label="$t('Postal Code')" width="140px" align="center">
             <template slot-scope="scope">
               <span>{{ scope.row.address.postcode }}</span>
             </template>
@@ -102,7 +103,7 @@
           <el-table-column
             :label="$t('table.actions')"
             align="center"
-            width="230"
+            width="150px"
             class-name="small-padding fixed-width"
           >
             <template slot-scope="scope">

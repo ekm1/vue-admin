@@ -1,53 +1,68 @@
 <template>
-  <el-row :gutter="10" type="flex" justify="center">
-    <el-col :xs="10" :sm="8" :md="8" :lg="6" :xl="5" class="column">
-      <div class="column">
-        <el-card class="box-card">
-          <div slot="header" class="clearfix">
-            <span>Filters</span>
-          </div>
-          <div>
-            <el-form ref="form" :model="searchForm" label-width="120px">
-              <el-form-item label="Product">
-                <el-input v-model="searchForm.name" class="block" placeholder="Product"></el-input>
-              </el-form-item>
-              <el-form-item label="Category">
-                <el-input v-model="searchForm.category" class="block" placeholder="Category"></el-input>
-              </el-form-item>
-              <el-form-item label="Subcategory">
-                <el-input v-model="searchForm.subcategory" class="block" placeholder="Subcategory"></el-input>
-              </el-form-item>
-              <el-form-item label="Activity zone">
-                <el-radio-group v-model="searchForm.isAuction" size="mini">
-                  <el-radio-button label="Inactive"></el-radio-button>
-                  <el-radio-button label="|"></el-radio-button>
-                  <el-radio-button label="Active"></el-radio-button>
-                </el-radio-group>
-              </el-form-item>
-              <el-form-item label="Stock Status">
-                <el-radio-group v-model="searchForm.stock_status" size="mini">
-                  <el-radio-button label="Inactive"></el-radio-button>
-                  <el-radio-button label="|"></el-radio-button>
-                  <el-radio-button label="Active"></el-radio-button>
-                </el-radio-group>
-              </el-form-item>
-            </el-form>
-          </div>
-        </el-card>
-      </div>
+  <el-row :gutter="4">
+    <el-col
+      :xs="{ span: 24 }"
+      :sm="{ span: 11 }"
+      :md="{ span: 9 }"
+      :lg="{ span: 8 }"
+      :xl="{ span: 5 }"
+    >
+      <el-card class="box-card">
+        <div slot="header" class="clearfix">
+          <span class="header-text">Filters</span>
+        </div>
+        <div>
+          <el-form
+            ref="form"
+            :model="searchForm"
+            class="form"
+            label-width="100px"
+            label-position="left"
+          >
+            <el-form-item label="Product">
+              <el-input v-model="searchForm.name" class="block" placeholder="Product"></el-input>
+            </el-form-item>
+            <el-form-item label="Category">
+              <el-input v-model="searchForm.category" class="block" placeholder="Category"></el-input>
+            </el-form-item>
+            <el-form-item label="Subcategory">
+              <el-input v-model="searchForm.subcategory" class="block" placeholder="Subcategory"></el-input>
+            </el-form-item>
+            <el-form-item label="Auction">
+              <el-radio-group v-model="searchForm.isAuction" size="mini">
+                <el-radio-button label="false">Inactive</el-radio-button>
+                <el-radio-button label="unset">|</el-radio-button>
+                <el-radio-button label="true">Active</el-radio-button>
+              </el-radio-group>
+            </el-form-item>
+            <el-form-item label="Stock Status">
+              <el-radio-group v-model="searchForm.stock_status" size="mini">
+                <el-radio-button label="false">Inactive</el-radio-button>
+                <el-radio-button label="unset">|</el-radio-button>
+                <el-radio-button label="true">Active</el-radio-button>
+              </el-radio-group>
+            </el-form-item>
+
+            <el-button
+              type="primary"
+              icon="el-icon-search"
+              class="search"
+              @click="SearchSubmit('searchForm')"
+            >Search</el-button>
+          </el-form>
+        </div>
+      </el-card>
     </el-col>
 
-    <el-col :xs="14" :sm="16" :md="16" :lg="18" :xl="19">
+    <el-col
+      :xs="{ span: 24 }"
+      :sm="{ span: 13 }"
+      :md="{ span: 15 }"
+      :lg="{ span: 16 }"
+      :xl="{ span: 19 }"
+    >
       <div id="center" class="app-container">
         <div class="filter-container">
-          <el-button
-            v-waves
-            class="filter-item"
-            type="primary"
-            icon="el-icon-search"
-            @click="centerDialogVisible = true"
-          />
-
           <router-link :to="{ path: 'products/new' }">
             <el-button
               class="filter-item"
@@ -179,30 +194,6 @@
           @pagination="getList"
         />
       </div>
-      <el-dialog
-        :visible.sync="centerDialogVisible"
-        :model="SearchForm"
-        title="Search"
-        width="20%"
-        center
-      >
-        <el-form ref="SearchForm" :model="SearchForm" label-width="120px" class="demo-dynamic">
-          <el-form-item prop="product" label="Product Name">
-            <el-input v-model="SearchForm.name"/>
-          </el-form-item>
-          <el-form-item prop="category" label="Category">
-            <el-input v-model="SearchForm.category"/>
-          </el-form-item>
-          <el-form-item prop="subcategory" label="Subcategory">
-            <el-input v-model="SearchForm.subcategory"/>
-          </el-form-item>
-
-          <el-form-item>
-            <el-button type="primary" @click="SearchSubmit('SearchForm')">Submit</el-button>
-            <el-button @click="resetForm('SearchForm')">Reset</el-button>
-          </el-form-item>
-        </el-form>
-      </el-dialog>
     </el-col>
   </el-row>
 </template>
@@ -216,6 +207,7 @@ import {
 } from '@/api/products'
 import waves from '@/directive/waves' // Waves directive
 import { parseTime } from '@/utils'
+
 import store from '../../store'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
 import * as moment from 'moment'
@@ -253,16 +245,13 @@ export default {
         searchValue: '',
         isBundle: false
       },
-      SearchForm: {
-        name: '',
-        category: '',
-        subcategory: ''
-      },
+
       searchForm: {
-        isAuction: null,
         category: '',
         subcategory: '',
-        stock_status: null
+        name: '',
+        isAuction: 'unset',
+        stock_status: 'unset'
       },
       centerDialogVisible: false,
       value10: [],
@@ -329,6 +318,8 @@ export default {
   created() {
     this.getList()
   },
+
+
   methods: {
     getList() {
       if (
@@ -394,13 +385,17 @@ export default {
     },
     // Search form
     SearchSubmit() {
-      this.listLoading = true
-      this.SearchForm.page = this.getProductsQuery.page
-      this.SearchForm.limit = this.getProductsQuery.limit
-      this.SearchForm.sortType = this.getProductsQuery.sortType
+      Object.keys(this.searchForm).forEach((key) => (this.searchForm[key] == null || this.searchForm[key] == '' || this.searchForm[key] == 'unset') && delete this.searchForm[key]);
 
-      console.log(this.SearchForm)
-      searchProducts(this.SearchForm).then(results => {
+      this.listLoading = true
+      this.searchForm.page = this.getProductsQuery.page
+      this.searchForm.limit = this.getProductsQuery.limit
+      this.searchForm.sortType = this.getProductsQuery.sortType
+      this.searchForm.isBundle = this.getProductsQuery.isBundle
+
+
+      console.log(this.searchForm)
+      searchProducts(this.searchForm).then(results => {
         this.list = results.data.docs
         this.total = results.data.total
         this.listLoading = false
@@ -556,9 +551,12 @@ export default {
           }
         })
       )
-    }
-  }
+    },
+
+  },
+
 }
+
 </script>
 <style scoped>
 .input-field {
@@ -571,12 +569,24 @@ export default {
 .pagination {
   text-align: center;
 }
+
+@media (max-width: 900px) {
+  .box-card {
+    margin-right: 20px;
+  }
+}
+
+.search {
+  margin: 3%;
+  float: right;
+  width: 100%;
+  min-width: 50px;
+  max-width: 100px;
+}
 .box-card {
   border: 1px solid #47c58c;
-}
-.column {
-  position: relative;
-  top: 15%;
-  left: 1%;
+
+  margin-top: 70px;
+  margin-left: 20px;
 }
 </style>

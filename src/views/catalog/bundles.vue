@@ -1,8 +1,14 @@
 <template>
   <div id="center" class="app-container">
-    <el-row :gutter="10" type="flex">
-      <el-col :xs="12" :sm="12" :md="16" :lg="12" :xl="16">
-        <el-card class="box-card">
+    <el-row :gutter="8">
+      <el-col
+        :xs="{ span: 24 }"
+        :sm="{ span: 24 }"
+        :md="{ span: 8 }"
+        :lg="{ span: 8 }"
+        :xl="{ span: 8 }"
+      >
+        <el-card class="box-card block">
           <div slot="header" class="clearfix">
             <span class="header-text">Create Bundles</span>
           </div>
@@ -20,7 +26,7 @@
                   filterable
                   remote
                   reserve-keyword
-                  placeholder="Please enter a product"
+                  placeholder="Product"
                   @input="getProductsBundle"
                 >
                   <el-option
@@ -31,17 +37,18 @@
                   />
                 </el-select>
               </el-col>
-              <el-col :span="11">
-                <el-tag v-for="(tag,index) in tagProducts" :key="tag" class="tag" closable>
-                  {{ tag }}
-                  <input
-                    v-model="ProductsForm.data.products_items[index].productQuantity"
-                    type="number"
-                    class="input-product"
-                    min="0"
-                    step="1"
-                  >
-                </el-tag>
+              <el-col :span="12">
+                <div v-for="(tag,index) in tagProducts">
+                  <el-form-item prop="category" :label="tag" class="tags">
+                    <input
+                      v-model="ProductsForm.data.products_items[index].productQuantity"
+                      type="number"
+                      class="input-product"
+                      min="0"
+                      step="1"
+                    >
+                  </el-form-item>
+                </div>
               </el-col>
             </el-form-item>
             <el-form-item prop="category" label="Bundle Name">
@@ -169,8 +176,14 @@
           </el-form>
         </el-card>
       </el-col>
-      <el-col :xs="12" :sm="12" :md="8" :lg="12" :xl="14">
-        <el-card>
+      <el-col
+        :xs="{ span: 24 }"
+        :sm="{ span: 24 }"
+        :md="{ span: 16 }"
+        :lg="{ span: 16 }"
+        :xl="{ span: 16 }"
+      >
+        <el-card class="block">
           <div slot="header" class="clearfix">
             <span class="header-text">Bundles List</span>
             <div class="filter-container"/>
@@ -298,6 +311,7 @@ import {
 import axios from "axios";
 import VueSelectImage from "@/components/vue-select-image";
 import waves from "@/directive/waves"; // Waves directive
+
 import Pagination from "@/components/Pagination"; // Secondary package based on el-pagination
 
 export default {
@@ -854,5 +868,19 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 .filter-container {
   text-align: center;
+}
+.tags {
+  background-color: rgba(64, 158, 255, 0.1);
+  display: inline-block;
+  height: 32px;
+  margin: 2px;
+  padding-bottom: 34px;
+  line-height: 30px;
+  font-size: 14px;
+  color: #409eff;
+  border-radius: 4px;
+  box-sizing: border-box;
+  border: 1px solid rgba(64, 158, 255, 0.2);
+  white-space: nowrap;
 }
 </style>

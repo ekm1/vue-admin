@@ -91,7 +91,11 @@
   background-color: #47c58c;
   color: white;
 }
-
+@media (max-width: 487px) {
+  .el-pagination span.el-pagination__jump {
+    display: none;
+  }
+}
 .el-pagination.is-background .el-pager li:not(.disabled).active {
   background-color: #47c58c;
 }
