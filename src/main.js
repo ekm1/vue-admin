@@ -1,6 +1,7 @@
 import Vue from 'vue'
 
 import Cookies from 'js-cookie'
+import VeeValidate from 'vee-validate'
 
 import 'normalize.css/normalize.css' // A modern alternative to CSS resets
 
@@ -24,6 +25,10 @@ Vue.use(Element, {
   size: Cookies.get('size') || 'medium', // set element-ui default size
   i18n: (key, value) => i18n.t(key, value)
 })
+const config = {
+  fieldsBagName: 'fieldName'
+}
+Vue.use(VeeValidate, config)
 
 // register global utility filters.
 Object.keys(filters).forEach(key => {

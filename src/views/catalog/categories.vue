@@ -16,18 +16,14 @@
             type="primary"
             icon="el-icon-search"
             @click="handleFilter"
-          >
-            {{ $t('table.search') }}
-          </el-button>
+          >{{ $t('table.search') }}</el-button>
           <el-button
             class="filter-item"
             style="margin-left: 10px;"
             type="primary"
             icon="el-icon-edit"
             @click="handleCreate"
-          >
-            {{ $t('table.add') }}
-          </el-button>
+          >{{ $t('table.add') }}</el-button>
           <el-button
             v-waves
             :loading="downloadLoading"
@@ -35,9 +31,7 @@
             type="primary"
             icon="el-icon-download"
             @click="handleDownload"
-          >
-            {{ $t('table.export') }}
-          </el-button>
+          >{{ $t('table.export') }}</el-button>
           <el-button
             v-model="showReviewer"
             :type="type"
@@ -85,27 +79,21 @@
                 type="primary"
                 size="mini"
                 @click="handleUpdate(scope.row)"
-              >
-                {{ $t('table.edit') }}
-              </el-button>
+              >{{ $t('table.edit') }}</el-button>
 
               <el-button
                 v-if="scope.row.active === true"
                 size="mini"
                 type="danger"
                 @click="handleModifyStatus(scope.row,'deleted')"
-              >
-                {{ $t('table.delete') }}
-              </el-button>
+              >{{ $t('table.delete') }}</el-button>
 
               <el-button
                 v-if="scope.row.active ===false"
                 size="mini"
                 type="success"
                 @click="handleModifyStatus(scope.row,'activate')"
-              >
-                Activate
-              </el-button>
+              >Activate</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -132,11 +120,33 @@
                 label-width="120px"
                 class="demo-dynamic"
               >
-                <el-form-item prop="category" label="Category">
-                  <el-input v-model="dynamicValidateForm.category" />
+                <el-form-item label="Category" required>
+                  <el-input
+                    v-validate="'required'"
+                    name="category"
+                    v-model="dynamicValidateForm.category"
+                  />
+                  <el-alert
+                    v-if="errors.first('category')"
+                    :title="errors.first('category')"
+                    type="error"
+                    show-icon
+                    :closable="false"
+                  ></el-alert>
                 </el-form-item>
-                <el-form-item prop="subcategory" label="Subcategory">
-                  <el-input v-model="dynamicValidateForm.subcategory" />
+                <el-form-item label="Subcategory" required>
+                  <el-input
+                    name="subcategory"
+                    v-validate="'required'"
+                    v-model="dynamicValidateForm.subcategory"
+                  />
+                  <el-alert
+                    v-if="errors.first('subcategory')"
+                    :title="errors.first('subcategory')"
+                    type="error"
+                    show-icon
+                    :closable="false"
+                  ></el-alert>
                 </el-form-item>
 
                 <el-form-item
@@ -149,7 +159,7 @@
                   }"
                   style="padding-left:15%"
                 >
-                  <el-input v-model="attribute.name" class="input-field" />
+                  <el-input v-model="attribute.name" class="input-field"/>
                   <el-select v-model="attribute.fieldType" class="select-size" placeholder="Select">
                     <el-option
                       v-for="item in options"
@@ -161,24 +171,14 @@
                   <el-checkbox
                     v-model="attribute.required"
                     :prop="'attributes.' + index + '.required'"
-                  >
-                    Required
-                  </el-checkbox>
+                  >Required</el-checkbox>
 
-                  <el-button @click.prevent="removeattribute(attribute)">
-                    Delete
-                  </el-button>
+                  <el-button @click.prevent="removeattribute(attribute)">Delete</el-button>
                 </el-form-item>
                 <el-form-item>
-                  <el-button type="primary" @click="submitForm('dynamicValidateForm')">
-                    Submit
-                  </el-button>
-                  <el-button @click="addAttribute">
-                    Add new Attribute
-                  </el-button>
-                  <el-button @click="resetForm('dynamicValidateForm')">
-                    Reset
-                  </el-button>
+                  <el-button type="primary" @click="submitForm('dynamicValidateForm')">Submit</el-button>
+                  <el-button @click="addAttribute">Add new Attribute</el-button>
+                  <el-button @click="resetForm('dynamicValidateForm')">Reset</el-button>
                 </el-form-item>
               </el-form>
             </el-col>
@@ -198,10 +198,10 @@
             class="demo-dynamic"
           >
             <el-form-item prop="category" label="Category">
-              <el-input v-model="dynamicValidateForm.category" />
+              <el-input v-model="dynamicValidateForm.category"/>
             </el-form-item>
             <el-form-item prop="subcategory" label="Subcategory">
-              <el-input v-model="dynamicValidateForm.subcategory" />
+              <el-input v-model="dynamicValidateForm.subcategory"/>
             </el-form-item>
 
             <el-form-item
@@ -214,7 +214,7 @@
               }"
               style="padding-left:15%"
             >
-              <el-input v-model="attribute.name" class="input-field" />
+              <el-input v-model="attribute.name" class="input-field"/>
               <el-select v-model="attribute.fieldType" placeholder="Select">
                 <el-option
                   v-for="item in options"
@@ -226,28 +226,18 @@
               <el-checkbox
                 v-model="attribute.required"
                 :prop="'attributes.' + index + '.required'"
-              >
-                Required
-              </el-checkbox>
+              >Required</el-checkbox>
 
               <el-button
                 class="delete-btn"
                 button
                 @click.prevent="removeattribute(attribute)"
-              >
-                Delete
-              </el-button>
+              >Delete</el-button>
             </el-form-item>
             <el-form-item>
-              <el-button type="primary" @click="updateForm('dynamicValidateForm')">
-                Update
-              </el-button>
-              <el-button @click="addAttribute">
-                Add new Attribute
-              </el-button>
-              <el-button @click="resetForm('dynamicValidateForm')">
-                Reset
-              </el-button>
+              <el-button type="primary" @click="updateForm('dynamicValidateForm')">Update</el-button>
+              <el-button @click="addAttribute">Add new Attribute</el-button>
+              <el-button @click="resetForm('dynamicValidateForm')">Reset</el-button>
             </el-form-item>
           </el-form>
         </el-dialog>

@@ -12,11 +12,30 @@
             label-position="left"
             class="demo-storeForm"
           >
-            <el-form-item label="Store Title" prop="name">
-              <el-input v-model="storeForm.storeName"/>
+            <el-form-item label="Store Title" required>
+              <el-input name="name" v-validate="'required'" v-model="storeForm.storeName"/>
+              <el-alert
+                v-if="errors.first('name')"
+                :title="errors.first('name')"
+                type="error"
+                show-icon
+                :closable="false"
+              ></el-alert>
             </el-form-item>
-            <el-form-item label="Store Description" prop="desc">
-              <el-input v-model="storeForm.storeDescription" type="textarea"/>
+            <el-form-item label="Store Description" required>
+              <el-input
+                v-model="storeForm.storeDescription"
+                v-validate="'required|min:10'"
+                name="description"
+                type="textarea"
+              />
+              <el-alert
+                v-if="errors.first('description')"
+                :title="errors.first('description')"
+                type="error"
+                show-icon
+                :closable="false"
+              ></el-alert>
             </el-form-item>
             <el-form-item>
               <el-container id="preview" class="images-thumbnail">

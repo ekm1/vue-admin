@@ -23,14 +23,48 @@
             label-width="120px"
             class="demo-dynamic"
           >
-            <el-form-item prop="category" label="Product Name">
-              <el-input v-model="ProductsForm.data.name"/>
+            <el-form-item label="Product Name" required>
+              <el-input v-validate="'required'" name="name" v-model="ProductsForm.data.name"/>
+              <el-alert
+                v-if="errors.first('name')"
+                :title="errors.first('name')"
+                type="error"
+                show-icon
+                :closable="false"
+              ></el-alert>
             </el-form-item>
-            <el-form-item prop="description" label="Description">
-              <el-input v-model="ProductsForm.data.description" type="textarea" rows="5"/>
+            <el-form-item label="Description" required>
+              <el-input
+                v-model="ProductsForm.data.description"
+                name="description"
+                v-validate="'required|min:10'"
+                type="textarea"
+                rows="5"
+              />
+              <el-alert
+                v-if="errors.first('description')"
+                :title="errors.first('description')"
+                type="error"
+                show-icon
+                :closable="false"
+              ></el-alert>
             </el-form-item>
-            <el-form-item prop="price" label="Price">
-              <el-input-number v-model="ProductsForm.data.price" :precision="2" :min="0" :step="1"/>
+            <el-form-item label="Price" required>
+              <el-input-number
+                v-validate="'required|min_value:0'"
+                v-model="ProductsForm.data.price"
+                :precision="2"
+                name="price"
+                :min="0"
+                :step="1"
+              />
+              <el-alert
+                v-if="errors.first('price')"
+                :title="errors.first('price')"
+                type="error"
+                show-icon
+                :closable="false"
+              ></el-alert>
             </el-form-item>
             <el-form-item prop="subcategory" label="Auction">
               <el-switch
@@ -39,13 +73,15 @@
                 active-text="Active"
               />
             </el-form-item>
-            <el-form-item prop="subcategory" label="Subcategory">
+            <el-form-item label="Subcategory" required>
               <el-col :span="11">
                 <el-select
                   v-model="ProductsForm.data.subcategory"
                   :remote-method="searchSubcategory"
                   filterable
+                  v-validate="'required'"
                   remote
+                  name="subcategory"
                   reserve-keyword
                   placeholder="Please enter a Subcategory"
                   @change="getCategory"
@@ -57,6 +93,13 @@
                     :value="category.subcategory"
                   />
                 </el-select>
+                <el-alert
+                  v-if="errors.first('subcategory')"
+                  :title="errors.first('subcategory')"
+                  type="error"
+                  show-icon
+                  :closable="false"
+                ></el-alert>
               </el-col>
               <el-col :span="11">
                 <el-input v-model="ProductsForm.data.category" :disabled="true"/>
@@ -97,14 +140,19 @@
               v-for="(attribute, index) in attributesList"
               :key="attribute._id"
               :label="attribute.name "
+              :required="attribute.required"
               style="padding-left:15%"
             >
               <el-input
+                :name="attribute.name"
+                v-validate="requiredOrNot[index]"
                 v-if="attribute.fieldType === 'String'"
                 v-model="ProductsForm.data.specificProperties[index].fieldValue"
                 class="input-field"
               />
               <input
+                :name="attribute.name"
+                v-validate="requiredOrNot[index]"
                 v-if="attribute.fieldType === 'Boolean'"
                 v-model="ProductsForm.data.specificProperties[index].fieldValue"
                 type="checkbox"
@@ -112,6 +160,8 @@
               >
 
               <input
+                :name="attribute.name"
+                v-validate="requiredOrNot[index]"
                 v-if="attribute.fieldType === 'Number'"
                 v-model="ProductsForm.data.specificProperties[index].fieldValue"
                 type="number"
@@ -119,6 +169,13 @@
                 min="0"
                 step="1"
               >
+              <el-alert
+                v-if="errors.first(attribute.name)"
+                :title="errors.first(attribute.name)"
+                type="error"
+                show-icon
+                :closable="false"
+              ></el-alert>
             </el-form-item>
             <el-form-item>
               <el-button type="primary" @click="submitForm('ProductsForm')">Submit</el-button>
@@ -185,6 +242,7 @@ export default {
       arrayOfURL: [],
       productUrl: this.$route.params.id,
       list: null,
+      requiredOrNot: [],
       attributesList: [],
       listSubcategories: [],
       selectedThumbnail: undefined,
@@ -198,13 +256,13 @@ export default {
     };
   },
   watch: {
-    dataImages: function() {
+    dataImages: function () {
       var i = 0;
       var entry1;
       while (i < this.ProductsForm.data.images.length) {
         entry1 = this.ProductsForm.data.images[i];
         if (
-          this.dataImages.some(function(entry2) {
+          this.dataImages.some(function (entry2) {
             return entry1 === entry2.src;
           })
         ) {
@@ -215,6 +273,17 @@ export default {
           this.ProductsForm.data.images.splice(i, 1);
         }
       }
+    },
+    attributesList: function attributesList() {
+
+      this.attributesList.forEach((value, index) => {
+        if (value.required === true) {
+          this.requiredOrNot[index] = 'required'
+        } else {
+          this.requiredOrNot[index] = ''
+        }
+      })
+      console.log(this.requiredOrNot)
     }
   },
   created() {
@@ -223,7 +292,6 @@ export default {
     } else {
       this.ProductsForm = store.state.products.productDetails;
       this.attributesList = this.ProductsForm.data.specificProperties;
-      console.log(this.attributesList);
 
       this.ProductsForm.data.images.forEach((image, index) => {
         this.dataImages[index] = { id: index, src: image };
@@ -232,6 +300,7 @@ export default {
         // }
       });
     }
+
   },
 
   methods: {
@@ -333,7 +402,7 @@ export default {
           while (i < files.length) {
             entry1 = files[i];
             if (
-              this.dataImages.some(function(entry2) {
+              this.dataImages.some(function (entry2) {
                 return entry1.name === entry2.alt;
               })
             ) {
@@ -389,7 +458,7 @@ export default {
       }
     },
     // Event for image selection
-    onSelectImage: function(data) {
+    onSelectImage: function (data) {
       this.imageSelected = data;
       this.dataImages.filter((selected, index) => {
         if (index === data.id) {
@@ -399,9 +468,10 @@ export default {
     },
 
     // Submit Dialog form for Adding
-    submitForm(ProductsForm) {
+    async submitForm(ProductsForm) {
+      await this.$validator.validateAll()
       this.$refs[ProductsForm].validate(valid => {
-        if (valid) {
+        if (valid && this.errors.items.length <= 0) {
           const images = [...new Set(this.ProductsForm.data.images)];
           this.ProductsForm.data.images = images;
 
@@ -421,7 +491,7 @@ export default {
           });
 
           updateProduct(this.ProductsForm, this.productUrl).then(
-            response => {}
+            response => { }
           );
 
           // that.submitUpload();
