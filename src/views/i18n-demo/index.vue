@@ -2,14 +2,14 @@
   <div>
     <el-card class="box-card" style="margin-top:40px;">
       <div slot="header" class="clearfix">
-        <svg-icon icon-class="international" />
+        <svg-icon icon-class="international"/>
         <span style="margin-left:10px;">{{ $t('i18nView.title') }}</span>
       </div>
       <div>
         <el-radio-group v-model="lang" size="small">
           <el-radio label="zh" border>简体中文</el-radio>
           <el-radio label="en" border>English</el-radio>
-          <el-radio label="es" border>Español</el-radio>
+          <el-radio label="it" border>Italian</el-radio>
         </el-radio-group>
         <el-tag style="margin-top:15px;display:block;" type="info">{{ $t('i18nView.note') }}</el-tag>
       </div>
@@ -26,7 +26,8 @@
               v-for="item in options"
               :key="item.value"
               :label="item.label"
-              :value="item.value"/>
+              :value="item.value"
+            />
           </el-select>
         </div>
         <div class="block">
@@ -40,8 +41,18 @@
       </el-col>
       <el-col :span="12" :xs="24">
         <el-table :data="tableData" fit highlight-current-row border style="width: 100%">
-          <el-table-column :label="$t('i18nView.tableName')" prop="name" width="100" align="center"/>
-          <el-table-column :label="$t('i18nView.tableDate')" prop="date" width="120" align="center"/>
+          <el-table-column
+            :label="$t('i18nView.tableName')"
+            prop="name"
+            width="100"
+            align="center"
+          />
+          <el-table-column
+            :label="$t('i18nView.tableDate')"
+            prop="date"
+            width="120"
+            align="center"
+          />
           <el-table-column :label="$t('i18nView.tableAddress')" prop="address"/>
         </el-table>
       </el-col>
@@ -102,7 +113,7 @@ export default {
     if (!this.$i18n.getLocaleMessage('en')[viewName]) {
       this.$i18n.mergeLocaleMessage('en', local.en)
       this.$i18n.mergeLocaleMessage('zh', local.zh)
-      this.$i18n.mergeLocaleMessage('es', local.es)
+      this.$i18n.mergeLocaleMessage('it', local.it)
     }
     this.setOptions() // set default select options
   },
@@ -133,7 +144,7 @@ export default {
   max-width: 100%;
   margin: 20px auto;
 }
-.item-btn{
+.item-btn {
   margin-bottom: 15px;
   margin-left: 0px;
 }

@@ -1,4 +1,3 @@
-
 export default {
   zh: {
     i18nView: {
@@ -40,7 +39,7 @@ export default {
       three: 'Three'
     }
   },
-  es: {
+  it: {
     i18nView: {
       title: 'Switch Language',
       note: 'The internationalization of this project is based on vue-i18n',

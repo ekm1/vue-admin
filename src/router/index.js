@@ -88,7 +88,7 @@ export const constantRouterMap = [
     redirect: '/sales/index',
     alwaysShow: true, // will always show the root menu
     meta: {
-      title: 'Sales Section',
+      title: 'Sales',
       icon: 'lock',
       roles: ['admin', 'editor'] // you can set roles in root nav
     },
