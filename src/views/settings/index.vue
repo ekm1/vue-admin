@@ -273,6 +273,7 @@ export default {
 <style rel="stylesheet/scss" lang="scss" scoped>
 .documentation-container {
   margin: 50px;
+
   .document-btn {
     float: left;
     margin-left: 50px;
@@ -338,5 +339,8 @@ export default {
 
 .delete-button {
   margin-left: 76%;
+}
+.app-main[data-v-6beed8bc] {
+  background-color: #f0f2f5;
 }
 </style>

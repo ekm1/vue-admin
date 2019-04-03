@@ -1,29 +1,76 @@
 <template>
-  <el-row :gutter="10" type="flex">
-    <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24">
+  <el-row :gutter="4">
+    <el-col
+      :xs="{ span: 24 }"
+      :sm="{ span: 11 }"
+      :md="{ span: 9 }"
+      :lg="{ span: 8 }"
+      :xl="{ span: 5 }"
+    >
+      <el-card class="box-card">
+        <div slot="header" class="clearfix">
+          <span class="header-text">Filters</span>
+        </div>
+        <div>
+          <el-form
+            ref="form"
+            :model="searchForm"
+            class="form"
+            label-width="100px"
+            label-position="left"
+          >
+            <el-form-item label="Product">
+              <el-input v-model="searchForm.name" class="block" placeholder="Product"></el-input>
+            </el-form-item>
+            <el-form-item label="Category">
+              <el-input v-model="searchForm.category" class="block" placeholder="Category"></el-input>
+            </el-form-item>
+            <el-form-item label="Subcategory">
+              <el-input v-model="searchForm.subcategory" class="block" placeholder="Subcategory"></el-input>
+            </el-form-item>
+            <el-form-item label="Auction">
+              <el-radio-group v-model="searchForm.isAuction" size="mini">
+                <el-radio-button label="false">Inactive</el-radio-button>
+                <el-radio-button label="unset">|</el-radio-button>
+                <el-radio-button label="true">Active</el-radio-button>
+              </el-radio-group>
+            </el-form-item>
+            <el-form-item label="Stock Status">
+              <el-radio-group v-model="searchForm.stock_status" size="mini">
+                <el-radio-button label="false">Inactive</el-radio-button>
+                <el-radio-button label="unset">|</el-radio-button>
+                <el-radio-button label="true">Active</el-radio-button>
+              </el-radio-group>
+            </el-form-item>
+
+            <el-button
+              type="primary"
+              icon="el-icon-search"
+              class="search"
+              @click="SearchSubmit('searchForm')"
+            >Search</el-button>
+          </el-form>
+        </div>
+      </el-card>
+    </el-col>
+
+    <el-col
+      :xs="{ span: 24 }"
+      :sm="{ span: 13 }"
+      :md="{ span: 15 }"
+      :lg="{ span: 16 }"
+      :xl="{ span: 19 }"
+    >
       <div id="center" class="app-container">
         <div class="filter-container">
-          <el-input
-            v-model="listQuery.name"
-            :placeholder="$t('table.category')"
-            style="width: 200px;"
-            class="filter-item"
-            @keyup.enter.native="handleFilter"
-          />
-          <el-button
-            v-waves
-            class="filter-item"
-            type="primary"
-            icon="el-icon-search"
-            @click="handleFilter"
-          >{{ $t('table.search') }}</el-button>
-          <el-button
-            class="filter-item"
-            style="margin-left: 10px;"
-            type="primary"
-            icon="el-icon-edit"
-            @click="handleCreate"
-          >{{ $t('table.add') }}</el-button>
+          <router-link :to="{ path: 'products/new' }">
+            <el-button
+              class="filter-item"
+              style="margin-left: 10px;"
+              type="primary"
+              icon="el-icon-edit"
+            >{{ $t('table.add') }}</el-button>
+          </router-link>
           <el-button
             v-waves
             :loading="downloadLoading"
@@ -47,23 +94,58 @@
           :key="tableKey"
           v-loading="listLoading"
           :data="list"
-          border
           fit
+          size="mini"
+          class="table-class"
+          align="center"
           highlight-current-row
           style="width: 100%;"
           @sort-change="sortChange"
         >
-          <el-table-column :label="$t('table.category')" width="150px" align="center">
+          <el-table-column :label="$t('Date')" sortable="custom" width="265px" align="center">
+            <template slot-scope="scope">
+              <i class="el-icon-time"/>
+
+              <span>{{ scope.row.buyerDetails.name }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column :label="$t('Name')" width="150px" align="center">
+            <template slot-scope="scope">
+              <span>{{ scope.row.buyerDetails.name }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column :label="$t('Description')" width="100px" align="center">
+            <template slot-scope="scope">
+              <span>{{ hideDescription(scope.row.description) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column :label="$t('Price')" width="100px" align="center">
+            <template slot-scope="scope">
+              <span>{{ scope.row.price }}$</span>
+            </template>
+          </el-table-column>
+          <el-table-column :label="$t('Auction')" width="80px" align="center">
+            <template slot-scope="scope">
+              <span>{{ scope.row.isAuction }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column :label="$t('Category')" width="140px" align="center">
             <template slot-scope="scope">
               <span>{{ scope.row.category }}</span>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('table.subcategory')" width="150px" align="center">
+
+          <el-table-column :label="$t('Stock')" width="80px" align="center">
             <template slot-scope="scope">
-              <span>{{ scope.row.subcategory }}</span>
+              <span>{{ scope.row.stock_level }}</span>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('table.status')" width="150px" align="center">
+          <el-table-column :label="$t('Stock Status')" width="120px" align="center">
+            <template slot-scope="scope">
+              <span>{{ scope.row.stock_status }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column :label="$t('table.status')" width="64px" align="center">
             <template slot-scope="scope">
               <span>{{ scope.row.active }}</span>
             </template>
@@ -75,11 +157,16 @@
             class-name="small-padding fixed-width"
           >
             <template slot-scope="scope">
-              <el-button
-                type="primary"
-                size="mini"
-                @click="handleUpdate(scope.row)"
-              >{{ $t('table.edit') }}</el-button>
+              <router-link :to="{ name: 'Product Details',params:{id:scope.row._id}, }">
+                <el-button type="info" size="mini" @click="changed(scope.row)">{{ $t('Open') }}</el-button>
+              </router-link>
+              <router-link :to="{ name: 'Edit Product',params:{id:scope.row._id}, }">
+                <el-button
+                  type="primary"
+                  size="mini"
+                  @click="changed(scope.row)"
+                >{{ $t('table.edit') }}</el-button>
+              </router-link>
 
               <el-button
                 v-if="scope.row.active === true"
@@ -101,141 +188,30 @@
         <pagination
           v-show="total>0"
           :total="total"
-          :page.sync="listQuery.page"
-          :limit.sync="listQuery.limit"
+          :page.sync="getOrdersQuery.page"
+          :limit.sync="getOrdersQuery.limit"
           class="pagination"
           @pagination="getList"
         />
-
-        <el-dialog
-          :title="textMap[dialogStatus]"
-          :visible.sync="dialogFormVisible"
-          class="dialog-size"
-        >
-          <el-row :gutter="10" type="flex">
-            <el-col :xs="21" :sm="22" :md="20" :lg="16" :xl="16">
-              <el-form
-                ref="dynamicValidateForm"
-                :model="dynamicValidateForm"
-                label-width="120px"
-                class="demo-dynamic"
-              >
-                <el-form-item prop="category" label="Category">
-                  <el-input v-model="dynamicValidateForm.category"/>
-                </el-form-item>
-                <el-form-item prop="subcategory" label="Subcategory">
-                  <el-input v-model="dynamicValidateForm.subcategory"/>
-                </el-form-item>
-
-                <el-form-item
-                  v-for="(attribute, index) in dynamicValidateForm.attributes"
-                  :key="attribute.key"
-                  :label="'Attribute '"
-                  :prop="'attributes.' + index + '.name'"
-                  :rules="{
-                    required: true, message: 'attribute can not be null', trigger: 'blur'
-                  }"
-                  style="padding-left:15%"
-                >
-                  <el-input v-model="attribute.name" class="input-field"/>
-                  <el-select v-model="attribute.fieldType" class="select-size" placeholder="Select">
-                    <el-option
-                      v-for="item in options"
-                      :key="item.value"
-                      :label="item.label"
-                      :value="item.value"
-                    />
-                  </el-select>
-                  <el-checkbox
-                    v-model="attribute.required"
-                    :prop="'attributes.' + index + '.required'"
-                  >Required</el-checkbox>
-
-                  <el-button @click.prevent="removeattribute(attribute)">Delete</el-button>
-                </el-form-item>
-                <el-form-item>
-                  <el-button type="primary" @click="submitForm('dynamicValidateForm')">Submit</el-button>
-                  <el-button @click="addAttribute">Add new Attribute</el-button>
-                  <el-button @click="resetForm('dynamicValidateForm')">Reset</el-button>
-                </el-form-item>
-              </el-form>
-            </el-col>
-          </el-row>
-        </el-dialog>
-
-        <el-dialog
-          :visible.sync="dialogPvVisible"
-          title="Update Category"
-          class="dialog-size"
-          @click="updateForm('dynamicValidateForm')"
-        >
-          <el-form
-            ref="dynamicValidateForm"
-            :model="dynamicValidateForm"
-            label-width="120px"
-            class="demo-dynamic"
-          >
-            <el-form-item prop="category" label="Category">
-              <el-input v-model="dynamicValidateForm.category"/>
-            </el-form-item>
-            <el-form-item prop="subcategory" label="Subcategory">
-              <el-input v-model="dynamicValidateForm.subcategory"/>
-            </el-form-item>
-
-            <el-form-item
-              v-for="(attribute, index) in dynamicValidateForm.attributes"
-              :key="attribute.key"
-              :label="'Attribute '"
-              :prop="'attributes.' + index + '.name'"
-              :rules="{
-                required: true, message: 'attribute can not be null', trigger: 'blur'
-              }"
-              style="padding-left:15%"
-            >
-              <el-input v-model="attribute.name" class="input-field"/>
-              <el-select v-model="attribute.fieldType" placeholder="Select">
-                <el-option
-                  v-for="item in options"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                />
-              </el-select>
-              <el-checkbox
-                v-model="attribute.required"
-                :prop="'attributes.' + index + '.required'"
-              >Required</el-checkbox>
-
-              <el-button
-                class="delete-btn"
-                button
-                @click.prevent="removeattribute(attribute)"
-              >Delete</el-button>
-            </el-form-item>
-            <el-form-item>
-              <el-button type="primary" @click="updateForm('dynamicValidateForm')">Update</el-button>
-              <el-button @click="addAttribute">Add new Attribute</el-button>
-              <el-button @click="resetForm('dynamicValidateForm')">Reset</el-button>
-            </el-form-item>
-          </el-form>
-        </el-dialog>
       </div>
     </el-col>
   </el-row>
 </template>
 
 <script>
-// TODO: Validation & on Enter Submit form.
-import { fetchList, fetchPv, updateArticle } from '@/api/article'
+import {
+  getAllProducts,
+  getSelectedSubcategory,
+  searchProducts,
+  changeProductStatus
+} from '@/api/products'
+import { getAllOrders } from '@/api/orders'
 import waves from '@/directive/waves' // Waves directive
 import { parseTime } from '@/utils'
+
+import store from '../../store'
 import Pagination from '@/components/Pagination' // Secondary package based on el-pagination
-import {
-  searchByCategoryName,
-  deleteSubCategory,
-  addCategory,
-  updateCategory
-} from '@/api/categories'
+import * as moment from 'moment'
 
 export default {
   name: 'Orders',
@@ -256,7 +232,8 @@ export default {
   },
   data() {
     return {
-      dynamicValidateForm: {
+      ProductsForm: {
+        price: 1,
         attributes: [
           {
             name: '',
@@ -265,45 +242,46 @@ export default {
         ],
         category: '',
         active: true,
-        subcategory: ''
+        subcategory: '',
+        searchValue: '',
+        isBundle: false
       },
-      options: [
-        {
-          value: 'String',
-          label: 'String'
-        },
-        {
-          value: 'Number',
-          label: 'Number'
-        },
-        {
-          value: 'Boolean',
-          label: 'Boolean'
-        },
-        {
-          value: 'List',
-          label: 'List'
-        }
-      ],
+
+      searchForm: {
+        category: '',
+        subcategory: '',
+        name: '',
+        isAuction: 'unset',
+        stock_status: 'unset'
+      },
+      centerDialogVisible: false,
+      value10: [],
       tableKey: 0,
       list: null,
-      total: 0,
       type: 'success',
       icon: 'el-icon-check',
+      listSubcategories: [],
+      total: 0,
       listLoading: true,
-      listQuery: {
+      getSubcategoriesQuery: {
         page: 1,
-        limit: 10,
-        importance: undefined,
-        name: undefined,
-        type: undefined,
+        limit: 999,
         status: true
+      },
+      getOrdersQuery: {
+        page: 1,
+        limit: 20,
+        status: true,
+        sortType: 'desc'
       },
       importanceOptions: [1, 2, 3],
       sortOptions: [
         { label: 'ID Ascending', key: '+id' },
         { label: 'ID Descending', key: '-id' }
       ],
+      statusOptions: ['published', 'draft', 'deleted'],
+      showReviewer: false,
+      tableStatus: true,
       temp: {
         id: undefined,
         importance: 1,
@@ -316,12 +294,10 @@ export default {
       dialogStatus: '',
       textMap: {
         update: 'Edit',
-        create: 'Create Category'
+        create: 'Add Product'
       },
       dialogPvVisible: false,
       pvData: [],
-      showReviewer: false,
-
       rules: {
         type: [
           { required: true, message: 'type is required', trigger: 'change' }
@@ -339,58 +315,97 @@ export default {
       downloadLoading: false
     }
   },
-  // Get items on create
   created() {
     this.getList()
   },
+
+
   methods: {
     getList() {
       if (
-        this.listQuery.name === undefined ||
-        this.listQuery.name === '' ||
-        this.listQuery.name === ' '
+        this.getOrdersQuery.name === undefined ||
+        this.getOrdersQuery.name === '' ||
+        this.getOrdersQuery.name === ' '
       ) {
         this.listLoading = true
-        fetchList(this.listQuery).then(response => {
-          this.list = response.data.docs
-          this.total = response.data.total
+        getAllOrders(this.getOrdersQuery).then(response => {
+          this.list = response.data.results.docs
+          console.log(this.list)
+          this.total = response.data.results.total
           this.listLoading = false
         })
       } else {
         this.getFilerResults()
       }
     },
-    getFilerResults() {
+
+    handleFilter() {
+      if (
+        this.getOrdersQuery.name === undefined ||
+        this.getOrdersQuery.name === '' ||
+        this.getOrdersQuery.name === ' '
+      ) {
+        this.getOrdersQuery.page = 1
+        this.getList()
+      } else {
+        this.getOrdersQuery.page = 1
+        this.getFilerResults()
+      }
+    },
+    sortChange(data) {
+      if (data.order === 'ascending') {
+        this.getOrdersQuery.sortType = 'asc'
+      } else {
+        this.getOrdersQuery.sortType = 'desc'
+      }
+      this.getList()
+    },
+    sortByID(order) {
+      if (order === 'ascending') {
+        this.getOrdersQuery.sort = '+id'
+      } else {
+        this.getOrdersQuery.sort = '-id'
+      }
+      this.handleFilter()
+    },
+    // Reset Modal form fields
+    resetTemp() {
+      const reset = (this.temp = {
+        attributes: [
+          {
+            name: '',
+            required: true
+          }
+        ],
+        category: '',
+        active: true,
+        subcategory: '',
+        price: 1
+      })
+      return reset
+    },
+    // Search form
+    SearchSubmit() {
+      Object.keys(this.searchForm).forEach((key) => (this.searchForm[key] == null || this.searchForm[key] == '' || this.searchForm[key] == 'unset') && delete this.searchForm[key]);
+
       this.listLoading = true
-      searchByCategoryName(
-        this.listQuery.name,
-        this.listQuery.page,
-        this.listQuery.limit,
-        this.listQuery.status
-      ).then(results => {
+      this.searchForm.page = this.getOrdersQuery.page
+      this.searchForm.limit = this.getOrdersQuery.limit
+      this.searchForm.sortType = this.getOrdersQuery.sortType
+      this.searchForm.isBundle = this.getOrdersQuery.isBundle
+
+
+      console.log(this.searchForm)
+      searchProducts(this.searchForm).then(results => {
         this.list = results.data.docs
         this.total = results.data.total
         this.listLoading = false
       })
+      this.centerDialogVisible = false
     },
-    // Searching in the table
-    handleFilter() {
-      if (
-        this.listQuery.name === undefined ||
-        this.listQuery.name === '' ||
-        this.listQuery.name === ' '
-      ) {
-        this.listQuery.page = 1
-        this.getList()
-      } else {
-        this.listQuery.page = 1
-        this.getFilerResults()
-      }
-    },
-    // Handle status change
     handleModifyStatus(row, status) {
       if (status === 'deleted') {
-        deleteSubCategory(row._id, 'false').then(res => {
+        changeProductStatus(row._id, 'false').then(res => {
           if (res.status) {
             this.$message({
               message: 'success',
@@ -403,7 +418,7 @@ export default {
           }
         })
       } else if (status === 'activate') {
-        deleteSubCategory(row._id, 'true').then(res => {
+        changeProductStatus(row._id, 'true').then(res => {
           if (res.status) {
             this.$notify({
               title: 'success',
@@ -419,66 +434,41 @@ export default {
         })
       }
     },
-
-    // Sorting change
-    sortChange(data) {
-      const { prop, order } = data
-      if (prop === 'id') {
-        this.sortByID(order)
-      }
-    },
-
-    // Sorting by ID
-    sortByID(order) {
-      if (order === 'ascending') {
-        this.listQuery.sort = '+id'
-      } else {
-        this.listQuery.sort = '-id'
-      }
-      this.handleFilter()
-    },
-    // Reset Modal-Form values
-    resetTemp() {
-      const reset = (this.temp = {
-        attributes: [
-          {
-            name: '',
-            required: true
-          }
-        ],
-        category: '',
-        active: true,
-        subcategory: ''
-      })
-      return reset
-    },
-    // Handle create method
+    // Handle Creating new Product
     handleCreate() {
-      this.dynamicValidateForm = this.resetTemp()
+      this.ProductsForm = this.resetTemp()
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
       this.$nextTick(() => {
-        this.$refs['dynamicValidateForm'].clearValidate()
+        this.$refs['ProductsForm'].clearValidate()
       })
     },
 
-    // Add new attributes
+    searchSubcategory(query) {
+      if (query !== '' && query.length >= 3) {
+        this.loading = true
+        console.log(query)
+        getSelectedSubcategory(query).then(response => {
+          this.listSubcategories = response.data
+          console.log(response.data)
+        })
+      } else {
+        this.listSubcategories = []
+      }
+    },
 
+    // Add new attributes
     addAttribute() {
-      this.dynamicValidateForm.attributes.push({
+      this.ProductsForm.attributes.push({
         required: true,
         name: ''
       })
     },
-
     // Submit Dialog form for Adding
-    submitForm(dynamicValidateForm) {
-      this.$refs[dynamicValidateForm].validate(valid => {
+    submitForm(ProductsForm) {
+      this.$refs[ProductsForm].validate(valid => {
         if (valid) {
-          addCategory(this.dynamicValidateForm)
-            .then(this.getList())
-            .catch(err => console.log(err))
-          // this.resetForm('dynamicValidateForm')
+          console.log(this.ProductsForm)
 
           this.$notify({
             title: 'success',
@@ -494,86 +484,37 @@ export default {
         }
       })
     },
-    // Edit Enitity
-    updateForm(dynamicValidateForm) {
-      this.$refs[dynamicValidateForm].validate(valid => {
-        if (valid) {
-          updateCategory(this.dynamicValidateForm)
-            .then(console.log(this.dynamicValidateForm), this.getList())
-            .catch(err => console.log(err))
-          this.$notify({
-            title: 'success',
-            message: 'Successfully updated Category',
-            type: 'success',
-            duration: 2000
-          })
-          this.dialogPvVisible = false
-        } else {
-          console.log('error submit!!')
-          return false
-        }
-      })
+    moment: function (date) {
+      return moment(date).format('MMMM Do YYYY, h:mm:ss a')
     },
-
     // Reseting Dialog form
     resetForm(formName) {
       this.$refs[formName].resetFields()
-      while (this.dynamicValidateForm.attributes.length > 0) {
-        this.dynamicValidateForm.attributes.pop()
+      while (this.ProductsForm.attributes.length > 0) {
+        this.ProductsForm.attributes.pop()
       }
     },
     // Remove attribute dinamically
     removeattribute(item) {
-      var index = this.dynamicValidateForm.attributes.indexOf(item)
+      var index = this.ProductsForm.attributes.indexOf(item)
       if (index !== -1) {
-        this.dynamicValidateForm.attributes.splice(index, 1)
+        this.ProductsForm.attributes.splice(index, 1)
       }
     },
     // Handling update on edit
-    handleUpdate(row) {
-      this.dynamicValidateForm = row
-      this.temp = Object.assign({}, row) // copy obj
-      this.temp.timestamp = new Date(this.temp.timestamp)
-      this.dialogStatus = 'update'
-      this.dialogPvVisible = true
+    changed: function (row) {
+      store.commit('CHANGE', row)
+    },
+    getProduct: function (event) {
+      console.log(event)
+      this.$router.push({ name: 'ProductDetails' })
     },
 
-    updateData() {
-      this.$refs['dataForm'].validate(valid => {
-        if (valid) {
-          const tempData = Object.assign({}, this.temp)
-          tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-          updateArticle(tempData).then(() => {
-            for (const v of this.list) {
-              if (v.id === this.temp.id) {
-                const index = this.list.indexOf(v)
-                this.list.splice(index, 1, this.temp)
-                break
-              }
-            }
-            this.dialogFormVisible = false
-            this.$notify({
-              title: '成功',
-              message: '更新成功',
-              type: 'success',
-              duration: 2000
-            })
-          })
-        }
-      })
-    },
-
-    handleFetchPv(pv) {
-      fetchPv(pv).then(response => {
-        this.pvData = response.data.pvData
-        this.dialogPvVisible = true
-      })
-    },
     handleDownload() {
       this.downloadLoading = true
       import('@/vendor/Export2Excel').then(excel => {
-        const tHeader = ['Category', 'Subcategory', 'ACTIVE']
-        const filterVal = ['category', 'subcategory', 'active']
+        const tHeader = ['DATE', 'Product Name', 'CATEGORY', 'SUBCATEGORY']
+        const filterVal = ['date', 'Name', 'category', 'subcategory']
         const data = this.formatJson(filterVal, this.list)
         excel.export_json_to_excel({
           header: tHeader,
@@ -584,17 +525,23 @@ export default {
       })
     },
     handleStatus() {
-      this.listQuery.status = !this.listQuery.status
-      if (this.listQuery.status === true) {
+      this.getOrdersQuery.status = !this.getOrdersQuery.status
+      if (this.getOrdersQuery.status === true) {
         this.type = 'success'
         this.icon = 'el-icon-check'
       } else {
         this.type = 'danger'
         this.icon = 'el-icon-delete'
       }
-      this.tableStatus = this.listQuery.status
+      this.tableStatus = this.getOrdersQuery.status
       this.getList()
     },
+    hideDescription(string) {
+      return string.length > length
+        ? string.substring(0, 30 - 3) + '...'
+        : string
+    },
+
     formatJson(filterVal, jsonData) {
       return jsonData.map(v =>
         filterVal.map(j => {
@@ -605,32 +552,42 @@ export default {
           }
         })
       )
-    }
-  }
-}
-</script>
-<style scoped>
-.app-container {
-  margin: 0 auto;
-  max-width: 723px;
+    },
+
+  },
+
 }
 
+</script>
+<style scoped>
 .input-field {
   padding-bottom: 2%;
 }
-/*
-.dialog-size {
-  width: 50%;
-  margin: 0 auto;
+.filter-container {
+  text-align: center;
 }
-.select-size {
-  width: 100%;
-} */
 
 .pagination {
   text-align: center;
 }
-.filter-container {
-  text-align: center;
+
+@media (max-width: 900px) {
+  .box-card {
+    margin-right: 20px;
+  }
+}
+
+.search {
+  margin: 3%;
+  float: right;
+  width: 100%;
+  min-width: 50px;
+  max-width: 100px;
+}
+.box-card {
+  border: 1px solid #47c58c;
+
+  margin-top: 70px;
+  margin-left: 20px;
 }
 </style>

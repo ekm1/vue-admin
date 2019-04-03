@@ -90,14 +90,6 @@
                 <el-input v-model="ProductsForm.data.category" :disabled="true"/>
               </el-col>
             </el-form-item>
-            <el-form-item prop="subcategory" label="Stock">
-              <el-input-number
-                v-model="ProductsForm.data.stock_level"
-                :step="1"
-                :min="0"
-                @change="stockChanger"
-              />
-            </el-form-item>
 
             <el-form-item>
               <el-container id="preview" class="images-thumbnail">
