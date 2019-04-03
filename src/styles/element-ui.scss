@@ -6,7 +6,7 @@
 }
 
 .el-upload {
-  input[type='file'] {
+  input[type="file"] {
     display: none !important;
   }
 }
@@ -19,6 +19,9 @@
   .el-tag {
     margin-right: 0px;
   }
+}
+.app-main {
+  background-color: #f0f2f5;
 }
 
 .small-padding {
@@ -34,7 +37,9 @@
     width: 60px;
   }
 }
-
+.card-holder {
+  margin: 1%;
+}
 .status-col {
   .cell {
     padding: 0 10px;
@@ -126,7 +131,7 @@
   }
 }
 
-input[type='file'] {
+input[type="file"] {
   display: none;
 }
 
