@@ -96,12 +96,14 @@
             v-loading="listLoading"
             :data="list"
             fit
+            ref="ordersTable"
+            @row-click="goToInvoice"
             size="mini"
             class="table-class"
             align="center"
             highlight-current-row
             style="width: 100%;"
-            @sort-change="sortChange"
+            @sort-change="sortChange(scope.row)"
           >
             <el-table-column :label="$t('Date')" sortable="custom" width="200px" align="center">
               <template slot-scope="scope">
@@ -157,58 +159,62 @@
                 </el-popover>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('Category')" width="140px" align="center">
+            <el-table-column type="expand" width="20px">
+              <template slot-scope="props">
+                <div v-for="product in props.row.orderdItems">
+                  <div>
+                    <p class="product-items">{{product.itemName}}</p>
+                    <p class="product-items">{{product.itemQuantity}}</p>
+                    <p class="product-items">{{product.itemPrice}}</p>
+                    <hr>
+                  </div>
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('Products')" width="80px" align="center">
               <template slot-scope="scope">
-                <span>{{ scope.row.category }}</span>
+                <div slot="reference" class="name-wrapper">
+                  <el-tag
+                    type="success"
+                    style="margin-left:10px"
+                    size="medium"
+                  >{{getQuantity(scope.row.orderdItems) }}</el-tag>
+                </div>
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('Tracking')" width="120px" align="center">
+              <template slot-scope="scope">
+                <div v-if="scope.row.orderStatus === 'Shipped'">
+                  <span>{{ scope.row.trackingNumber }}</span>
+                </div>
+                <div v-else="scope.row.orderStatus === 'Pending'">
+                  <span>Not Available</span>
+                </div>
               </template>
             </el-table-column>
 
-            <el-table-column :label="$t('Stock')" width="80px" align="center">
-              <template slot-scope="scope">
-                <span>{{ scope.row.stock_level }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column :label="$t('Stock Status')" width="120px" align="center">
-              <template slot-scope="scope">
-                <span>{{ scope.row.stock_status }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column :label="$t('table.status')" width="64px" align="center">
-              <template slot-scope="scope">
-                <span>{{ scope.row.active }}</span>
-              </template>
-            </el-table-column>
             <el-table-column
               :label="$t('table.actions')"
               align="center"
-              width="230"
+              width="300"
               class-name="small-padding fixed-width"
             >
               <template slot-scope="scope">
-                <router-link :to="{ name: 'Product Details',params:{id:scope.row._id}, }">
-                  <el-button type="info" size="mini" @click="changed(scope.row)">{{ $t('Open') }}</el-button>
-                </router-link>
-                <router-link :to="{ name: 'Edit Product',params:{id:scope.row._id}, }">
-                  <el-button
-                    type="primary"
-                    size="mini"
-                    @click="changed(scope.row)"
-                  >{{ $t('table.edit') }}</el-button>
-                </router-link>
-
                 <el-button
-                  v-if="scope.row.active === true"
-                  size="mini"
-                  type="danger"
-                  @click="handleModifyStatus(scope.row,'deleted')"
-                >{{ $t('table.delete') }}</el-button>
-
+                  type="info"
+                  size="small"
+                  @click.stop="changeOrderStatus(orderStatus[0],scope.row._id)"
+                >{{ $t('Pending') }}</el-button>
                 <el-button
-                  v-if="scope.row.active ===false"
-                  size="mini"
                   type="success"
-                  @click="handleModifyStatus(scope.row,'activate')"
-                >Activate</el-button>
+                  size="small"
+                  @click.stop="changeOrderStatus(orderStatus[1],scope.row._id)"
+                >{{ $t('Shipped') }}</el-button>
+                <el-button
+                  type="primary"
+                  size="small"
+                  @click.stop="changeOrderStatus(orderStatus[2],scope.row._id)"
+                >{{ $t('Completed') }}</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -223,18 +229,24 @@
           />
         </div>
       </el-card>
+      <el-dialog title="Add Tracking" :visible.sync="centerDialogVisible" width="20%" center>
+        <el-form :inline="true" :model="formInline" class="demo-form-inline">
+          <el-form-item>
+            <el-input v-model="formInline.trackingNumber" placeholder="Tracking Number"></el-input>
+          </el-form-item>
+
+          <el-form-item>
+            <el-button type="primary" @click="submitForm">Submit</el-button>
+          </el-form-item>
+        </el-form>
+      </el-dialog>
     </el-col>
   </el-row>
 </template>
 
 <script>
-import {
-  getAllProducts,
-  getSelectedSubcategory,
-  searchProducts,
-  changeProductStatus
-} from "@/api/products";
-import { getAllOrders } from "@/api/orders";
+
+import { getAllOrders, setTracking } from "@/api/orders";
 import waves from "@/directive/waves"; // Waves directive
 import { parseTime } from "@/utils";
 
@@ -261,21 +273,6 @@ export default {
   },
   data() {
     return {
-      ProductsForm: {
-        price: 1,
-        attributes: [
-          {
-            name: "",
-            required: true
-          }
-        ],
-        category: "",
-        active: true,
-        subcategory: "",
-        searchValue: "",
-        isBundle: false
-      },
-
       searchForm: {
         category: "",
         subcategory: "",
@@ -288,14 +285,23 @@ export default {
       tableKey: 0,
       list: null,
       type: "success",
+      setStatus: {
+        orderId: '',
+        orderHistory: []
+      },
       icon: "el-icon-check",
+      orderStatus: [{ status: 'Pending', notes: 'Your order is Pending' }, { status: 'Shipped', notes: 'Your order has been Shipped' }, { status: 'Completed', notes: 'Your order is Delivered' }],
       listSubcategories: [],
       total: 0,
+
       listLoading: true,
       getSubcategoriesQuery: {
         page: 1,
         limit: 999,
         status: true
+      },
+      formInline: {
+        trackingNumber: ''
       },
       getOrdersQuery: {
         page: 1,
@@ -303,7 +309,9 @@ export default {
         status: true,
         sortType: "desc"
       },
-      importanceOptions: [1, 2, 3],
+      centerDialogVisible: false,
+
+
       sortOptions: [
         { label: "ID Ascending", key: "+id" },
         { label: "ID Descending", key: "-id" }
@@ -311,14 +319,6 @@ export default {
       statusOptions: ["published", "draft", "deleted"],
       showReviewer: false,
       tableStatus: true,
-      temp: {
-        id: undefined,
-        importance: 1,
-        remark: "",
-        timestamp: new Date(),
-        name: "",
-        type: ""
-      },
       dialogFormVisible: false,
       dialogStatus: "",
       textMap: {
@@ -326,21 +326,7 @@ export default {
         create: "Add Product"
       },
       dialogPvVisible: false,
-      pvData: [],
-      rules: {
-        type: [
-          { required: true, message: "type is required", trigger: "change" }
-        ],
-        timestamp: [
-          {
-            type: "date",
-            required: true,
-            message: "timestamp is required",
-            trigger: "change"
-          }
-        ],
-        name: [{ required: true, message: "name is required", trigger: "blur" }]
-      },
+
       downloadLoading: false
     };
   },
@@ -388,6 +374,9 @@ export default {
       }
       this.getList();
     },
+    getQuantity(items) {
+      return items.length
+    },
     sortByID(order) {
       if (order === "ascending") {
         this.getOrdersQuery.sort = "+id";
@@ -411,6 +400,15 @@ export default {
         price: 1
       });
       return reset;
+    },
+    async changeOrderStatus(data, row) {
+      if (data.status === 'Shipped') {
+        this.addTracking(row)
+      } else {
+        this.setStatus.orderId = row
+        this.setStatus.orderHistory = data
+        console.log(this.setStatus)
+      }
     },
     // Search form
     SearchSubmit() {
@@ -467,6 +465,19 @@ export default {
         });
       }
     },
+    goToInvoice(row) {
+      store.commit("INVOICE", row);
+
+      this.$refs.ordersTable.setCurrentRow('');
+
+
+      this.$router.push({ path: `/sales/invoices/${row._id}` });
+
+    },
+    addTracking(row) {
+      this.centerDialogVisible = true
+      this.formInline.orderId = row._id
+    },
     // Handle Creating new Product
     handleCreate() {
       this.ProductsForm = this.resetTemp();
@@ -497,27 +508,19 @@ export default {
         name: ""
       });
     },
+
     // Submit Dialog form for Adding
-    submitForm(ProductsForm) {
-      this.$refs[ProductsForm].validate(valid => {
-        if (valid) {
-          console.log(this.ProductsForm);
+    submitForm(formInline) {
 
-          this.$notify({
-            title: "success",
-            message: "Successfully created new Category",
-            type: "success",
-            duration: 2000
-          });
 
-          this.dialogFormVisible = false;
-        } else {
-          console.log("error submit!!");
-          return false;
-        }
-      });
+      setTracking(this.formInline).then(response => {
+        console.log(response)
+      })
+      this.dialogFormVisible = false
+
     },
-    moment: function(date) {
+
+    moment: function (date) {
       return moment(date).format("MMMM Do YYYY, h:mm:ss a");
     },
     // Reseting Dialog form
@@ -535,10 +538,10 @@ export default {
       }
     },
     // Handling update on edit
-    changed: function(row) {
+    changed: function (row) {
       store.commit("CHANGE", row);
     },
-    getProduct: function(event) {
+    getProduct: function (event) {
       console.log(event);
       this.$router.push({ name: "ProductDetails" });
     },
@@ -617,5 +620,11 @@ export default {
 .box-card {
   margin-top: 13px;
   margin-left: 20px;
+}
+.product-items {
+  display: inline-block;
+}
+.product-expand {
+  margin: 10px;
 }
 </style>

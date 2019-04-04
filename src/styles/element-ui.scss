@@ -6,7 +6,7 @@
 }
 
 .el-upload {
-  input[type="file"] {
+  input[type='file'] {
     display: none !important;
   }
 }
@@ -69,7 +69,11 @@
     border-bottom: 1px solid #bfcbd9;
   }
 }
-
+.el-button--success {
+  color: #fff;
+  background-color: #13ce66;
+  border-color: #13ce66;
+}
 //element ui upload
 .upload-container {
   .el-upload {
@@ -131,7 +135,7 @@
   }
 }
 
-input[type="file"] {
+input[type='file'] {
   display: none;
 }
 

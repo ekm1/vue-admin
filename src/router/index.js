@@ -103,7 +103,7 @@ export const constantRouterMap = [
         }
       },
       {
-        path: 'invoices',
+        path: 'invoices/:id',
         component: () => import('@/views/sales/invoices'),
         name: 'Invoices',
         meta: {

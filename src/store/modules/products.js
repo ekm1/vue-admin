@@ -5,6 +5,9 @@ const products = {
   mutations: {
     CHANGE(state, productDetails) {
       state.productDetails = productDetails
+    },
+    INVOICE(state, orderDetails) {
+      state.orderDetails = orderDetails
     }
   },
   actions: {}

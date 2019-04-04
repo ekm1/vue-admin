@@ -8,6 +8,15 @@ export function getAllOrders(data) {
     data
   })
 }
+
+export function setTracking(data) {
+  return request({
+    url: '/api/orders/setTrackingNumber',
+    method: 'post',
+    data
+  })
+}
+
 // Function to select Subcategories based on Name
 // export function getSelectedSubcategory(query) {
 //   return request({

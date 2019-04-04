@@ -97,6 +97,8 @@ import {
   createArticle,
   updateArticle
 } from "@/api/article";
+import store from "../../store";
+
 import waves from "@/directive/waves"; // Waves directive
 import { parseTime } from "@/utils";
 import Pagination from "@/components/Pagination"; // Secondary package based on el-pagination
@@ -190,7 +192,9 @@ export default {
     };
   },
   created() {
-    this.getList();
+
+    console.log(store.state.products.orderDetails)
+
   },
   methods: {
     getList() {
