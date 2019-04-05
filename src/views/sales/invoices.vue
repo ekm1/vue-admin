@@ -1,169 +1,151 @@
 <template>
   <div class="app-container">
-    <el-button type="primary" @click="fetchData">Click to download PDF</el-button>
-
-    <el-card class="card-holder" id="printable">
-      <header class="clearfix">
-        <div class="container">
-          <figure>
-            <img
-              class="logo"
-              src="data:image/svg+xml;charset=utf-8;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+Cjxzdmcgd2lkdGg9IjQ4cHgiIGhlaWdodD0iNDdweCIgdmlld0JveD0iMCAwIDQ4IDQ3IiB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHhtbG5zOnNrZXRjaD0iaHR0cDovL3d3dy5ib2hlbWlhbmNvZGluZy5jb20vc2tldGNoL25zIj4KICAgIDwhLS0gR2VuZXJhdG9yOiBTa2V0Y2ggMy40LjEgKDE1NjgxKSAtIGh0dHA6Ly93d3cuYm9oZW1pYW5jb2RpbmcuY29tL3NrZXRjaCAtLT4KICAgIDx0aXRsZT5ob21lNDwvdGl0bGU+CiAgICA8ZGVzYz5DcmVhdGVkIHdpdGggU2tldGNoLjwvZGVzYz4KICAgIDxkZWZzPjwvZGVmcz4KICAgIDxnIGlkPSJQYWdlLTEiIHN0cm9rZT0ibm9uZSIgc3Ryb2tlLXdpZHRoPSIxIiBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIHNrZXRjaDp0eXBlPSJNU1BhZ2UiPgogICAgICAgIDxnIGlkPSJJTlZPSUNFLTMiIHNrZXRjaDp0eXBlPSJNU0FydGJvYXJkR3JvdXAiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0zOC4wMDAwMDAsIC00MS4wMDAwMDApIiBmaWxsPSIjRkZGRkZGIj4KICAgICAgICAgICAgPGcgaWQ9IlpBR0xBVkxKRSIgc2tldGNoOnR5cGU9Ik1TTGF5ZXJHcm91cCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMzAuMDAwMDAwLCAyNS4wMDAwMDApIj4KICAgICAgICAgICAgICAgIDxnIGlkPSJob21lNCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOC4wMDAwMDAsIDE2LjAwMDAwMCkiIHNrZXRjaDp0eXBlPSJNU1NoYXBlR3JvdXAiPgogICAgICAgICAgICAgICAgICAgIDxwYXRoIGQ9Ik00Ni40MzQ3MTE0LDIxLjI5MTAxNzMgTDM5LjI3NzM2MTQsMTMuNjY2ODQ1MyBMMzkuMjc3MzYxNCw0Ljg1OTI0NjYgQzM5LjI3NzM2MTQsMy4yNjcwODUyMSAzOC4wNjYxNTc5LDEuOTc2Mzk3NDIgMzYuNTY4NTk4NCwxLjk3NjM5NzQyIEMzNS4wNzQ4NTIyLDEuOTc2Mzk3NDIgMzMuODYzNjQ4NywzLjI2NzA4NTIxIDMzLjg2MzY0ODcsNC44NTkyNDY2IEwzMy44NjM2NDg3LDcuODk5NzUwNjEgTDI4LjUzNDE4NjQsMi4yMjI3ODA2OCBDMjUuODk5MDY4LC0wLjU4MjEyOTY0NCAyMS4zMTc3MywtMC41NzcxNzkxMzEgMTguNjg5MDQ2NiwyLjIyNzczMTE5IEwwLjc5MjIxNTc1OSwyMS4yOTEwMTczIEMtMC4yNjM5NTI3NTQsMjIuNDE4NTkyIC0wLjI2Mzk1Mjc1NCwyNC4yNDMzMDA2IDAuNzkyMjE1NzU5LDI1LjM2ODg0NDMgQzEuODQ5NDU2NzcsMjYuNDk2NDE5IDMuNTY1Njg1OTEsMjYuNDk2NDE5IDQuNjIxODU0NDIsMjUuMzY4ODQ0MyBMMjIuNTE2Nzc4Niw2LjMwNTU1ODI0IEMyMy4xMDAwOTYzLDUuNjg3NzU5NTEgMjQuMTI3NDI2Nyw1LjY4Nzc1OTUxIDI0LjcwNzQwNzcsNi4zMDM2NTQyIEw0Mi42MDUwNzI3LDI1LjM2ODg0NDMgQzQzLjEzNjE5NTcsMjUuOTMyNTY4MiA0My44Mjc5NTQ1LDI2LjIxMzIyNDMgNDQuNTE5NzEzMywyNi4yMTMyMjQzIEM0NS4yMTI3ODI5LDI2LjIxMzIyNDMgNDUuOTA1OTcxNywyNS45MzI1NjgyIDQ2LjQzNTE4ODEsMjUuMzY4ODQ0MyBDNDcuNDkxODMzMiwyNC4yNDMzMDA2IDQ3LjQ5MTgzMzIsMjIuNDE4NTkyIDQ2LjQzNDcxMTQsMjEuMjkxMDE3MyBMNDYuNDM0NzExNCwyMS4yOTEwMTczIFoiIGlkPSJGaWxsLTEiPjwvcGF0aD4KICAgICAgICAgICAgICAgICAgICA8cGF0aCBkPSJNMjQuNTUzODAyNywxMS43NzgyODc3IEMyNC4wMzM4ODEzLDExLjIyNDg0NTcgMjMuMTkyMjExNywxMS4yMjQ4NDU3IDIyLjY3MzcyMDMsMTEuNzc4Mjg3NyBMNi45MzE2NDk1NiwyOC41NDE3NDI4IEM2LjY4MzA2OTIyLDI4LjgwNjAyNDEgNi41NDI0NTMzMSwyOS4xNjc1Mzg2IDYuNTQyNDUzMzEsMjkuNTQ0Mjg1MyBMNi41NDI0NTMzMSw0MS43NzE0MTk3IEM2LjU0MjQ1MzMxLDQ0LjY0MDMwNTkgOC43MjYxNzA3OCw0Ni45NjYyODU3IDExLjQxOTQ0MjIsNDYuOTY2Mjg1NyBMMTkuMjEzMTM4OCw0Ni45NjYyODU3IEwxOS4yMTMxMzg4LDM0LjEwOTAzOTkgTDI4LjAxMjM1ODQsMzQuMTA5MDM5OSBMMjguMDEyMzU4NCw0Ni45NjYyODU3IEwzNS44MDY2NTA4LDQ2Ljk2NjI4NTcgQzM4LjQ5OTkyMjIsNDYuOTY2Mjg1NyA0MC42ODM1MjA1LDQ0LjY0MDMwNTkgNDAuNjgzNTIwNSw0MS43NzE0MTk3IEw0MC42ODM1MjA1LDI5LjU0NDI4NTMgQzQwLjY4MzUyMDUsMjkuMTY3NTM4NiA0MC41NDM4NTc5LDI4LjgwNjAyNDEgNDAuMjk0NDQzNCwyOC41NDE3NDI4IEwyNC41NTM4MDI3LDExLjc3ODI4NzcgWiIgaWQ9IkZpbGwtMyI+PC9wYXRoPgogICAgICAgICAgICAgICAgPC9nPgogICAgICAgICAgICA8L2c+CiAgICAgICAgPC9nPgogICAgPC9nPgo8L3N2Zz4="
-              alt
-            >
-          </figure>
-          <div class="company-info">
-            <h2 class="title">Lorem</h2>
-            <div class="address">
-              <p>
-                455 lorem lorem,
-                <br>AZ 85004, US
-              </p>
-            </div>
-            <div class="phone">
-              <a href="tel:602-519-0450">(xxx) xxx-xxx</a>
-            </div>
-            <div class="email">
-              <span class="icon">
-                <img
-                  src="data:image/svg+xml;charset=utf-8;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+Cjxzdmcgd2lkdGg9IjZweCIgaGVpZ2h0PSI0cHgiIHZpZXdCb3g9IjAgMCA2IDQiIHZlcnNpb249IjEuMSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgeG1sbnM6c2tldGNoPSJodHRwOi8vd3d3LmJvaGVtaWFuY29kaW5nLmNvbS9za2V0Y2gvbnMiPgogICAgPCEtLSBHZW5lcmF0b3I6IFNrZXRjaCAzLjQuMSAoMTU2ODEpIC0gaHR0cDovL3d3dy5ib2hlbWlhbmNvZGluZy5jb20vc2tldGNoIC0tPgogICAgPHRpdGxlPmVtYWlsMTk8L3RpdGxlPgogICAgPGRlc2M+Q3JlYXRlZCB3aXRoIFNrZXRjaC48L2Rlc2M+CiAgICA8ZGVmcz48L2RlZnM+CiAgICA8ZyBpZD0iUGFnZS0xIiBzdHJva2U9Im5vbmUiIHN0cm9rZS13aWR0aD0iMSIgZmlsbD0ibm9uZSIgZmlsbC1ydWxlPSJldmVub2RkIiBza2V0Y2g6dHlwZT0iTVNQYWdlIj4KICAgICAgICA8ZyBpZD0iSU5WT0lDRS0zIiBza2V0Y2g6dHlwZT0iTVNBcnRib2FyZEdyb3VwIiB0cmFuc2Zvcm09InRyYW5zbGF0ZSgtNDI1LjAwMDAwMCwgLTkzLjAwMDAwMCkiIGZpbGw9IiNGRkZGRkYiPgogICAgICAgICAgICA8ZyBpZD0iTUFJTCIgc2tldGNoOnR5cGU9Ik1TTGF5ZXJHcm91cCIgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNDIzLjAwMDAwMCwgOTAuMDAwMDAwKSI+CiAgICAgICAgICAgICAgICA8cGF0aCBkPSJNMiw3IEw4LDcgTDgsMyBMMiwzIEwyLDcgWiBNNC45OTk4MTU2Miw1LjQ3MDEzMjgyIEwyLjUzOTEzNTI0LDMuMjk2NjA4NzkgTDcuNDYwODY0NzYsMy4yOTY2MDg3OSBMNC45OTk4MTU2Miw1LjQ3MDEzMjgyIFogTTQuMDE5NTQ0NTcsNC45OTkzMDQ2MSBMMi4yOTQ5MjAyNSw2LjUyMjU4ODcyIEwyLjI5NDkyMDI1LDMuNDc1OTI3NzcgTDQuMDE5NTQ0NTcsNC45OTkzMDQ2MSBaIE00LjI0MzIwMDg5LDUuMTk2NjExMTEgTDQuOTk5ODE1NjIsNS44NjQ4Mzg1NSBMNS43NTY0MzAzNSw1LjE5NjYxMTExIEw3LjQ2MjMzOTgyLDYuNzAzMjk4NDkgTDIuNTM3NjYwMTgsNi43MDMyOTg0OSBMNC4yNDMyMDA4OSw1LjE5NjYxMTExIFogTTUuOTgwMDg2NjYsNC45OTkzMDQ2MSBMNy43MDQ3MTA5OCwzLjQ3NTkyNzc3IEw3LjcwNDcxMDk4LDYuNTIyNTg4NzIgTDUuOTgwMDg2NjYsNC45OTkzMDQ2MSBaIiBpZD0iZW1haWwxOSIgc2tldGNoOnR5cGU9Ik1TU2hhcGVHcm91cCI+PC9wYXRoPgogICAgICAgICAgICA8L2c+CiAgICAgICAgPC9nPgogICAgPC9nPgo8L3N2Zz4="
-                  alt
-                >
-              </span>
-              <a href="mailto:xxxx@xxxxx.com">xxxx@xxxx.com</a>
-            </div>
-          </div>
+    <div class="card-holder">
+      <el-card id="printable">
+        <div slot="header" class="clearfix">
+          <el-button style="float: right; padding: 3px 0" @click="fetchData" type="text">Download</el-button>
         </div>
-      </header>
 
-      <section>
-        <div class="container">
-          <div class="details clearfix">
-            <div class="client left">
-              <p class="name">{{orderDetails.buyerDetails.name}}</p>
-              <p>{{orderDetails.buyerDetails.address}} - {{orderDetails.buyerDetails.address2}}</p>
-              <p>{{orderDetails.buyerDetails.city}}, {{orderDetails.buyerDetails.zip_code}}, {{orderDetails.buyerDetails.country}}</p>
-              <a href="mailto:john@example.com">john@example.com</a>
-            </div>
-            <div class="data right">
-              <div class="title">Invoice {{orderDetails._id}}</div>
-              <div class="date">
-                Date of Invoice: 01/06/2014
-                <br>Due Date: 30/06/2014
-              </div>
-            </div>
-          </div>
+        <header>
+          <h1>Invoice</h1>
+          <address>
+            <p>{{orderDetails.buyerDetails.name}}</p>
+            <p>
+              {{orderDetails.buyerDetails.address}} - {{orderDetails.buyerDetails.address2}}
+              <br>
+              {{orderDetails.buyerDetails.city}}, {{orderDetails.buyerDetails.country}}, {{orderDetails.buyerDetails.zip_code}}
+            </p>
+            <p>(800) 555-1234</p>
+          </address>
+          <span>
+            <img alt src="http://www.jonathantneal.com/examples/invoice/logo.png">
 
-          <table border="0" cellspacing="0" cellpadding="0">
+            <input type="file" accept="image/*">
+          </span>
+        </header>
+        <article>
+          <h1>Recipient</h1>
+          <address>
+            <p>
+              Some Company
+              <br>c/o Some Guy
+            </p>
+          </address>
+          <table class="meta">
+            <tr>
+              <th>
+                <span>Invoice #</span>
+              </th>
+              <td>
+                <span>{{orderDetails._id}}</span>
+              </td>
+            </tr>
+            <tr>
+              <th>
+                <span>Date</span>
+              </th>
+              <td>
+                <span>January 1, 2012</span>
+              </td>
+            </tr>
+            <tr>
+              <th>
+                <span>Amount Due</span>
+              </th>
+              <td>
+                <span>{{orderDetails.totalPayment}}</span>
+                <span id="prefix">{{orderDetails.currency}}</span>
+              </td>
+            </tr>
+          </table>
+          <table class="inventory">
             <thead>
               <tr>
-                <th class="qty">Quantity</th>
-                <th class="desc">Description</th>
-                <th class="unit">Unit price</th>
-                <th class="total">Total</th>
+                <th>
+                  <span>Item</span>
+                </th>
+                <th>
+                  <span>Description</span>
+                </th>
+                <th>
+                  <span>Rate</span>
+                </th>
+                <th>
+                  <span>Quantity</span>
+                </th>
+                <th>
+                  <span>Price</span>
+                </th>
               </tr>
             </thead>
             <tbody>
               <template v-for="item in orderDetails.orderdItems">
                 <tr>
-                  <td class="qty">{{item.itemQuantity}}</td>
-                  <td class="desc">
-                    <h3>{{item.itemName}}</h3>Creating a recognizable design solution based on the company's existing visual identity
+                  <td>
+                    <span>{{item.itemName}}</span>
                   </td>
-                  <td class="unit">{{item.itemPrice}} {{orderDetails.currency}}</td>
-                  <td class="total">{{item.itemPrice * item.itemQuantity}} {{orderDetails.currency}}</td>
+                  <td>
+                    <span>Experience Review</span>
+                  </td>
+                  <td>
+                    <span>{{item.itemPrice}}</span>
+                    <span data-prefix>{{orderDetails.currency}}</span>
+                  </td>
+                  <td>
+                    <span>{{item.itemQuantity}}</span>
+                  </td>
+                  <td>
+                    <span>{{item.itemPrice * item.itemQuantity}}</span>
+                    <span data-prefix>{{orderDetails.currency}}</span>
+                  </td>
                 </tr>
               </template>
             </tbody>
           </table>
-          <div class="no-break">
-            <table class="grand-total">
-              <tbody>
-                <tr class="total">
-                  <td class="qty"></td>
-                  <td class="desc"></td>
-                  <td class="unit">SUBTOTAL:</td>
-                  <td class="total">{{orderDetails.totalPayment}} {{orderDetails.currency}}</td>
-                </tr>
-                <tr class="total">
-                  <td class="qty"></td>
-                  <td class="desc"></td>
-                  <td class="unit">TAX 25%:</td>
-                  <td class="total">{{orderDetails.totalPayment}} {{orderDetails.currency}}</td>
-                </tr>
-                <tr class="total">
-                  <td class="grand-total" colspan="4">
-                    <div>
-                      <span>GRAND TOTAL:</span>
-                      {{orderDetails.totalPayment}} {{orderDetails.currency}}
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
 
-      <footer>
-        <div class="container">
-          <div class="thanks">Thank you!</div>
-          <div class="notice">
-            <div>NOTICE:</div>
-            <div>A finance charge of 1.5% will be made on unpaid balances after 30 days.</div>
+          <table class="balance">
+            <tr>
+              <th>
+                <span>Total</span>
+              </th>
+              <td>
+                <span>600.00</span>
+                <span data-prefix>{{orderDetails.currency}}</span>
+              </td>
+            </tr>
+            <tr>
+              <th>
+                <span>Amount Paid</span>
+              </th>
+              <td>
+                <span>0.00</span>
+                <span data-prefix>{{orderDetails.currency}}</span>
+              </td>
+            </tr>
+          </table>
+        </article>
+        <aside>
+          <h1>
+            <span>Additional Notes</span>
+          </h1>
+          <div>
+            <p>A finance charge of 1.5% will be made on unpaid balances after 30 days.</p>
           </div>
-          <div
-            class="end"
-          >Invoice was created on a computer and is valid without the signature and seal.</div>
-        </div>
-      </footer>
-    </el-card>
+        </aside>
+      </el-card>
+    </div>
   </div>
 </template>
 
 <script>
-import {
-  fetchList,
-  fetchPv,
-  createArticle,
-  updateArticle
-} from "@/api/article";
 import store from "../../store";
 
 import waves from "@/directive/waves"; // Waves directive
 import { parseTime } from "@/utils";
-import Pagination from "@/components/Pagination"; // Secondary package based on el-pagination
-
-const calendarTypeOptions = [
-  { key: "CN", display_name: "China" },
-  { key: "US", display_name: "USA" },
-  { key: "JP", display_name: "Japan" },
-  { key: "EU", display_name: "Eurozone" }
-];
-
-// arr to obj ,such as { CN : "China", US : "USA" }
-const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
-  acc[cur.key] = cur.display_name;
-  return acc;
-}, {});
 
 export default {
   name: "Invoices",
-  components: { Pagination },
   directives: { waves },
-  filters: {
-    statusFilter(status) {
-      const statusMap = {
-        published: "success",
-        draft: "info",
-        deleted: "danger"
-      };
-      return statusMap[status];
-    },
-    typeFilter(type) {
-      return calendarTypeKeyValue[type];
-    }
-  },
   data() {
     return {
       showReviewer: false,
@@ -187,22 +169,10 @@ export default {
     this.orderDetails = store.state.products.orderDetails;
   },
   methods: {
-    getList() {
-      this.listLoading = true;
-      fetchList(this.listQuery).then(response => {
-        this.list = response.data.items;
-        this.total = response.data.total;
-
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false;
-        }, 1.5 * 1000);
-      });
-    },
 
     fetchData() {
       setTimeout(() => {
-        this.fullscreenLoading = false;
+        this.fullscreenLoading = true;
 
         var headstr = "<el-card>";
         var footstr = "</el-card>";
@@ -212,294 +182,307 @@ export default {
         window.print();
         document.body.innerHTML = oldstr;
         return false;
-      }, 3000);
+      }, 2000);
+      this.fullscreenLoading = false;
+      vm.$set("x", 0);
+      vm.$delete("x");
     }
+
   }
 };
 </script>
-   <style <style  scoped>
+   <style   scoped>
+/* reset */
+
 * {
+  border: 0;
+  box-sizing: content-box;
+  list-style: none;
   margin: 0;
   padding: 0;
-  border: 0;
-  font: inherit;
-  font-size: 100%;
-  vertical-align: baseline;
-  line-height: 1.2;
+  text-decoration: none;
+  vertical-align: top;
 }
 
-ol,
-ul {
-  list-style: none;
+/* content editable */
+
+*[contenteditable] {
+  border-radius: 0.25em;
+  min-width: 1em;
+  outline: 0;
 }
+
+*[contenteditable] {
+  cursor: pointer;
+}
+
+*[contenteditable]:hover,
+*[contenteditable]:focus,
+td:hover *[contenteditable],
+td:focus *[contenteditable],
+img.hover {
+  background: #def;
+  box-shadow: 0 0 1em 0.5em #def;
+}
+
+span[contenteditable] {
+  display: inline-block;
+}
+
+/* heading */
+
+h1 {
+  letter-spacing: 0.2em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* table */
 
 table {
-  border-collapse: collapse;
-  border-spacing: 0;
+  font-size: 75%;
+  table-layout: fixed;
+  width: 100%;
 }
-
-caption,
+table {
+  border-collapse: separate;
+  border-spacing: 2px;
+}
 th,
 td {
+  border-width: 1px;
+  padding: 0.5em;
+  position: relative;
   text-align: left;
-  font-weight: normal;
-  vertical-align: middle;
+}
+th,
+td {
+  border-radius: 0.25em;
+  border-style: solid;
+}
+th {
+  background: #42b983;
+  border-color: #42b983;
+  color: #fff;
+}
+td {
+  border-color: #ddd;
 }
 
-q,
-blockquote {
-  quotes: none;
-}
-q:before,
-q:after,
-blockquote:before,
-blockquote:after {
-  content: "";
-  content: none;
-}
+/* page */
 
-a img {
-  border: none;
+html {
+  overflow: auto;
+  padding: 0.5in;
 }
-
-article,
-aside,
-details,
-figcaption,
-figure,
-footer,
-header,
-hgroup,
-main,
-menu,
-nav,
-section,
-summary {
-  display: block;
+html {
+  background: #999;
+  cursor: default;
 }
 
 body {
-  font-family: "Source Sans Pro", sans-serif;
-  font-weight: 300;
-  font-size: 12px;
-  margin: 0;
-  padding: 0;
-  color: #555555;
-}
-body a {
-  text-decoration: none;
-  color: inherit;
-}
-body a:hover {
-  color: inherit;
-  opacity: 0.7;
-}
-body .container {
-  min-width: 460px;
+  box-sizing: border-box;
+  height: 11in;
   margin: 0 auto;
-  padding: 0 20px;
+  overflow: hidden;
+  padding: 0.5in;
+  width: 8.5in;
 }
-body .clearfix:after {
-  content: "";
-  display: table;
-  clear: both;
+body {
+  background: #fff;
+  border-radius: 1px;
+  box-shadow: 0 0 1in -0.25in rgba(0, 0, 0, 0.5);
 }
-body .left {
-  float: left;
-}
-body .right {
-  float: right;
-}
-body .helper {
-  display: inline-block;
-  height: 100%;
-  vertical-align: middle;
-}
-body .no-break {
-  page-break-inside: avoid;
-}
+
+/* header */
 
 header {
-  margin-top: 15px;
-  margin-bottom: 45px;
+  margin: 0 0 3em;
 }
-header figure {
+header:after {
+  clear: both;
+  content: "";
+  display: table;
+}
+
+header h1 {
+  background: #42b983;
+  border-radius: 0.25em;
+  color: #fff;
+  margin: 0 0 1em;
+  padding: 0.5em 0;
+}
+header address {
   float: left;
-  margin-right: 10px;
-  width: 65px;
-  height: 70px;
-  background-color: #42b983;
-  text-align: center;
+  font-size: 75%;
+  font-style: normal;
+  line-height: 1.25;
+  margin: 0 1em 1em 0;
 }
-header figure img {
-  margin-top: 10px;
+header address p {
+  margin: 0 0 0.25em;
 }
-header .company-info {
+header span,
+header img {
+  display: block;
   float: right;
-  color: #42b983;
-  line-height: 14px;
 }
-header .company-info .address,
-header .company-info .phone,
-header .company-info .email {
+header span {
+  margin: 0 0 1em 1em;
+  max-height: 25%;
+  max-width: 60%;
   position: relative;
 }
-header .company-info .address img,
-header .company-info .phone img {
-  margin-top: 2px;
+header img {
+  max-height: 100%;
+  max-width: 100%;
 }
-header .company-info .email img {
-  margin-top: 3px;
-}
-header .company-info .title {
-  color: #42b983;
-  font-weight: 400;
-  font-size: 1.33333333333333em;
-}
-header .company-info .icon {
+header input {
+  cursor: pointer;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+  height: 100%;
+  left: 0;
+  opacity: 0;
   position: absolute;
-  left: -15px;
-  top: 1px;
-  width: 10px;
-  height: 10px;
-  background-color: #42b983;
-  text-align: center;
-  line-height: 0;
-}
-
-section .details {
-  min-width: 440px;
-  margin-bottom: 40px;
-  padding: 5px 10px;
-  background-color: #cc5a6a;
-  color: #ffffff;
-  line-height: 20px;
-}
-section .details .client {
-  width: 50%;
-}
-section .details .client .name {
-  font-size: 1.16666666666667em;
-  font-weight: 600;
-}
-section .details .data {
-  width: 50%;
-  font-weight: 600;
-  text-align: right;
-}
-section .details .title {
-  margin-bottom: 5px;
-  font-size: 1.33333333333333em;
-  text-transform: uppercase;
-}
-section table {
+  top: 0;
   width: 100%;
-  margin-bottom: 20px;
-  table-layout: fixed;
-  border-collapse: collapse;
-  border-spacing: 0;
-}
-section table .qty,
-section table .unit,
-section table .total {
-  width: 15%;
-}
-section table .desc {
-  width: 55%;
-}
-section table thead {
-  display: table-header-group;
-  vertical-align: middle;
-  border-color: inherit;
-}
-section table thead th {
-  padding: 7px 10px;
-  background: #42b983;
-  border-right: 5px solid #ffffff;
-  color: white;
-  text-align: center;
-  font-weight: 400;
-  text-transform: uppercase;
-}
-section table thead th:last-child {
-  border-right: none;
-}
-section table tbody tr:first-child td {
-  border-top: 10px solid #ffffff;
-}
-section table tbody td {
-  padding: 10px 10px;
-  text-align: center;
-  border-right: 3px solid #42b983;
-}
-section table tbody td:last-child {
-  border-right: none;
-}
-section table tbody td.desc {
-  text-align: left;
-}
-section table tbody td.total {
-  color: #42b983;
-  font-weight: 600;
-  text-align: right;
-}
-section table tbody h3 {
-  margin-bottom: 5px;
-  color: #42b983;
-  font-weight: 600;
-}
-section table.grand-total {
-  margin-bottom: 50px;
-}
-section table.grand-total tbody tr td {
-  padding: 0px 10px 12px;
-  border: none;
-  background-color: #b2ddd4;
-  color: #555555;
-  font-weight: 300;
-  text-align: right;
-}
-section table.grand-total tbody tr:first-child td {
-  padding-top: 12px;
-}
-section table.grand-total tbody tr:last-child td {
-  background-color: transparent;
-}
-section table.grand-total tbody .grand-total {
-  padding: 0;
-}
-section table.grand-total tbody .grand-total div {
-  float: right;
-  padding: 11px 10px;
-  background-color: #42b983;
-  color: #ffffff;
-  font-weight: 600;
-}
-section table.grand-total tbody .grand-total div span {
-  display: inline-block;
-  margin-right: 20px;
-  width: 80px;
 }
 
-footer {
-  margin-bottom: 15px;
-  padding: 0 5px;
+/* article */
+
+article,
+article address,
+table.meta,
+table.inventory {
+  margin: 0 0 3em;
 }
-footer .thanks {
-  margin-bottom: 40px;
-  color: #42b983;
-  font-size: 1.16666666666667em;
-  font-weight: 600;
+article:after {
+  clear: both;
+  content: "";
+  display: table;
 }
-footer .notice {
-  margin-bottom: 15px;
+article h1 {
+  clip: rect(0 0 0 0);
+  position: absolute;
 }
-footer .end {
-  padding-top: 5px;
-  border-top: 2px solid #42b983;
+
+article address {
+  float: left;
+  font-size: 125%;
+  font-weight: bold;
+}
+
+/* table meta & balance */
+
+table.meta,
+table.balance {
+  float: right;
+  width: 36%;
+}
+table.meta:after,
+table.balance:after {
+  clear: both;
+  content: "";
+  display: table;
+}
+
+/* table meta */
+
+table.meta th {
+  width: 40%;
+}
+table.meta td {
+  width: 60%;
+}
+
+/* table items */
+
+table.inventory {
+  clear: both;
+  width: 100%;
+}
+table.inventory th {
+  font-weight: bold;
   text-align: center;
+}
+
+table.inventory td:nth-child(1) {
+  width: 26%;
+}
+table.inventory td:nth-child(2) {
+  width: 38%;
+}
+table.inventory td:nth-child(3) {
+  text-align: right;
+  width: 12%;
+}
+table.inventory td:nth-child(4) {
+  text-align: right;
+  width: 12%;
+}
+table.inventory td:nth-child(5) {
+  text-align: right;
+  width: 12%;
+}
+
+/* table balance */
+
+table.balance th,
+table.balance td {
+  width: 50%;
+}
+table.balance td {
+  text-align: right;
+}
+
+/* aside */
+
+aside h1 {
+  border: none;
+  border-width: 0 0 1px;
+  margin: 0 0 1em;
+}
+aside h1 {
+  border-color: #999;
+  border-bottom-style: solid;
+}
+
+/* javascript */
+
+tr:hover .cut {
+  opacity: 1;
+}
+
+@media print {
+  * {
+    -webkit-print-color-adjust: exact;
+  }
+  html {
+    background: none;
+    padding: 0;
+  }
+  body {
+    box-shadow: none;
+    margin: 0;
+  }
+  span:empty {
+    display: none;
+  }
+  .add,
+  .cut {
+    display: none;
+  }
+}
+
+@page {
+  margin: 0;
 }
 .card-holder {
   margin: 2%;
+}
+.download-button {
+  padding: 1%;
+  margin-bottom: 1%;
+  margin: 0 auto;
 }
 </style>

@@ -16,6 +16,14 @@ export function setTracking(data) {
     data
   })
 }
+export function updateStatus(id, data) {
+  console.log(history)
+  return request({
+    url: '/api/orders/updateStatus?id=' + id,
+    method: 'post',
+    data
+  })
+}
 
 // Function to select Subcategories based on Name
 // export function getSelectedSubcategory(query) {

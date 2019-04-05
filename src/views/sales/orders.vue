@@ -63,34 +63,6 @@
     >
       <el-card class="card-holder">
         <div id="center" class="app-container">
-          <div class="filter-container">
-            <router-link :to="{ path: 'products/new' }">
-              <el-button
-                class="filter-item"
-                style="margin-left: 10px;"
-                type="primary"
-                icon="el-icon-edit"
-              >{{ $t('table.add') }}</el-button>
-            </router-link>
-            <el-button
-              v-waves
-              :loading="downloadLoading"
-              class="filter-item"
-              type="primary"
-              icon="el-icon-download"
-              @click="handleDownload"
-            >{{ $t('table.export') }}</el-button>
-            <el-button
-              v-model="showReviewer"
-              :type="type"
-              :icon="icon"
-              class="filter-item"
-              circle
-              style="margin-left:15px;"
-              @click="handleStatus()"
-            />
-          </div>
-
           <el-table
             :key="tableKey"
             v-loading="listLoading"
@@ -184,8 +156,11 @@
             </el-table-column>
             <el-table-column :label="$t('Tracking')" width="120px" align="center">
               <template slot-scope="scope">
-                <div v-if="scope.row.orderStatus === 'Shipped'">
-                  <span>{{ scope.row.trackingNumber }}</span>
+                <div
+                  v-if="scope.row.orderStatus === 'Shipped' || scope.row.orderStatus === 'Completed'"
+                >
+                  <span v-if="scope.row.trackingNumber !='' ">{{ scope.row.trackingNumber }}</span>
+                  <span v-else>Not Available</span>
                 </div>
                 <div v-else="scope.row.orderStatus === 'Pending'">
                   <span>Not Available</span>
@@ -203,16 +178,19 @@
                 <el-button
                   type="info"
                   size="small"
+                  v-bind:disabled="scope.row.orderStatus === 'Pending'"
                   @click.stop="changeOrderStatus(orderStatus[0],scope.row._id)"
                 >{{ $t('Pending') }}</el-button>
                 <el-button
                   type="success"
                   size="small"
+                  v-bind:disabled="scope.row.orderStatus === 'Shipped'"
                   @click.stop="changeOrderStatus(orderStatus[1],scope.row._id)"
                 >{{ $t('Shipped') }}</el-button>
                 <el-button
                   type="primary"
                   size="small"
+                  v-bind:disabled="scope.row.orderStatus === 'Completed'"
                   @click.stop="changeOrderStatus(orderStatus[2],scope.row._id)"
                 >{{ $t('Completed') }}</el-button>
               </template>
@@ -246,7 +224,7 @@
 
 <script>
 
-import { getAllOrders, setTracking } from "@/api/orders";
+import { getAllOrders, setTracking, updateStatus } from "@/api/orders";
 import waves from "@/directive/waves"; // Waves directive
 import { parseTime } from "@/utils";
 
@@ -286,8 +264,7 @@ export default {
       list: null,
       type: "success",
       setStatus: {
-        orderId: '',
-        orderHistory: []
+        id: '',
       },
       icon: "el-icon-check",
       orderStatus: [{ status: 'Pending', notes: 'Your order is Pending' }, { status: 'Shipped', notes: 'Your order has been Shipped' }, { status: 'Completed', notes: 'Your order is Delivered' }],
@@ -295,11 +272,6 @@ export default {
       total: 0,
 
       listLoading: true,
-      getSubcategoriesQuery: {
-        page: 1,
-        limit: 999,
-        status: true
-      },
       formInline: {
         trackingNumber: ''
       },
@@ -401,15 +373,22 @@ export default {
       });
       return reset;
     },
-    async changeOrderStatus(data, row) {
+    changeOrderStatus(data, row) {
       if (data.status === 'Shipped') {
         this.addTracking(row)
+        this.setStatus.id = row
+
+        updateStatus(this.setStatus.id, data)
       } else {
-        this.setStatus.orderId = row
-        this.setStatus.orderHistory = data
-        console.log(this.setStatus)
+        this.setStatus.id = row
+        console.log(this.setStatus.id, data)
+        updateStatus(this.setStatus.id, data)
+        this.getList()
+
       }
     },
+
+
     // Search form
     SearchSubmit() {
       Object.keys(this.searchForm).forEach(
@@ -419,6 +398,7 @@ export default {
             this.searchForm[key] == "unset") &&
           delete this.searchForm[key]
       );
+
 
       this.listLoading = true;
       this.searchForm.page = this.getOrdersQuery.page;
@@ -476,7 +456,9 @@ export default {
     },
     addTracking(row) {
       this.centerDialogVisible = true
-      this.formInline.orderId = row._id
+      this.formInline.orderId = row
+
+
     },
     // Handle Creating new Product
     handleCreate() {
@@ -512,12 +494,12 @@ export default {
     // Submit Dialog form for Adding
     submitForm(formInline) {
 
-
+      console.log(this.formInline)
       setTracking(this.formInline).then(response => {
         console.log(response)
       })
       this.dialogFormVisible = false
-
+      this.getList()
     },
 
     moment: function (date) {
