@@ -195,6 +195,7 @@
             v-loading="listLoading"
             :data="list"
             fit
+            size="mini"
             class="table-class"
             align="center"
             highlight-current-row

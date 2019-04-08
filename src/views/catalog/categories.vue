@@ -50,6 +50,7 @@
             :data="list"
             border
             fit
+            size="mini"
             highlight-current-row
             style="width: 100%;"
             @sort-change="sortChange"

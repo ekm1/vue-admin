@@ -1,6 +1,6 @@
 <template>
   <el-row :gutter="4">
-    <el-col
+    <!-- <el-col
       :xs="{ span: 24 }"
       :sm="{ span: 11 }"
       :md="{ span: 9 }"
@@ -19,16 +19,16 @@
             label-width="100px"
             label-position="left"
           >
-            <el-form-item label="Product">
-              <el-input v-model="searchForm.name" class="block" placeholder="Product"></el-input>
+            <el-form-item label="Client">
+              <el-input v-model="searchForm.name" class="block" placeholder="Type a name"></el-input>
             </el-form-item>
-            <el-form-item label="Category">
-              <el-input v-model="searchForm.category" class="block" placeholder="Category"></el-input>
+            <el-form-item label="Order">
+              <el-input v-model="searchForm.category" class="block" placeholder="Type id"></el-input>
             </el-form-item>
             <el-form-item label="Subcategory">
               <el-input v-model="searchForm.subcategory" class="block" placeholder="Subcategory"></el-input>
             </el-form-item>
-            <el-form-item label="Auction">
+            <el-form-item label="Order Status">
               <el-radio-group v-model="searchForm.isAuction" size="mini">
                 <el-radio-button label="false">Inactive</el-radio-button>
                 <el-radio-button label="unset">|</el-radio-button>
@@ -52,17 +52,85 @@
           </el-form>
         </div>
       </el-card>
-    </el-col>
+    </el-col>-->
 
     <el-col
       :xs="{ span: 24 }"
-      :sm="{ span: 13 }"
-      :md="{ span: 15 }"
-      :lg="{ span: 16 }"
-      :xl="{ span: 19 }"
+      :sm="{ span: 24 }"
+      :md="{ span: 24 }"
+      :lg="{ span: 24 }"
+      :xl="{ span: 24 }"
     >
       <el-card class="card-holder">
         <div id="center" class="app-container">
+          <div class="filter-container">
+            <div>
+              <el-input
+                :placeholder="$t('Search by name')"
+                style="width: 200px;"
+                class="filter-item"
+              />
+              <el-button
+                v-waves
+                class="filter-item"
+                type="primary"
+                icon="el-icon-search"
+              >{{ $t('table.search') }}</el-button>
+              <el-button class="filter-item" @click="show3 = !show3" type="primary">
+                <i class="fas el-icon-fa-caret-down"></i> Filters
+              </el-button>
+
+              <transition name="el-fade-in-linear">
+                <div v-show="show3" class="container">
+                  <el-form
+                    ref="form"
+                    :model="searchForm"
+                    class="form"
+                    :inline="true"
+                    size="mini"
+                    label-position="top"
+                  >
+                    <el-form-item label="Client">
+                      <el-input v-model="searchForm.name" class="block" placeholder="Type a name"></el-input>
+                    </el-form-item>
+                    <el-form-item label="Order">
+                      <el-input v-model="searchForm.category" class="block" placeholder="Type id"></el-input>
+                    </el-form-item>
+                    <el-form-item label="Subcategory">
+                      <el-input
+                        v-model="searchForm.subcategory"
+                        class="block"
+                        placeholder="Subcategory"
+                      ></el-input>
+                    </el-form-item>
+                    <el-form-item label="Order">
+                      <el-radio-group v-model="searchForm.isAuction" size="mini">
+                        <el-radio-button size="mini" label="false">Inactive</el-radio-button>
+                        <el-radio-button size="mini" label="unset">|</el-radio-button>
+                        <el-radio-button size="mini" label="true">Active</el-radio-button>
+                      </el-radio-group>
+                    </el-form-item>
+                    <el-form-item label="Stock ">
+                      <el-radio-group v-model="searchForm.stock_status" size="mini">
+                        <el-radio-button size="mini" label="false">Inactive</el-radio-button>
+                        <el-radio-button size="mini" label="unset">|</el-radio-button>
+                        <el-radio-button size="mini" label="true">Active</el-radio-button>
+                      </el-radio-group>
+                    </el-form-item>
+                    <el-form-item>
+                      <el-button
+                        type="primary"
+                        icon="el-icon-search"
+                        class="search"
+                        size="mini"
+                        @click="SearchSubmit('searchForm')"
+                      >Apply</el-button>
+                    </el-form-item>
+                  </el-form>
+                </div>
+              </transition>
+            </div>
+          </div>
           <el-table
             :key="tableKey"
             v-loading="listLoading"
@@ -85,13 +153,13 @@
               </template>
             </el-table-column>
 
-            <el-table-column :label="$t('Name')" width="150px" align="center">
+            <el-table-column :label="$t('Bill-to Name')" width="150px" align="center">
               <template slot-scope="scope">
                 <span>{{ scope.row.buyerDetails.name }}</span>
               </template>
             </el-table-column>
 
-            <el-table-column :label="$t('Payment')" width="100px" align="center">
+            <el-table-column :label="$t('Grand Total')" width="100px" align="center">
               <template slot-scope="scope">
                 <span>{{ scope.row.totalPayment}} {{ scope.row.currency}}</span>
               </template>
@@ -101,7 +169,7 @@
                 <span>{{ scope.row.gatewayVendor }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('Address')" width="80px" align="center">
+            <el-table-column :label="$t('Ship-to')" width="80px" align="center">
               <template slot-scope="scope">
                 <el-popover trigger="hover" placement="top">
                   <p>
@@ -154,12 +222,21 @@
                 </div>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('Tracking')" width="120px" align="center">
+            <el-table-column :label="$t('Tracking')" width="200px" align="center">
               <template slot-scope="scope">
                 <div
                   v-if="scope.row.orderStatus === 'Shipped' || scope.row.orderStatus === 'Completed'"
                 >
-                  <span v-if="scope.row.trackingNumber !='' ">{{ scope.row.trackingNumber }}</span>
+                  <el-button
+                    class="track-item"
+                    size="mini"
+                    type="success"
+                    @click.stop="redirectToTracking(scope.row.trackingNumber)"
+                    v-if="scope.row.trackingNumber !='' "
+                  >
+                    {{ scope.row.trackingNumber }}
+                    <svg-icon icon-class="link"/>
+                  </el-button>
                   <span v-else>Not Available</span>
                 </div>
                 <div v-else="scope.row.orderStatus === 'Pending'">
@@ -261,6 +338,8 @@ export default {
       centerDialogVisible: false,
       value10: [],
       tableKey: 0,
+      show3: false,
+
       list: null,
       type: "success",
       setStatus: {
@@ -349,36 +428,21 @@ export default {
     getQuantity(items) {
       return items.length
     },
-    sortByID(order) {
-      if (order === "ascending") {
-        this.getOrdersQuery.sort = "+id";
-      } else {
-        this.getOrdersQuery.sort = "-id";
-      }
-      this.handleFilter();
+    redirectToTracking(track) {      window.open(`https://track.aftership.com/${track}`, `_blank`);
+
     },
+
     // Reset Modal form fields
-    resetTemp() {
-      const reset = (this.temp = {
-        attributes: [
-          {
-            name: "",
-            required: true
-          }
-        ],
-        category: "",
-        active: true,
-        subcategory: "",
-        price: 1
-      });
-      return reset;
-    },
     changeOrderStatus(data, row) {
       if (data.status === 'Shipped') {
-        this.addTracking(row)
+
         this.setStatus.id = row
 
         updateStatus(this.setStatus.id, data)
+        this.getList()
+
+        this.addTracking(row)
+
       } else {
         this.setStatus.id = row
         console.log(this.setStatus.id, data)
@@ -386,6 +450,8 @@ export default {
         this.getList()
 
       }
+
+
     },
 
 
@@ -414,37 +480,6 @@ export default {
       });
       this.centerDialogVisible = false;
     },
-    handleModifyStatus(row, status) {
-      if (status === "deleted") {
-        changeProductStatus(row._id, "false").then(res => {
-          if (res.status) {
-            this.$message({
-              message: "success",
-              type: "success"
-            });
-            this.list = this.list.filter(el => {
-              return el._id !== row._id;
-            });
-            row.status = status;
-          }
-        });
-      } else if (status === "activate") {
-        changeProductStatus(row._id, "true").then(res => {
-          if (res.status) {
-            this.$notify({
-              title: "success",
-              message: "Successfully deleted Subcategory",
-              type: "success",
-              duration: 2000
-            });
-            this.list = this.list.filter(el => {
-              return el._id !== row._id;
-            });
-            row.status = status;
-          }
-        });
-      }
-    },
     goToInvoice(row) {
       store.commit("INVOICE", row);
 
@@ -459,15 +494,6 @@ export default {
       this.formInline.orderId = row
 
 
-    },
-    // Handle Creating new Product
-    handleCreate() {
-      this.ProductsForm = this.resetTemp();
-      this.dialogStatus = "create";
-      this.dialogFormVisible = true;
-      this.$nextTick(() => {
-        this.$refs["ProductsForm"].clearValidate();
-      });
     },
 
     searchSubcategory(query) {
@@ -484,12 +510,6 @@ export default {
     },
 
     // Add new attributes
-    addAttribute() {
-      this.ProductsForm.attributes.push({
-        required: true,
-        name: ""
-      });
-    },
 
     // Submit Dialog form for Adding
     submitForm(formInline) {
@@ -506,27 +526,11 @@ export default {
       return moment(date).format("MMMM Do YYYY, h:mm:ss a");
     },
     // Reseting Dialog form
-    resetForm(formName) {
-      this.$refs[formName].resetFields();
-      while (this.ProductsForm.attributes.length > 0) {
-        this.ProductsForm.attributes.pop();
-      }
-    },
-    // Remove attribute dinamically
-    removeattribute(item) {
-      var index = this.ProductsForm.attributes.indexOf(item);
-      if (index !== -1) {
-        this.ProductsForm.attributes.splice(index, 1);
-      }
-    },
+
+
     // Handling update on edit
-    changed: function (row) {
-      store.commit("CHANGE", row);
-    },
-    getProduct: function (event) {
-      console.log(event);
-      this.$router.push({ name: "ProductDetails" });
-    },
+
+
 
     handleDownload() {
       this.downloadLoading = true;
@@ -575,38 +579,33 @@ export default {
 };
 </script>
 <style scoped>
-.input-field {
-  padding-bottom: 2%;
-}
-.filter-container {
-  text-align: center;
-}
-
 .pagination {
   text-align: center;
 }
 
 @media (max-width: 900px) {
   .box-card {
-    margin-right: 20px;
+    margin-right: 0.5rem;
   }
 }
 
 .search {
-  margin: 3%;
+  margin: 1rem;
   float: right;
   width: 100%;
   min-width: 50px;
   max-width: 100px;
+  position: relative;
+  top: 0.8rem;
 }
 .box-card {
-  margin-top: 13px;
-  margin-left: 20px;
+  margin-top: 1rem;
+  margin-left: 1.2rem;
 }
 .product-items {
   display: inline-block;
 }
 .product-expand {
-  margin: 10px;
+  margin: 0.75rem;
 }
 </style>

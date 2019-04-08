@@ -89,7 +89,7 @@ export const constantRouterMap = [
     alwaysShow: true, // will always show the root menu
     meta: {
       title: 'Sales',
-      icon: 'lock',
+      icon: 'shopping',
       roles: ['admin', 'editor'] // you can set roles in root nav
     },
     children: [
@@ -105,9 +105,11 @@ export const constantRouterMap = [
       {
         path: 'invoices/:id',
         component: () => import('@/views/sales/invoices'),
-        name: 'Invoices',
+        name: 'Personal Invoice',
+        hidden: true,
+
         meta: {
-          title: 'Invoices'
+          title: 'Personal Invoice'
           // if do not set roles, means: this page does not require permission
         }
       },

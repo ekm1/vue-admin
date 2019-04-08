@@ -30,7 +30,9 @@
     padding-right: 5px;
   }
 }
-
+.el-form--label-top .el-form-item__label {
+  padding: 0;
+}
 .fixed-width {
   .el-button--mini {
     padding: 7px 10px;
@@ -85,9 +87,13 @@
     }
   }
 }
+
 .el-alert {
   height: 30px;
   background-color: transparent;
+}
+.filter-container {
+  text-align: center;
 }
 
 //dropdown
