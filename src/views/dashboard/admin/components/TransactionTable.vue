@@ -1,14 +1,16 @@
 <template>
   <el-table :data="list" style="width: 100%;padding-top: 15px;">
     <el-table-column label="Order ID" min-width="200">
-      <template slot-scope="scope">{{ scope.row.order_no | orderNoFilter }}</template>
+      <template slot-scope="scope">#{{ scope.row._id }}</template>
     </el-table-column>
     <el-table-column label="Price" width="195" align="center">
-      <template slot-scope="scope">€{{ scope.row.price | toThousandFilter }}</template>
+      <template
+        slot-scope="scope"
+      >{{ scope.row.totalPayment }}{{scope.row.currency | currencyFilter}}</template>
     </el-table-column>
-    <el-table-column label="Status" width="100" align="center">
+    <el-table-column label="Status" width="102" align="center">
       <template slot-scope="scope">
-        <el-tag :type="scope.row.status | statusFilter">{{ scope.row.status }}</el-tag>
+        <el-tag :type="scope.row.orderStatus | statusFilter">{{ scope.row.orderStatus }}</el-tag>
       </template>
     </el-table-column>
   </el-table>
@@ -16,23 +18,35 @@
 
 <script>
 import { fetchList } from '@/api/transaction'
-
+import { getAllOrders } from '@/api/orders'
 export default {
   filters: {
     statusFilter(status) {
       const statusMap = {
-        success: 'success',
-        pending: 'danger'
+        Shipped: 'success',
+        Pending: 'info',
+        Completed: '',
       }
       return statusMap[status]
     },
-    orderNoFilter(str) {
-      return str.substring(0, 30)
-    }
+    currencyFilter(currency) {
+      const currencyMap = {
+        USD: '$',
+        EUR: '€',
+      }
+      return currencyMap[currency]
+    },
+
   },
   data() {
     return {
-      list: null
+      list: null,
+      getOrdersQuery: {
+        page: 1,
+        limit: 10,
+        status: true,
+        sortType: "desc"
+      },
     }
   },
   created() {
@@ -40,8 +54,8 @@ export default {
   },
   methods: {
     fetchData() {
-      fetchList().then(response => {
-        this.list = response.data.items.slice(0, 8)
+      getAllOrders(this.getOrdersQuery).then(response => {
+        this.list = response.data.results.docs
       })
     }
   }

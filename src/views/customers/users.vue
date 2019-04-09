@@ -380,7 +380,7 @@ export default {
         this.getFilerResults();
       }
     },
-    moment: function(date) {
+    moment: function (date) {
       return moment(date).format("MMMM Do YYYY, h:mm:ss a");
     },
 

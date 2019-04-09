@@ -99,7 +99,7 @@
               </template>
             </el-table-column>
 
-            <el-table-column :label="$t('Transaction #')" width="150px" align="center">
+            <el-table-column :label="$t('Transaction #')" width="220px" align="center">
               <template slot-scope="scope">
                 <span>#{{ scope.row.transactionId }}</span>
               </template>
@@ -129,7 +129,7 @@
             </el-table-column>
             <el-table-column :label="$t('Grand Total')" width="120px" align="center">
               <template slot-scope="scope">
-                <span>{{scope.row.totalPayment}} {{scope.row.currency}}</span>
+                <span>{{scope.row.totalPayment}}{{scope.row.currency | currencyFilter}}</span>
               </template>
             </el-table-column>
           </el-table>
@@ -181,6 +181,13 @@ export default {
         deleted: "danger"
       };
       return statusMap[status];
+    },
+    currencyFilter(currency) {
+      const currencyMap = {
+        USD: '$',
+        EUR: '€',
+      }
+      return currencyMap[currency]
     },
     typeFilter(type) {
       return true;

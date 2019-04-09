@@ -53,8 +53,7 @@
                   <span>Amount Due</span>
                 </th>
                 <td>
-                  <span>{{orderDetails.totalPayment}}</span>
-                  <span id="prefix">{{orderDetails.currency}}</span>
+                  <span>{{orderDetails.totalPayment}}{{orderDetails.currency | currencyFilter}}</span>
                 </td>
               </tr>
             </table>
@@ -88,15 +87,13 @@
                       <span>Experience Review</span>
                     </td>
                     <td>
-                      <span>{{item.itemPrice}}</span>
-                      <span data-prefix>{{orderDetails.currency}}</span>
+                      <span>{{item.itemPrice}}{{orderDetails.currency | currencyFilter}}</span>
                     </td>
                     <td>
                       <span>{{item.itemQuantity}}</span>
                     </td>
                     <td>
-                      <span>{{item.itemPrice * item.itemQuantity}}</span>
-                      <span data-prefix>{{orderDetails.currency}}</span>
+                      <span>{{item.itemPrice * item.itemQuantity}}{{orderDetails.currency | currencyFilter}}</span>
                     </td>
                   </tr>
                 </template>
@@ -109,8 +106,7 @@
                   <span>Total</span>
                 </th>
                 <td>
-                  <span>600.00</span>
-                  <span data-prefix>{{orderDetails.currency}}</span>
+                  <span>600.00{{orderDetails.currency | currencyFilter}}</span>
                 </td>
               </tr>
               <tr>
@@ -118,8 +114,7 @@
                   <span>Amount Paid</span>
                 </th>
                 <td>
-                  <span>0.00</span>
-                  <span data-prefix>{{orderDetails.currency}}</span>
+                  <span>0.00{{orderDetails.currency | currencyFilter}}</span>
                 </td>
               </tr>
             </table>
@@ -145,8 +140,17 @@ import waves from "@/directive/waves"; // Waves directive
 import { parseTime } from "@/utils";
 
 export default {
-  name: 'Personal Invoice',
+  name: 'Invoice',
   directives: { waves },
+  filters: {
+    currencyFilter(currency) {
+      const currencyMap = {
+        USD: '$',
+        EUR: '€',
+      }
+      return currencyMap[currency]
+    },
+  },
   data() {
     return {
       showReviewer: false,

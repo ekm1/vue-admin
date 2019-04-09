@@ -161,7 +161,7 @@
 
             <el-table-column :label="$t('Grand Total')" width="100px" align="center">
               <template slot-scope="scope">
-                <span>{{ scope.row.totalPayment}} {{ scope.row.currency}}</span>
+                <span>{{ scope.row.totalPayment}}{{ scope.row.currency | currencyFilter}}</span>
               </template>
             </el-table-column>
             <el-table-column :label="$t('Proccessor')" width="100px" align="center">
@@ -321,6 +321,13 @@ export default {
         deleted: "danger"
       };
       return statusMap[status];
+    },
+    currencyFilter(currency) {
+      const currencyMap = {
+        USD: '$',
+        EUR: '€',
+      }
+      return currencyMap[currency]
     },
     typeFilter(type) {
       return true;

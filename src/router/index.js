@@ -89,7 +89,7 @@ export const constantRouterMap = [
     alwaysShow: true, // will always show the root menu
     meta: {
       title: 'Sales',
-      icon: 'shopping',
+      icon: 'dollar',
       roles: ['admin', 'editor'] // you can set roles in root nav
     },
     children: [
@@ -131,7 +131,7 @@ export const constantRouterMap = [
     alwaysShow: true, // will always show the root menu
     meta: {
       title: 'Catalog',
-      icon: 'lock',
+      icon: 'package',
       roles: ['admin', 'editor'] // you can set roles in root nav
     },
     children: [
@@ -194,27 +194,108 @@ export const constantRouterMap = [
     ]
   },
   {
+    path: '/promotions',
+    component: Layout,
+    redirect: '/promo/index',
+    alwaysShow: true, // will always show the root menu
+    meta: {
+      title: 'Promotions',
+      icon: 'promo',
+      roles: ['admin', 'editor'] // you can set roles in root nav
+    },
+    children: [
+      {
+        path: 'coupons',
+        component: () => import('@/views/promotions/coupons'),
+        name: 'Coupons',
+        meta: {
+          title: 'Coupons'
+        }
+      },
+      {
+        path: 'discounts',
+        component: () => import('@/views/promotions/discounts'),
+        name: 'Discounts',
+        meta: {
+          title: 'Discounts'
+        }
+      }
+    ]
+  },
+  {
     path: '/Customers',
     component: Layout,
     redirect: '/sales/index',
     alwaysShow: true, // will always show the root menu
     meta: {
       title: 'Customers',
-      icon: 'lock',
+      icon: 'user',
       roles: ['admin', 'editor'] // you can set roles in root nav
     },
     children: [
       {
         path: 'users',
         component: () => import('@/views/customers/users'),
-        name: 'Registered Users',
+        name: 'All Customers',
         meta: {
-          title: 'Registered Users'
+          title: 'All Customers'
+        }
+      },
+      {
+        path: 'users/groups',
+        component: () => import('@/views/customers/groups'),
+        name: 'Customers Group',
+        meta: {
+          title: 'Customers Group'
         }
       }
     ]
   },
-
+  {
+    path: '/reports',
+    component: Layout,
+    redirect: '/promo/index',
+    alwaysShow: true, // will always show the root menu
+    meta: {
+      title: 'Reports',
+      icon: 'report',
+      roles: ['admin', 'editor'] // you can set roles in root nav
+    },
+    children: [
+      {
+        path: 'orders',
+        component: () => import('@/views/reports/orders'),
+        name: 'Orders',
+        meta: {
+          title: 'Orders'
+        }
+      },
+      {
+        path: 'products',
+        component: () => import('@/views/reports/products'),
+        name: 'Products',
+        meta: {
+          title: 'Products'
+        }
+      },
+      {
+        path: 'categories',
+        component: () => import('@/views/reports/categories'),
+        name: 'Categories',
+        meta: {
+          title: 'Categories'
+        }
+      },
+      {
+        path: 'users',
+        component: () => import('@/views/reports/users'),
+        name: 'Users',
+        meta: {
+          title: 'Users'
+        }
+      }
+    ]
+  },
   {
     path: '/settings',
     component: Layout,
@@ -224,7 +305,8 @@ export const constantRouterMap = [
         path: '',
         component: () => import('@/views/settings/index'),
         name: 'Settings',
-        meta: { title: 'Settings', icon: 'setting', affix: true }
+
+        meta: { title: 'Settings', icon: 'settings', affix: true }
       }
     ]
   },
