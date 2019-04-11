@@ -59,7 +59,50 @@
               >
               <el-button type="primary" plain @click="submitUpload">Upload</el-button>
             </el-form-item>
-
+            <el-form-item class="address" label="Address" required>
+              <el-input
+                name="address"
+                class="element"
+                v-validate="'required'"
+                placeholder="Primary Address"
+                v-model="storeForm.address"
+              />
+              <el-input
+                name="address"
+                class="element"
+                placeholder="Secondary Address"
+                v-validate="'required'"
+                v-model="storeForm.street"
+              />
+              <el-input
+                name="address"
+                class="element"
+                placeholder="City"
+                v-validate="'required'"
+                v-model="storeForm.city"
+              />
+              <el-input
+                name="address"
+                class="element"
+                placeholder="Zip Code"
+                v-validate="'required'"
+                v-model="storeForm.storeName"
+              />
+              <el-input
+                name="address"
+                class="element"
+                placeholder="Country"
+                v-validate="'required'"
+                v-model="storeForm.country"
+              />
+              <el-alert
+                v-if="errors.first('address')"
+                :title="errors.first('address')"
+                type="error"
+                show-icon
+                :closable="false"
+              ></el-alert>
+            </el-form-item>
             <el-form-item>
               <el-button type="primary" @click="submitForm('storeForm')">{{ buttonName }}</el-button>
               <el-button @click="resetForm('storeForm')">Reset</el-button>
@@ -342,5 +385,8 @@ export default {
 }
 .app-main[data-v-6beed8bc] {
   background-color: #f0f2f5;
+}
+.address .element {
+  margin: 0.6rem 0;
 }
 </style>
