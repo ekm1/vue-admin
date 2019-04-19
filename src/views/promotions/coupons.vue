@@ -4,20 +4,6 @@
       <el-card class="card-holder">
         <div id="center" class="app-container">
           <div class="filter-container">
-            <el-input
-              v-model="listQuery.name"
-              :placeholder="$t('table.category')"
-              style="width: 200px;"
-              class="filter-item"
-              @keyup.enter.native="handleFilter"
-            />
-            <el-button
-              v-waves
-              class="filter-item"
-              type="primary"
-              icon="el-icon-search"
-              @click="handleFilter"
-            >{{ $t('table.search') }}</el-button>
             <el-button
               class="filter-item"
               style="margin-left: 10px;"
@@ -33,15 +19,6 @@
               icon="el-icon-download"
               @click="handleDownload"
             >{{ $t('table.export') }}</el-button>
-            <el-button
-              v-model="showReviewer"
-              :type="type"
-              :icon="icon"
-              class="filter-item"
-              circle
-              style="margin-left:15px;"
-              @click="handleStatus()"
-            />
           </div>
 
           <el-table
@@ -53,23 +30,60 @@
             size="mini"
             highlight-current-row
             style="width: 100%;"
-            @sort-change="sortChange"
           >
-            <el-table-column :label="$t('table.category')" width="150px" align="center">
+            <el-table-column :label="$t('Start')" width="200" align="center">
               <template slot-scope="scope">
-                <span>{{ scope.row.category }}</span>
+                <span>{{ moment(scope.row.dateCreated) }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('table.subcategory')" width="150px" align="center">
+            <el-table-column :label="$t('End')" width="200" align="center">
               <template slot-scope="scope">
-                <span>{{ scope.row.subcategory }}</span>
+                <span>{{ moment(scope.row.dateEnds) }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('table.status')" width="150px" align="center">
+            <el-table-column :label="$t('Name')" width="150" align="center">
               <template slot-scope="scope">
-                <span>{{ scope.row.active }}</span>
+                <span>{{ scope.row.couponName.toUpperCase() }}</span>
               </template>
             </el-table-column>
+            <el-table-column :label="$t('Code')" width="150" align="center">
+              <template slot-scope="scope">
+                <span>{{ scope.row.couponCode.toUpperCase() }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('Discount')" width="200" align="center">
+              <template slot-scope="scope">
+                <span>{{ scope.row.couponDiscount }}%</span>
+              </template>
+            </el-table-column>
+            <el-table-column :label="$t('Active-for')" width="100" align="center">
+              <template slot-scope="scope">
+                <el-popover trigger="hover" placement="top">
+                  <p>
+                    <b>City:</b>
+                  </p>
+                  <p>
+                    <b>Addr:</b>
+                  </p>
+                  <p>
+                    <b>Addr:</b>
+                  </p>
+                  <p>
+                    <b>Zip:</b>
+                  </p>
+                  <p>
+                    <b>Country:</b>
+                  </p>
+
+                  <div slot="reference" class="name-wrapper">
+                    <el-tag size="medium" v-if="scope.row.isForProduct === true">Product</el-tag>
+                    <el-tag size="medium" v-if="scope.row.isForCategory === true">Category</el-tag>
+                    <el-tag size="medium" v-if="scope.row.isForOrder === true">Category</el-tag>
+                  </div>
+                </el-popover>
+              </template>
+            </el-table-column>
+
             <el-table-column
               :label="$t('table.actions')"
               align="center"
@@ -125,12 +139,12 @@
                   <el-form-item label="Name" required>
                     <el-input
                       v-validate="'required'"
-                      name="category"
-                      v-model="couponForm.category"
+                      name="Coupon Name"
+                      v-model="couponForm.couponName"
                     />
                     <el-alert
-                      v-if="errors.first('category')"
-                      :title="errors.first('category')"
+                      v-if="errors.first('Coupon Name')"
+                      :title="errors.first('Coupon Name')"
                       type="error"
                       show-icon
                       :closable="false"
@@ -138,24 +152,25 @@
                   </el-form-item>
                   <el-form-item label="Code" required>
                     <el-input
-                      name="subcategory"
+                      name="Coupon Code"
                       v-validate="'required'"
-                      v-model="couponForm.subcategory"
+                      v-model="couponForm.couponCode"
                     />
                     <el-alert
-                      v-if="errors.first('subcategory')"
-                      :title="errors.first('subcategory')"
+                      v-if="errors.first('Coupon Code')"
+                      :title="errors.first('Coupon Code')"
                       type="error"
                       show-icon
                       :closable="false"
                     ></el-alert>
                   </el-form-item>
-                  <el-form-item label="Percentage">
+                  <el-form-item label="Percentage" required>
                     <el-col :span="11">
                       <el-input-number
                         type="number"
                         v-model="couponForm.couponDiscount"
-                        style="width: 100%;"
+                        v-validate="'required'"
+                        name="Discount"
                         :max="100"
                       ></el-input-number>
                     </el-col>
@@ -169,40 +184,75 @@
                       ></el-progress>
                     </el-col>
                   </el-form-item>
-
-                  <el-form-item
-                    v-for="(attribute, index) in couponForm.attributes"
-                    :key="attribute.key"
-                    :label="'Attribute '"
-                    :prop="'attributes.' + index + '.name'"
-                    :rules="{
-                    required: true, message: 'attribute can not be null', trigger: 'blur'
-                  }"
-                    style="padding-left:15%"
-                  >
-                    <el-input v-model="attribute.name" class="input-field"/>
+                  <el-form-item label="Range" required>
+                    <div class="block">
+                      <el-date-picker
+                        @change="modifyDate()"
+                        v-model="temp.date"
+                        type="daterange"
+                        start-placeholder="Start date"
+                        end-placeholder="End date"
+                      ></el-date-picker>
+                    </div>
+                  </el-form-item>
+                  <el-form-item label="Target">
+                    <el-radio-group v-model="temp.active" size="mini" @change="couponState()">
+                      <el-radio-button label="Products"></el-radio-button>
+                      <el-radio-button label="Categories"></el-radio-button>
+                      <el-radio-button label="Order"></el-radio-button>
+                    </el-radio-group>
+                  </el-form-item>
+                  <el-form-item v-if="temp.active == 'Categories'" label="Categories">
                     <el-select
-                      v-model="attribute.fieldType"
-                      class="select-size"
-                      placeholder="Select"
+                      v-model="couponForm.activeCategories"
+                      multiple
+                      filterable
+                      remote
+                      reserve-keyword
+                      placeholder="Categories"
+                      :remote-method="getCategories"
+                      :loading="Loading"
                     >
                       <el-option
-                        v-for="item in options"
-                        :key="item.value"
-                        :label="item.label"
-                        :value="item.value"
-                      />
+                        v-for="category in listCategories"
+                        :key="category._id"
+                        :label="category.category"
+                        :value="category._id"
+                      ></el-option>
                     </el-select>
-                    <el-checkbox
-                      v-model="attribute.required"
-                      :prop="'attributes.' + index + '.required'"
-                    >Required</el-checkbox>
-
-                    <el-button @click.prevent="removeattribute(attribute)">Delete</el-button>
+                  </el-form-item>
+                  <el-form-item v-if="temp.active == 'Products'" label="Products">
+                    <el-select
+                      v-model="couponForm.activeProducts"
+                      multiple
+                      filterable
+                      remote
+                      reserve-keyword
+                      placeholder="Products"
+                      :remote-method="getProducts"
+                      :loading="Loading"
+                    >
+                      <el-option
+                        v-for="product in listProducts"
+                        :key="product._id"
+                        :label="product.data.name"
+                        :value="product._id"
+                      ></el-option>
+                    </el-select>
                   </el-form-item>
                   <el-form-item>
+                    <el-input-number
+                      type="number"
+                      label="Max Uses"
+                      v-model="couponForm.count"
+                      v-validate="'required'"
+                      name="Discount"
+                      :max="100"
+                    ></el-input-number>
+                  </el-form-item>
+
+                  <el-form-item>
                     <el-button type="primary" @click="submitForm('couponForm')">Submit</el-button>
-                    <el-button @click="addAttribute">Add new Attribute</el-button>
                     <el-button @click="resetForm('couponForm')">Reset</el-button>
                   </el-form-item>
                 </el-form>
@@ -212,54 +262,138 @@
 
           <el-dialog
             :visible.sync="dialogPvVisible"
-            title="Update Category"
+            title="Update Coupon"
             class="dialog-size"
             @click="updateForm('couponForm')"
           >
-            <el-form ref="couponForm" :model="couponForm" label-width="120px" class="demo-dynamic">
-              <el-form-item prop="category" label="Category">
-                <el-input v-model="couponForm.category"/>
-              </el-form-item>
-              <el-form-item prop="subcategory" label="Subcategory">
-                <el-input v-model="couponForm.subcategory"/>
-              </el-form-item>
+            <el-row :gutter="10" type="flex">
+              <el-col :xs="21" :sm="22" :md="20" :lg="16" :xl="16">
+                <el-form
+                  ref="couponForm"
+                  :model="couponForm"
+                  label-width="120px"
+                  class="demo-dynamic"
+                >
+                  <el-form-item label="Name" required>
+                    <el-input
+                      v-validate="'required'"
+                      name="Coupon"
+                      v-model="couponForm.couponName"
+                    />
+                    <el-alert
+                      v-if="errors.first('Coupon')"
+                      :title="errors.first('Coupon')"
+                      type="error"
+                      show-icon
+                      :closable="false"
+                    ></el-alert>
+                  </el-form-item>
+                  <el-form-item label="Code" required>
+                    <el-input
+                      name="Coupon"
+                      v-validate="'required'"
+                      v-model="couponForm.couponCode"
+                    />
+                    <el-alert
+                      v-if="errors.first('Coupon')"
+                      :title="errors.first('Coupon')"
+                      type="error"
+                      show-icon
+                      :closable="false"
+                    ></el-alert>
+                  </el-form-item>
+                  <el-form-item label="Percentage" required>
+                    <el-col :span="11">
+                      <el-input-number
+                        type="number"
+                        v-model="couponForm.couponDiscount"
+                        v-validate="'required'"
+                        :max="100"
+                      ></el-input-number>
+                    </el-col>
+                    <el-col class="line" :span="2">-</el-col>
+                    <el-col :span="11">
+                      <el-progress
+                        :text-inside="true"
+                        :stroke-width="20"
+                        style="margin-top:0.4rem"
+                        :percentage="couponForm.couponDiscount"
+                      ></el-progress>
+                    </el-col>
+                  </el-form-item>
+                  <el-form-item label="Range" required>
+                    <div class="block">
+                      <el-date-picker
+                        @change="modifyDate()"
+                        v-model="temp.date"
+                        type="daterange"
+                        start-placeholder="Start date"
+                        end-placeholder="End date"
+                      ></el-date-picker>
+                    </div>
+                  </el-form-item>
+                  <el-form-item label="Target">
+                    <el-radio-group v-model="temp.active" size="mini" @change="couponState()">
+                      <el-radio-button label="Products"></el-radio-button>
+                      <el-radio-button label="Categories"></el-radio-button>
+                      <el-radio-button label="Order"></el-radio-button>
+                    </el-radio-group>
+                  </el-form-item>
+                  <el-form-item v-if="temp.active == 'Categories'" label="Categories">
+                    <el-select
+                      v-model="couponForm.activeCategories"
+                      multiple
+                      filterable
+                      remote
+                      reserve-keyword
+                      placeholder="Categories"
+                      :remote-method="getCategories"
+                      :loading="Loading"
+                    >
+                      <el-option
+                        v-for="category in listCategories"
+                        :key="category._id"
+                        :label="category.category"
+                        :value="category._id"
+                      ></el-option>
+                    </el-select>
+                  </el-form-item>
+                  <el-form-item v-if="temp.active == 'Products'" label="Products">
+                    <el-select
+                      v-model="couponForm.activeProducts"
+                      multiple
+                      filterable
+                      remote
+                      reserve-keyword
+                      placeholder="Products"
+                      :remote-method="getProducts"
+                      :loading="Loading"
+                    >
+                      <el-option
+                        v-for="product in listProducts"
+                        :key="product._id"
+                        :label="product.data.name"
+                        :value="product._id"
+                      ></el-option>
+                    </el-select>
+                  </el-form-item>
+                  <el-form-item label="Max Uses">
+                    <el-input-number
+                      type="number"
+                      v-model="couponForm.count"
+                      v-validate="'required'"
+                      name="Discount"
+                      :max="100"
+                    ></el-input-number>
+                  </el-form-item>
 
-              <el-form-item
-                v-for="(attribute, index) in couponForm.attributes"
-                :key="attribute.key"
-                :label="'Attribute '"
-                :prop="'attributes.' + index + '.name'"
-                :rules="{
-                required: true, message: 'attribute can not be null', trigger: 'blur'
-              }"
-                style="padding-left:15%"
-              >
-                <el-input v-model="attribute.name" class="input-field"/>
-                <el-select v-model="attribute.fieldType" placeholder="Select">
-                  <el-option
-                    v-for="item in options"
-                    :key="item.value"
-                    :label="item.label"
-                    :value="item.value"
-                  />
-                </el-select>
-                <el-checkbox
-                  v-model="attribute.required"
-                  :prop="'attributes.' + index + '.required'"
-                >Required</el-checkbox>
-
-                <el-button
-                  class="delete-btn"
-                  button
-                  @click.prevent="removeattribute(attribute)"
-                >Delete</el-button>
-              </el-form-item>
-              <el-form-item>
-                <el-button type="primary" @click="updateForm('couponForm')">Update</el-button>
-                <el-button @click="addAttribute">Add new Attribute</el-button>
-                <el-button @click="resetForm('couponForm')">Reset</el-button>
-              </el-form-item>
-            </el-form>
+                  <el-form-item>
+                    <el-button type="primary" @click="updateForm('couponForm')">Submit</el-button>
+                    <el-button @click="resetForm('couponForm')">Reset</el-button>
+                  </el-form-item>
+                </el-form>
+              </el-col>
+            </el-row>
           </el-dialog>
         </div>
       </el-card>
@@ -269,15 +403,16 @@
 
 <script>
 // TODO: Validation & on Enter Submit form.
-import { fetchList, fetchPv, updateArticle } from "@/api/article";
+import { getAllCoupons, createCoupon, updateCoupon } from "@/api/coupons";
+import { searchProducts } from "@/api/products";
+import * as moment from "moment";
+
 import waves from "@/directive/waves"; // Waves directive
 import { parseTime } from "@/utils";
 import Pagination from "@/components/Pagination"; // Secondary package based on el-pagination
 import {
   searchByCategoryName,
-  deleteSubCategory,
-  addCategory,
-  updateCategory
+
 } from "@/api/categories";
 
 export default {
@@ -300,34 +435,12 @@ export default {
   data() {
     return {
       couponForm: {
-        attributes: [
-          {
-            name: "",
-            required: true
-          }
-        ],
-        category: "",
-        active: true,
-        subcategory: ""
+
+        dateCreated: null,
+        dateEnds: null,
+        isForCategory: true
       },
-      options: [
-        {
-          value: "String",
-          label: "String"
-        },
-        {
-          value: "Number",
-          label: "Number"
-        },
-        {
-          value: "Boolean",
-          label: "Boolean"
-        },
-        {
-          value: "List",
-          label: "List"
-        }
-      ],
+
       tableKey: 0,
       list: null,
       total: 0,
@@ -342,19 +455,22 @@ export default {
         type: undefined,
         status: true
       },
-      importanceOptions: [1, 2, 3],
-      sortOptions: [
-        { label: "ID Ascending", key: "+id" },
-        { label: "ID Descending", key: "-id" }
-      ],
+      listProducts: [],
+      listCategories: [],
+
       temp: {
-        id: undefined,
-        importance: 1,
-        remark: "",
-        timestamp: new Date(),
-        name: "",
-        type: ""
+        date: [],
+        active: 'Orders'
       },
+      SearchForm: {
+        name: "",
+        sortType: "desc",
+        page: 1,
+        isBundle: false,
+        limit: 9999,
+        status: true
+      },
+      Loading: false,
       dialogFormVisible: false,
       dialogStatus: "",
       textMap: {
@@ -364,21 +480,6 @@ export default {
       dialogPvVisible: false,
       pvData: [],
       showReviewer: false,
-
-      rules: {
-        type: [
-          { required: true, message: "type is required", trigger: "change" }
-        ],
-        timestamp: [
-          {
-            type: "date",
-            required: true,
-            message: "timestamp is required",
-            trigger: "change"
-          }
-        ],
-        name: [{ required: true, message: "name is required", trigger: "blur" }]
-      },
       downloadLoading: false
     };
   },
@@ -394,7 +495,8 @@ export default {
         this.listQuery.name === " "
       ) {
         this.listLoading = true;
-        fetchList(this.listQuery).then(response => {
+        getAllCoupons(this.listQuery.page, this.listQuery.limit).then(response => {
+
           this.list = response.data.docs;
           this.total = response.data.total;
           this.listLoading = false;
@@ -430,74 +532,8 @@ export default {
         this.getFilerResults();
       }
     },
-    // Handle status change
-    handleModifyStatus(row, status) {
-      if (status === "deleted") {
-        deleteSubCategory(row._id, "false").then(res => {
-          if (res.status) {
-            this.$message({
-              message: "success",
-              type: "success"
-            });
-            this.list = this.list.filter(el => {
-              return el._id !== row._id;
-            });
-            row.status = status;
-          }
-        });
-      } else if (status === "activate") {
-        deleteSubCategory(row._id, "true").then(res => {
-          if (res.status) {
-            this.$notify({
-              title: "success",
-              message: "Successfully deleted Subcategory",
-              type: "success",
-              duration: 2000
-            });
-            this.list = this.list.filter(el => {
-              return el._id !== row._id;
-            });
-            row.status = status;
-          }
-        });
-      }
-    },
-
-    // Sorting change
-    sortChange(data) {
-      const { prop, order } = data;
-      if (prop === "id") {
-        this.sortByID(order);
-      }
-    },
-
-    // Sorting by ID
-    sortByID(order) {
-      if (order === "ascending") {
-        this.listQuery.sort = "+id";
-      } else {
-        this.listQuery.sort = "-id";
-      }
-      this.handleFilter();
-    },
-    // Reset Modal-Form values
-    resetTemp() {
-      const reset = (this.temp = {
-        attributes: [
-          {
-            name: "",
-            required: true
-          }
-        ],
-        category: "",
-        active: true,
-        subcategory: ""
-      });
-      return reset;
-    },
     // Handle create method
     handleCreate() {
-      this.couponForm = this.resetTemp();
       this.dialogStatus = "create";
       this.dialogFormVisible = true;
       this.$nextTick(() => {
@@ -507,18 +543,14 @@ export default {
 
     // Add new attributes
 
-    addAttribute() {
-      this.couponForm.attributes.push({
-        required: true,
-        name: ""
-      });
-    },
 
     // Submit Dialog form for Adding
     submitForm(couponForm) {
+      delete this.couponForm.active;
+
       this.$refs[couponForm].validate(valid => {
         if (valid) {
-          addCategory(this.couponForm)
+          createCoupon(this.couponForm)
             .then(this.getList())
             .catch(err => console.log(err));
           // this.resetForm('couponForm')
@@ -537,16 +569,92 @@ export default {
         }
       });
     },
+    //Get Products in order to add Coupon code on them
+    getProducts(query) {
+      if (query !== "" && query.length >= 3) {
+        this.Loading = true;
+        this.SearchForm.name = query;
+        searchProducts(this.SearchForm).then(response => {
+          this.listProducts = response.data.docs
+        });
+      } else {
+        this.listProducts = [];
+      }
+      this.Loading = false;
+
+    },
+    getCategories(query) {
+      if (query !== "" && query.length >= 3) {
+        this.Loading = true;
+        this.SearchForm.name = query;
+        searchByCategoryName(
+          this.SearchForm.name,
+          this.SearchForm.page,
+          this.SearchForm.limit,
+          this.SearchForm.status
+        ).then(response => {
+          console.log(response.data.docs)
+          this.listCategories = response.data.docs
+        });
+      } else {
+        this.listCategories = [];
+      }
+      this.Loading = false;
+
+    },
+
+    //Add date to start and end date
+    modifyDate() {
+      if (this.temp.date != null) {
+        this.temp.date.forEach((element, index) => {
+          if (index === 0) {
+            this.couponForm.dateCreated = element
+          } else {
+            this.couponForm.dateEnds = element
+          }
+        });
+        delete this.couponForm.date
+
+      } else {
+        this.couponForm.dateCreated = null;
+        this.couponForm.dateEnds = null
+        delete this.couponForm.date
+
+      }
+    },
+    couponState() {
+      if (this.temp.active === 'Products') {
+        this.couponForm.isForProduct = true;
+        this.couponForm.isForCategory = false;
+        this.couponForm.isForOrder = false;
+      } else if (this.temp.active === 'Categories') {
+        this.couponForm.isForCategory = true;
+        this.couponForm.isForProduct = false;
+        this.couponForm.isForOrder = false;
+
+      } else {
+        this.couponForm.isForOrder = true;
+        this.couponForm.isForCategory = false;
+        this.couponForm.isForProduct = false;
+      }
+      if (this.couponForm.isForProduct === true) {
+        this.temp.active === 'Products'
+      }
+      console.log(this.temp.active)
+
+    },
+
     // Edit Enitity
     updateForm(couponForm) {
       this.$refs[couponForm].validate(valid => {
         if (valid) {
-          updateCategory(this.couponForm)
+          let id = this.couponForm._id
+          updateCoupon(this.couponForm, id)
             .then(console.log(this.couponForm), this.getList())
             .catch(err => console.log(err));
           this.$notify({
             title: "success",
-            message: "Successfully updated Category",
+            message: "Coupon Successfully Updated",
             type: "success",
             duration: 2000
           });
@@ -561,26 +669,23 @@ export default {
     // Reseting Dialog form
     resetForm(formName) {
       this.$refs[formName].resetFields();
-      while (this.couponForm.attributes.length > 0) {
-        this.couponForm.attributes.pop();
-      }
-    },
-    // Remove attribute dinamically
-    removeattribute(item) {
-      var index = this.couponForm.attributes.indexOf(item);
-      if (index !== -1) {
-        this.couponForm.attributes.splice(index, 1);
-      }
-    },
-    // Handling update on edit
-    handleUpdate(row) {
-      this.couponForm = row;
-      this.temp = Object.assign({}, row); // copy obj
-      this.temp.timestamp = new Date(this.temp.timestamp);
-      this.dialogStatus = "update";
-      this.dialogPvVisible = true;
+
     },
 
+    // Handling update on edit
+    handleUpdate(row) {
+      console.log(row)
+      this.temp.date.push(row.dateCreated, row.dateEnds)
+      console.log(this.temp)
+      this.couponForm = row;
+      //   this.temp = Object.assign({}, row); // copy obj
+      //   this.temp.timestamp = new Date(this.temp.timestamp);
+      //   this.dialogStatus = "update";
+      this.dialogPvVisible = true;
+    },
+    moment: function (date) {
+      return moment(date).format("MMMM Do YYYY, h:mm:ss a");
+    },
     updateData() {
       this.$refs["dataForm"].validate(valid => {
         if (valid) {
@@ -626,18 +731,7 @@ export default {
         this.downloadLoading = false;
       });
     },
-    handleStatus() {
-      this.listQuery.status = !this.listQuery.status;
-      if (this.listQuery.status === true) {
-        this.type = "success";
-        this.icon = "el-icon-check";
-      } else {
-        this.type = "danger";
-        this.icon = "el-icon-delete";
-      }
-      this.tableStatus = this.listQuery.status;
-      this.getList();
-    },
+
     formatJson(filterVal, jsonData) {
       return jsonData.map(v =>
         filterVal.map(j => {
@@ -655,7 +749,7 @@ export default {
 <style scoped>
 .app-container {
   margin: 0 auto;
-  max-width: 723px;
+  max-width: 1271px;
 }
 
 .input-field {

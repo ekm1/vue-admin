@@ -36,33 +36,42 @@
                     size="mini"
                     label-position="top"
                   >
-                    <el-form-item label="Client">
-                      <el-input v-model="searchForm.name" class="block" placeholder="Type a name"></el-input>
+                    <el-form-item label="Buyer Name">
+                      <el-input v-model="searchForm.buyerName" class="block" placeholder="Name"></el-input>
                     </el-form-item>
                     <el-form-item label="Order">
-                      <el-input v-model="searchForm.category" class="block" placeholder="Type id"></el-input>
-                    </el-form-item>
-                    <el-form-item label="Subcategory">
                       <el-input
-                        v-model="searchForm.subcategory"
+                        v-model="searchForm.trackingNumber"
                         class="block"
-                        placeholder="Subcategory"
+                        placeholder="Tracking"
                       ></el-input>
                     </el-form-item>
+                    <el-form-item label="Country">
+                      <el-select
+                        v-model="searchForm.country"
+                        filterable
+                        remote
+                        reserve-keyword
+                        placeholder="Please enter a keyword"
+                        :remote-method="remoteMethod"
+                        :loading="Loading"
+                      >
+                        <el-option
+                          v-for="item in options"
+                          :key="item.label"
+                          :label="item.label"
+                          :value="item.value"
+                        ></el-option>
+                      </el-select>
+                    </el-form-item>
                     <el-form-item label="Order">
-                      <el-radio-group v-model="searchForm.isAuction" size="mini">
-                        <el-radio-button size="mini" label="false">Inactive</el-radio-button>
-                        <el-radio-button size="mini" label="unset">|</el-radio-button>
-                        <el-radio-button size="mini" label="true">Active</el-radio-button>
+                      <el-radio-group v-model="searchForm.orderStatus" size="mini">
+                        <el-radio-button size="mini" label="Pending">Pending</el-radio-button>
+                        <el-radio-button size="mini" label="Shipped">Shipped</el-radio-button>
+                        <el-radio-button size="mini" label="Completed">Completed</el-radio-button>
                       </el-radio-group>
                     </el-form-item>
-                    <el-form-item label="Stock ">
-                      <el-radio-group v-model="searchForm.stock_status" size="mini">
-                        <el-radio-button size="mini" label="false">Inactive</el-radio-button>
-                        <el-radio-button size="mini" label="unset">|</el-radio-button>
-                        <el-radio-button size="mini" label="true">Active</el-radio-button>
-                      </el-radio-group>
-                    </el-form-item>
+
                     <el-form-item>
                       <el-button
                         type="primary"

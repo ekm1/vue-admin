@@ -421,9 +421,11 @@ export default {
       if (status === "deleted") {
         deleteSubCategory(row._id, "false").then(res => {
           if (res.status) {
-            this.$message({
-              message: "success",
-              type: "success"
+            this.$notify({
+              title: "delete",
+              message: `${row.category} Successfully Deleted`,
+              type: "warning",
+              duration: 2000
             });
             this.list = this.list.filter(el => {
               return el._id !== row._id;
@@ -436,7 +438,7 @@ export default {
           if (res.status) {
             this.$notify({
               title: "success",
-              message: "Successfully deleted Subcategory",
+              message: `${row.category} Successfully Activated`,
               type: "success",
               duration: 2000
             });
@@ -504,6 +506,7 @@ export default {
     submitForm(dynamicValidateForm) {
       this.$refs[dynamicValidateForm].validate(valid => {
         if (valid) {
+          console.log(this.dynamicValidateForm)
           addCategory(this.dynamicValidateForm)
             .then(this.getList())
             .catch(err => console.log(err));
@@ -511,7 +514,7 @@ export default {
 
           this.$notify({
             title: "success",
-            message: "Successfully created new Category",
+            message: `${this.dynamicValidateForm.category} Successfully Created`,
             type: "success",
             duration: 2000
           });
@@ -532,7 +535,7 @@ export default {
             .catch(err => console.log(err));
           this.$notify({
             title: "success",
-            message: "Successfully updated Category",
+            message: `${this.dynamicValidateForm.category} Successfully Updated`,
             type: "success",
             duration: 2000
           });

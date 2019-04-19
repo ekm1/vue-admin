@@ -2,64 +2,10 @@
   <el-row :gutter="4">
     <el-col
       :xs="{ span: 24 }"
-      :sm="{ span: 11 }"
-      :md="{ span: 9 }"
-      :lg="{ span: 8 }"
-      :xl="{ span: 5 }"
-    >
-      <el-card class="box-card">
-        <div slot="header" class="clearfix">
-          <span class="header-text">Filters</span>
-        </div>
-        <div>
-          <el-form
-            ref="form"
-            :model="searchForm"
-            class="form"
-            label-width="100px"
-            label-position="left"
-          >
-            <el-form-item label="Product">
-              <el-input v-model="searchForm.name" class="block" placeholder="Product"></el-input>
-            </el-form-item>
-            <el-form-item label="Category">
-              <el-input v-model="searchForm.category" class="block" placeholder="Category"></el-input>
-            </el-form-item>
-            <el-form-item label="Subcategory">
-              <el-input v-model="searchForm.subcategory" class="block" placeholder="Subcategory"></el-input>
-            </el-form-item>
-            <el-form-item label="Auction">
-              <el-radio-group v-model="searchForm.isAuction" size="mini">
-                <el-radio-button label="false">Inactive</el-radio-button>
-                <el-radio-button label="unset">|</el-radio-button>
-                <el-radio-button label="true">Active</el-radio-button>
-              </el-radio-group>
-            </el-form-item>
-            <el-form-item label="Stock Status">
-              <el-radio-group v-model="searchForm.stock_status" size="mini">
-                <el-radio-button label="false">Inactive</el-radio-button>
-                <el-radio-button label="unset">|</el-radio-button>
-                <el-radio-button label="true">Active</el-radio-button>
-              </el-radio-group>
-            </el-form-item>
-
-            <el-button
-              type="primary"
-              icon="el-icon-search"
-              class="search"
-              @click="SearchSubmit('searchForm')"
-            >Search</el-button>
-          </el-form>
-        </div>
-      </el-card>
-    </el-col>
-
-    <el-col
-      :xs="{ span: 24 }"
-      :sm="{ span: 13 }"
-      :md="{ span: 15 }"
-      :lg="{ span: 16 }"
-      :xl="{ span: 19 }"
+      :sm="{ span: 24 }"
+      :md="{ span: 24 }"
+      :lg="{ span: 24 }"
+      :xl="{ span: 24 }"
     >
       <el-card class="card-holder">
         <div id="center" class="app-container">
@@ -80,6 +26,10 @@
               icon="el-icon-download"
               @click="handleDownload"
             >{{ $t('table.export') }}</el-button>
+
+            <el-button class="filter-item" @click="show3 = !show3" type="primary">
+              <i class="fas el-icon-fa-caret-down"></i> Filters
+            </el-button>
             <el-button
               v-model="showReviewer"
               :type="type"
@@ -89,6 +39,56 @@
               style="margin-left:15px;"
               @click="handleStatus()"
             />
+
+            <transition name="el-fade-in-linear">
+              <div v-show="show3" class="container">
+                <el-form
+                  ref="form"
+                  :model="searchForm"
+                  class="form"
+                  :inline="true"
+                  size="mini"
+                  label-position="top"
+                >
+                  <el-form-item label="Client">
+                    <el-input v-model="searchForm.name" class="block" placeholder="Type a name"></el-input>
+                  </el-form-item>
+                  <el-form-item label="Category">
+                    <el-input v-model="searchForm.category" class="block" placeholder="Category"></el-input>
+                  </el-form-item>
+                  <el-form-item label="Subcategory">
+                    <el-input
+                      v-model="searchForm.subcategory"
+                      class="block"
+                      placeholder="Subcategory"
+                    ></el-input>
+                  </el-form-item>
+                  <el-form-item label="Auction">
+                    <el-radio-group v-model="searchForm.isAuction" size="mini">
+                      <el-radio-button size="mini" label="false">Inactive</el-radio-button>
+                      <el-radio-button size="mini" label="unset">|</el-radio-button>
+                      <el-radio-button size="mini" label="true">Active</el-radio-button>
+                    </el-radio-group>
+                  </el-form-item>
+                  <el-form-item label="Stock Status ">
+                    <el-radio-group v-model="searchForm.stock_status" size="mini">
+                      <el-radio-button size="mini" label="false">Inactive</el-radio-button>
+                      <el-radio-button size="mini" label="unset">|</el-radio-button>
+                      <el-radio-button size="mini" label="true">Active</el-radio-button>
+                    </el-radio-group>
+                  </el-form-item>
+                  <el-form-item>
+                    <el-button
+                      type="primary"
+                      icon="el-icon-search"
+                      class="search"
+                      size="mini"
+                      @click="SearchSubmit('searchForm')"
+                    >Apply</el-button>
+                  </el-form-item>
+                </el-form>
+              </div>
+            </transition>
           </div>
 
           <el-table
@@ -244,6 +244,7 @@ export default {
         category: "",
         active: true,
         subcategory: "",
+
         searchValue: "",
         isBundle: false
       },
@@ -260,6 +261,7 @@ export default {
       tableKey: 0,
       list: null,
       type: "success",
+      show3: false,
       icon: "el-icon-check",
       listSubcategories: [],
       total: 0,
@@ -412,9 +414,11 @@ export default {
       if (status === "deleted") {
         changeProductStatus(row._id, "false").then(res => {
           if (res.status) {
-            this.$message({
-              message: "success",
-              type: "success"
+            this.$notify({
+              title: "delete",
+              message: `${row.data.name} Successfully Deleted`,
+              type: "warning",
+              duration: 2000
             });
             this.list = this.list.filter(el => {
               return el._id !== row._id;
@@ -427,7 +431,7 @@ export default {
           if (res.status) {
             this.$notify({
               title: "success",
-              message: "Successfully deleted Subcategory",
+              message: `${row.data.name} Successfully Activated`,
               type: "success",
               duration: 2000
             });
@@ -449,46 +453,6 @@ export default {
       });
     },
 
-    searchSubcategory(query) {
-      if (query !== "" && query.length >= 3) {
-        this.loading = true;
-        console.log(query);
-        getSelectedSubcategory(query).then(response => {
-          this.listSubcategories = response.data;
-          console.log(response.data);
-        });
-      } else {
-        this.listSubcategories = [];
-      }
-    },
-
-    // Add new attributes
-    addAttribute() {
-      this.ProductsForm.attributes.push({
-        required: true,
-        name: ""
-      });
-    },
-    // Submit Dialog form for Adding
-    submitForm(ProductsForm) {
-      this.$refs[ProductsForm].validate(valid => {
-        if (valid) {
-          console.log(this.ProductsForm);
-
-          this.$notify({
-            title: "success",
-            message: "Successfully created new Category",
-            type: "success",
-            duration: 2000
-          });
-
-          this.dialogFormVisible = false;
-        } else {
-          console.log("error submit!!");
-          return false;
-        }
-      });
-    },
     moment: function (date) {
       return moment(date).format("MMMM Do YYYY, h:mm:ss a");
     },
@@ -580,11 +544,16 @@ export default {
 }
 
 .search {
-  margin: 3%;
+  margin: 1rem;
   float: right;
   width: 100%;
   min-width: 50px;
   max-width: 100px;
+  position: relative;
+  top: 0.8rem;
+}
+.el-button + .el-button {
+  margin-left: 0;
 }
 .box-card {
   margin-top: 13px;

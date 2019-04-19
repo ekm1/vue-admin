@@ -497,7 +497,7 @@ export default {
 
           this.$notify({
             title: "success",
-            message: "Submit Successfully",
+            message: `${this.ProductsForm.data.name} Successfully Created`,
             type: "success",
             duration: 2000
           });
@@ -509,8 +509,12 @@ export default {
 
           // that.submitUpload();
         } else {
-          console.log("error submit!!");
-          return false;
+          this.$notify({
+            title: "error",
+            message: `Please check your Product for errors`,
+            type: "error",
+            duration: 2000
+          }); return false;
         }
       });
     },

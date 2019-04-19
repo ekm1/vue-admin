@@ -1,59 +1,5 @@
 <template>
   <el-row :gutter="4">
-    <!-- <el-col
-      :xs="{ span: 24 }"
-      :sm="{ span: 11 }"
-      :md="{ span: 9 }"
-      :lg="{ span: 8 }"
-      :xl="{ span: 5 }"
-    >
-      <el-card class="box-card">
-        <div slot="header" class="clearfix">
-          <span class="header-text">Filters</span>
-        </div>
-        <div>
-          <el-form
-            ref="form"
-            :model="searchForm"
-            class="form"
-            label-width="100px"
-            label-position="left"
-          >
-            <el-form-item label="Client">
-              <el-input v-model="searchForm.name" class="block" placeholder="Type a name"></el-input>
-            </el-form-item>
-            <el-form-item label="Order">
-              <el-input v-model="searchForm.category" class="block" placeholder="Type id"></el-input>
-            </el-form-item>
-            <el-form-item label="Subcategory">
-              <el-input v-model="searchForm.subcategory" class="block" placeholder="Subcategory"></el-input>
-            </el-form-item>
-            <el-form-item label="Order Status">
-              <el-radio-group v-model="searchForm.isAuction" size="mini">
-                <el-radio-button label="false">Inactive</el-radio-button>
-                <el-radio-button label="unset">|</el-radio-button>
-                <el-radio-button label="true">Active</el-radio-button>
-              </el-radio-group>
-            </el-form-item>
-            <el-form-item label="Stock Status">
-              <el-radio-group v-model="searchForm.stock_status" size="mini">
-                <el-radio-button label="false">Inactive</el-radio-button>
-                <el-radio-button label="unset">|</el-radio-button>
-                <el-radio-button label="true">Active</el-radio-button>
-              </el-radio-group>
-            </el-form-item>
-
-            <el-button
-              type="primary"
-              icon="el-icon-search"
-              class="search"
-              @click="SearchSubmit('searchForm')"
-            >Search</el-button>
-          </el-form>
-        </div>
-      </el-card>
-    </el-col>-->
-
     <el-col
       :xs="{ span: 24 }"
       :sm="{ span: 24 }"
@@ -91,32 +37,41 @@
                     label-position="top"
                   >
                     <el-form-item label="Client">
-                      <el-input v-model="searchForm.name" class="block" placeholder="Type a name"></el-input>
+                      <el-input v-model="searchForm.buyerName" class="block" placeholder="Name"></el-input>
                     </el-form-item>
                     <el-form-item label="Order">
-                      <el-input v-model="searchForm.category" class="block" placeholder="Type id"></el-input>
-                    </el-form-item>
-                    <el-form-item label="Subcategory">
                       <el-input
-                        v-model="searchForm.subcategory"
+                        v-model="searchForm.trackingNumber"
                         class="block"
-                        placeholder="Subcategory"
+                        placeholder="Tracking"
                       ></el-input>
                     </el-form-item>
+                    <el-form-item label="Country">
+                      <el-select
+                        v-model="searchForm.country"
+                        filterable
+                        remote
+                        reserve-keyword
+                        placeholder="Please enter a keyword"
+                        :remote-method="remoteMethod"
+                        :loading="Loading"
+                      >
+                        <el-option
+                          v-for="item in options"
+                          :key="item.label"
+                          :label="item.label"
+                          :value="item.value"
+                        ></el-option>
+                      </el-select>
+                    </el-form-item>
                     <el-form-item label="Order">
-                      <el-radio-group v-model="searchForm.isAuction" size="mini">
-                        <el-radio-button size="mini" label="false">Inactive</el-radio-button>
-                        <el-radio-button size="mini" label="unset">|</el-radio-button>
-                        <el-radio-button size="mini" label="true">Active</el-radio-button>
+                      <el-radio-group v-model="searchForm.orderStatus" size="mini">
+                        <el-radio-button size="mini" label="Pending">Pending</el-radio-button>
+                        <el-radio-button size="mini" label="Shipped">Shipped</el-radio-button>
+                        <el-radio-button size="mini" label="Completed">Completed</el-radio-button>
                       </el-radio-group>
                     </el-form-item>
-                    <el-form-item label="Stock ">
-                      <el-radio-group v-model="searchForm.stock_status" size="mini">
-                        <el-radio-button size="mini" label="false">Inactive</el-radio-button>
-                        <el-radio-button size="mini" label="unset">|</el-radio-button>
-                        <el-radio-button size="mini" label="true">Active</el-radio-button>
-                      </el-radio-group>
-                    </el-form-item>
+
                     <el-form-item>
                       <el-button
                         type="primary"
@@ -304,6 +259,7 @@
 import { getAllOrders, setTracking, updateStatus } from "@/api/orders";
 import waves from "@/directive/waves"; // Waves directive
 import { parseTime } from "@/utils";
+import { country_list } from '@/filters/countries'
 
 import store from "../../store";
 import Pagination from "@/components/Pagination"; // Secondary package based on el-pagination
@@ -336,19 +292,20 @@ export default {
   data() {
     return {
       searchForm: {
-        category: "",
-        subcategory: "",
-        name: "",
-        isAuction: "unset",
-        stock_status: "unset"
+        trackingNumber: "",
+        buyerName: "",
+        orderStatus: "",
       },
       centerDialogVisible: false,
       value10: [],
       tableKey: 0,
+      value4: 'test',
       show3: false,
+      options: [],
 
       list: null,
       type: "success",
+      countryList: [],
       setStatus: {
         id: '',
       },
@@ -358,6 +315,7 @@ export default {
       total: 0,
 
       listLoading: true,
+      Loading: true,
       formInline: {
         trackingNumber: ''
       },
@@ -370,19 +328,12 @@ export default {
       centerDialogVisible: false,
 
 
-      sortOptions: [
-        { label: "ID Ascending", key: "+id" },
-        { label: "ID Descending", key: "-id" }
-      ],
-      statusOptions: ["published", "draft", "deleted"],
+
       showReviewer: false,
       tableStatus: true,
       dialogFormVisible: false,
       dialogStatus: "",
-      textMap: {
-        update: "Edit",
-        create: "Add Product"
-      },
+
       dialogPvVisible: false,
 
       downloadLoading: false
@@ -390,10 +341,16 @@ export default {
   },
   created() {
     this.getList();
-  },
 
+  },
+  mounted() {
+    this.countryList = country_list.map(item => {
+      return { value: item, label: item };
+    });
+  },
   methods: {
     getList() {
+      const temp = new Set()
       if (
         this.getOrdersQuery.name === undefined ||
         this.getOrdersQuery.name === "" ||
@@ -402,13 +359,17 @@ export default {
         this.listLoading = true;
         getAllOrders(this.getOrdersQuery).then(response => {
           this.list = response.data.results.docs;
-          console.log(this.list);
           this.total = response.data.results.total;
           this.listLoading = false;
+
         });
+
+
       } else {
         this.getFilerResults();
       }
+
+
     },
 
     handleFilter() {
@@ -425,11 +386,12 @@ export default {
       }
     },
     sortChange(data) {
-      if (data.order === "ascending") {
-        this.getOrdersQuery.sortType = "asc";
-      } else {
-        this.getOrdersQuery.sortType = "desc";
-      }
+      console.log(data)
+      // if (data.order === "ascending") {
+      //   this.getOrdersQuery.sortType = "asc";
+      // } else {
+      //   this.getOrdersQuery.sortType = "desc";
+      // }
       this.getList();
     },
     getQuantity(items) {
@@ -464,25 +426,17 @@ export default {
 
     // Search form
     SearchSubmit() {
-      Object.keys(this.searchForm).forEach(
-        key =>
-          (this.searchForm[key] == null ||
-            this.searchForm[key] == "" ||
-            this.searchForm[key] == "unset") &&
-          delete this.searchForm[key]
-      );
-
+      console.log(this.searchForm)
 
       this.listLoading = true;
       this.searchForm.page = this.getOrdersQuery.page;
       this.searchForm.limit = this.getOrdersQuery.limit;
       this.searchForm.sortType = this.getOrdersQuery.sortType;
-      this.searchForm.isBundle = this.getOrdersQuery.isBundle;
 
       console.log(this.searchForm);
-      searchProducts(this.searchForm).then(results => {
-        this.list = results.data.docs;
-        this.total = results.data.total;
+      getAllOrders(this.searchForm).then(results => {
+        this.list = results.data.results.docs;
+        this.total = results.data.results.total;
         this.listLoading = false;
       });
       this.centerDialogVisible = false;
@@ -515,9 +469,21 @@ export default {
         this.listSubcategories = [];
       }
     },
+    //Get Countries from exported file
+    remoteMethod(query) {
+      if (query !== '') {
+        this.Loading = true;
 
-    // Add new attributes
+        this.Loading = false;
+        this.options = this.countryList.filter(item => {
+          return item.label.toLowerCase()
+            .indexOf(query.toLowerCase()) > -1;
+        });
 
+      } else {
+        this.options = [];
+      }
+    },
     // Submit Dialog form for Adding
     submitForm(formInline) {
 
@@ -528,17 +494,11 @@ export default {
       this.dialogFormVisible = false
       this.getList()
     },
-
+    //Change Date Format
     moment: function (date) {
       return moment(date).format("MMMM Do YYYY, h:mm:ss a");
     },
-    // Reseting Dialog form
-
-
-    // Handling update on edit
-
-
-
+    //Handle download to Excel file
     handleDownload() {
       this.downloadLoading = true;
       import("@/vendor/Export2Excel").then(excel => {
@@ -553,6 +513,7 @@ export default {
         this.downloadLoading = false;
       });
     },
+
     handleStatus() {
       this.getOrdersQuery.status = !this.getOrdersQuery.status;
       if (this.getOrdersQuery.status === true) {

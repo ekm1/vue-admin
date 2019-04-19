@@ -66,6 +66,23 @@
                 :closable="false"
               ></el-alert>
             </el-form-item>
+            <el-form-item label="Discount Price" required>
+              <el-input-number
+                v-validate="'required|min_value:0'"
+                v-model="ProductsForm.data.display_price"
+                :precision="2"
+                name="discount"
+                :min="0"
+                :step="1"
+              />
+              <el-alert
+                v-if="errors.first('discount')"
+                :title="errors.first('discount')"
+                type="error"
+                show-icon
+                :closable="false"
+              ></el-alert>
+            </el-form-item>
             <el-form-item prop="subcategory" label="Auction">
               <el-switch
                 v-model="ProductsForm.isAuction"
@@ -485,7 +502,7 @@ export default {
 
           this.$notify({
             title: "success",
-            message: "Submit Successfully",
+            message: `${this.ProductsForm.data.name} Successfully Updated`,
             type: "success",
             duration: 2000
           });
@@ -496,8 +513,12 @@ export default {
 
           // that.submitUpload();
         } else {
-          console.log("error submit!!");
-          return false;
+          this.$notify({
+            title: "error",
+            message: `Please check your Product for errors`,
+            type: "error",
+            duration: 2000
+          }); return false;
         }
       });
     },
