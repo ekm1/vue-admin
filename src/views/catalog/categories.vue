@@ -54,17 +54,17 @@
             style="width: 100%;"
             @sort-change="sortChange"
           >
-            <el-table-column :label="$t('table.category')" width="150px" align="center">
+            <el-table-column :label="$t('table.category')" align="center">
               <template slot-scope="scope">
                 <span>{{ scope.row.category }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('table.subcategory')" width="150px" align="center">
+            <el-table-column :label="$t('table.subcategory')" align="center">
               <template slot-scope="scope">
                 <span>{{ scope.row.subcategory }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('table.status')" width="150px" align="center">
+            <el-table-column :label="$t('table.status')" align="center">
               <template slot-scope="scope">
                 <span>{{ scope.row.active }}</span>
               </template>
@@ -72,7 +72,6 @@
             <el-table-column
               :label="$t('table.actions')"
               align="center"
-              width="230"
               class-name="small-padding fixed-width"
             >
               <template slot-scope="scope">
@@ -668,7 +667,6 @@ export default {
 <style scoped>
 .app-container {
   margin: 0 auto;
-  max-width: 723px;
 }
 
 .input-field {
