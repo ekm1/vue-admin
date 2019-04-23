@@ -110,43 +110,43 @@
                 <span>{{ moment(scope.row.date) }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('Name')" width="150" align="center">
+            <el-table-column :label="$t('Name')" align="center">
               <template slot-scope="scope">
                 <span>{{ scope.row.data.name }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('Description')" width="100" align="center">
+            <el-table-column :label="$t('Description')" align="center">
               <template slot-scope="scope">
                 <span>{{ hideDescription(scope.row.data.description) }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('Price')" width="100" align="center">
+            <el-table-column :label="$t('Price')" align="center">
               <template slot-scope="scope">
                 <span>{{ scope.row.data.price }}$</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('Auction')" width="80" align="center">
+            <el-table-column :label="$t('Auction')" align="center">
               <template slot-scope="scope">
                 <span>{{ scope.row.isAuction }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('Category')" width="140" align="center">
+            <el-table-column :label="$t('Category')" align="center">
               <template slot-scope="scope">
                 <span>{{ scope.row.data.category }}</span>
               </template>
             </el-table-column>
 
-            <el-table-column :label="$t('Stock')" width="80" align="center">
+            <el-table-column :label="$t('Stock')" align="center">
               <template slot-scope="scope">
                 <span>{{ scope.row.data.stock_level }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('Stock Status')" width="120" align="center">
+            <el-table-column :label="$t('Stock Status')" align="center">
               <template slot-scope="scope">
                 <span>{{ scope.row.data.stock_status }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('table.status')" width="64" align="center">
+            <el-table-column :label="$t('table.status')" align="center">
               <template slot-scope="scope">
                 <span>{{ scope.row.active }}</span>
               </template>

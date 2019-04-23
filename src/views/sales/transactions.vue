@@ -100,7 +100,7 @@
             style="width: 100%;"
             @sort-change="sortChange(scope.row)"
           >
-            <el-table-column :label="$t('Date')" sortable="custom" width="200px" align="center">
+            <el-table-column :label="$t('Date')" sortable="custom" align="center">
               <template slot-scope="scope">
                 <i class="el-icon-time"/>
 
@@ -108,12 +108,12 @@
               </template>
             </el-table-column>
 
-            <el-table-column :label="$t('Transaction #')" width="220px" align="center">
+            <el-table-column :label="$t('Transaction #')" align="center">
               <template slot-scope="scope">
                 <span>#{{ scope.row.transactionId }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('Proccessor')" width="150px" align="center">
+            <el-table-column :label="$t('Proccessor')" align="center">
               <template slot-scope="scope">
                 <!-- <i class="fas el-icon-fa-cc-stripe"></i> -->
 
@@ -121,22 +121,22 @@
               </template>
             </el-table-column>
 
-            <el-table-column :label="$t('Order #')" width="200px" align="center">
+            <el-table-column :label="$t('Order #')" align="center">
               <template slot-scope="scope">
                 <span>#{{scope.row._id}}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('Bill-to')" width="100px" align="center">
+            <el-table-column :label="$t('Bill-to')" align="center">
               <template slot-scope="scope">
                 <span>{{ scope.row.buyerDetails.name }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('Status')" width="80px" align="center">
+            <el-table-column :label="$t('Status')" align="center">
               <template slot-scope="scope">
                 <span>Paid</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('Grand Total')" width="120px" align="center">
+            <el-table-column :label="$t('Grand Total')" align="center">
               <template slot-scope="scope">
                 <span>{{scope.row.totalPayment}}{{scope.row.currency | currencyFilter}}</span>
               </template>

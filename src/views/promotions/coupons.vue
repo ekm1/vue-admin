@@ -25,38 +25,37 @@
             :key="tableKey"
             v-loading="listLoading"
             :data="list"
-            border
             fit
             size="mini"
             highlight-current-row
             style="width: 100%;"
           >
-            <el-table-column :label="$t('Start')" width="200" align="center">
+            <el-table-column :label="$t('Start')" align="center">
               <template slot-scope="scope">
                 <span>{{ moment(scope.row.dateCreated) }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('End')" width="200" align="center">
+            <el-table-column :label="$t('End')" align="center">
               <template slot-scope="scope">
                 <span>{{ moment(scope.row.dateEnds) }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('Name')" width="150" align="center">
+            <el-table-column :label="$t('Name')" align="center">
               <template slot-scope="scope">
                 <span>{{ scope.row.couponName.toUpperCase() }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('Code')" width="150" align="center">
+            <el-table-column :label="$t('Code')" align="center">
               <template slot-scope="scope">
                 <span>{{ scope.row.couponCode.toUpperCase() }}</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('Discount')" width="200" align="center">
+            <el-table-column :label="$t('Discount')" align="center">
               <template slot-scope="scope">
                 <span>{{ scope.row.couponDiscount }}%</span>
               </template>
             </el-table-column>
-            <el-table-column :label="$t('Active-for')" width="100" align="center">
+            <el-table-column :label="$t('Active-for')" align="center">
               <template slot-scope="scope">
                 <el-popover trigger="hover" placement="top">
                   <p>
@@ -155,7 +154,9 @@
                       name="Coupon Code"
                       v-validate="'required'"
                       v-model="couponForm.couponCode"
-                    />
+                    >
+                      <el-button slot="append" @click="generateCode(6)">Generate</el-button>
+                    </el-input>
                     <el-alert
                       v-if="errors.first('Coupon Code')"
                       :title="errors.first('Coupon Code')"
@@ -289,11 +290,10 @@
                     ></el-alert>
                   </el-form-item>
                   <el-form-item label="Code" required>
-                    <el-input
-                      name="Coupon"
-                      v-validate="'required'"
-                      v-model="couponForm.couponCode"
-                    />
+                    <el-input name="Coupon" v-validate="'required'" v-model="couponForm.couponCode">
+                      <el-button slot="append" @click="generateCode(6)">Generate</el-button>
+                    </el-input>
+
                     <el-alert
                       v-if="errors.first('Coupon')"
                       :title="errors.first('Coupon')"
@@ -437,6 +437,7 @@ export default {
       couponForm: {
 
         dateCreated: null,
+        couponCode: "",
         dateEnds: null,
         isForCategory: true
       },
@@ -602,6 +603,15 @@ export default {
       this.Loading = false;
 
     },
+    generateCode(length) {
+      var text = "";
+      var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+      for (var i = 0; i < length; i++)
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+      this.couponForm.couponCode = text    },
+
 
     //Add date to start and end date
     modifyDate() {
@@ -749,7 +759,6 @@ export default {
 <style scoped>
 .app-container {
   margin: 0 auto;
-  max-width: 1271px;
 }
 
 .input-field {
