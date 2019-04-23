@@ -173,14 +173,14 @@
                   v-if="scope.row.active === true"
                   size="mini"
                   type="danger"
-                  @click="handleModifyStatus(scope.row,'deleted')"
+                  @click="confirmBox(scope.row,'deleted')"
                 >{{ $t('table.delete') }}</el-button>
 
                 <el-button
                   v-if="scope.row.active ===false"
                   size="mini"
                   type="success"
-                  @click="handleModifyStatus(scope.row,'activate')"
+                  @click="confirmBox(scope.row,'activate')"
                 >Activate</el-button>
               </template>
             </el-table-column>
@@ -442,6 +442,31 @@ export default {
           }
         });
       }
+    },
+    //Confirm Delete
+    confirmBox(row, status) {
+      if (status === 'deleted') {
+
+        this.$confirm(`This will delete ${row.data.name} Product. Continue?`, 'Warning', {
+          confirmButtonText: 'OK',
+          cancelButtonText: 'Cancel',
+          type: 'warning'
+        }).then(() => {
+          this.handleModifyStatus(row, status)
+
+
+        }).catch(() => {
+
+        });
+      } else {        this.$confirm(`This will activate ${row.data.name} Product. Continue?`, 'Warning', {
+          confirmButtonText: 'OK',
+          cancelButtonText: 'Cancel',
+          type: 'success'
+        }).then(() => {
+          this.handleModifyStatus(row, status)
+        }).catch(() => {
+
+        });      }
     },
     // Handle Creating new Product
     handleCreate() {

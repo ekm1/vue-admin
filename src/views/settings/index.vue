@@ -48,7 +48,7 @@
                 />
               </el-container>
               <label for="file-input" class="custom-file-upload">
-                <i class="el-icon-upload"/> Choose Files
+                <i class="el-icon-upload"/> Choose Logo
               </label>
               <input
                 id="file-input"
